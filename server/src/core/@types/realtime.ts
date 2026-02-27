@@ -1,0 +1,104 @@
+import type {
+  AgentKind,
+  AgentState,
+  CommunicationActivation,
+  CommunicationGraph,
+  SessionEvent,
+  SessionMetrics,
+  SessionMode,
+  Turn,
+} from './session';
+
+export interface StudentPersonalitySnapshot {
+  id: string;
+  name: string;
+  kind: AgentKind;
+  state: AgentState;
+}
+
+export interface StudentPersonalityChange {
+  id: string;
+  name: string;
+  kind: AgentKind;
+  previousState: AgentState;
+  currentState: AgentState;
+  deltas: {
+    attention: number;
+    boredom: number;
+    fatigue: number;
+    knowledgeRetention: number;
+  };
+}
+
+export interface SessionCreatedRealtimeEvent {
+  type: 'session_created';
+  sessionId: string;
+  mode: SessionMode;
+  topic: string;
+  metrics: SessionMetrics;
+  communicationGraph: CommunicationGraph;
+  studentStates: StudentPersonalitySnapshot[];
+}
+
+export interface TurnProcessedRealtimeEvent {
+  type: 'turn_processed';
+  sessionId: string;
+  mode: SessionMode;
+  topic: string;
+  turnId: string;
+  transcript: Turn[];
+  events: SessionEvent[];
+  metrics: SessionMetrics;
+  communicationGraph: CommunicationGraph;
+  currentTurnActivations: CommunicationActivation[];
+  studentStates: StudentPersonalitySnapshot[];
+  studentStateChanges: StudentPersonalityChange[];
+}
+
+export type SimulationRealtimeEvent = SessionCreatedRealtimeEvent | TurnProcessedRealtimeEvent;
+
+export type RealtimeClientCommandType = 'subscribe' | 'unsubscribe' | 'ping';
+
+export interface RealtimeClientCommand {
+  type: RealtimeClientCommandType;
+  sessionId?: string;
+}
+
+export interface WsEnvelope<TType extends string, TPayload> {
+  type: TType;
+  timestamp: string;
+  sessionId?: string;
+  payload: TPayload;
+}
+
+export interface WsConnectedPayload {
+  connectionId: string;
+  endpoint: '/socket.io';
+}
+
+export interface WsSubscriptionPayload {
+  sessionId: string;
+}
+
+export interface WsTurnPayload {
+  turnId: string;
+  transcript: Turn[];
+  events: SessionEvent[];
+  metrics: SessionMetrics;
+}
+
+export interface WsGraphPayload {
+  turnId: string;
+  communicationGraph: CommunicationGraph;
+  currentTurnActivations: CommunicationActivation[];
+}
+
+export interface WsStudentStatesPayload {
+  turnId: string;
+  studentStates: StudentPersonalitySnapshot[];
+  studentStateChanges: StudentPersonalityChange[];
+}
+
+export interface WsErrorPayload {
+  message: string;
+}
