@@ -80,6 +80,9 @@ const ChartsModal = ({
         <Button icon="pi pi-times" rounded text size="small" onClick={onHide} />
       </div>
       <div className="mt-2 flex h-[95%] flex-col gap-2 overflow-x-hidden text-sm">
+        <div className="text-xs text-slate-600">
+          Socket: {socket?.connected ? "connected" : "disconnected"}
+        </div>
         <div className="w-full">
           <div>Albert Eintstein</div>
           <Chart

@@ -3,6 +3,8 @@ import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 
 import { env } from '../config/env';
+import { ClassRoom } from './entities/ClassRoom';
+import { Student } from './entities/Student';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -13,7 +15,7 @@ export const AppDataSource = new DataSource({
   database: env.DB_NAME,
   synchronize: false,
   logging: env.DB_LOGGING,
-  entities: [],
+  entities: [Student, ClassRoom],
   migrations: ['src/database/migrations/*.{ts,js}', 'dist/database/migrations/*.{ts,js}'],
   migrationsTableName: 'typeorm_migrations',
 });
