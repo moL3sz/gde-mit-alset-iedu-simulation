@@ -1,7 +1,9 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "primereact/button";
 
 import ClassroomMockup, { type ClassroomStudent } from "./ClassroomMockup";
+import ChartsModal from "./ChartsModal";
+import { useSockets } from "../context/SocketContext";
 
 type StudentSetupPayload = {
   students?: ClassroomStudent[];
@@ -32,11 +34,13 @@ const readStoredStudents = (): ClassroomStudent[] => {
 
 export const Unsupervised = () => {
   const students = useMemo(() => readStoredStudents(), []);
+  const { unsupervisedSocket } = useSockets();
+  const [isChartsVisible, setIsChartsVisible] = useState(false);
 
   return (
     <section className="h-full w-full p-2 md:w-1/2 md:p-3">
       <div
-        className="flex h-full flex-col rounded-3xl border border-slate-300/70 bg-[#f2f4f7] shadow-[0_16px_34px_rgba(15,23,42,0.1)]"
+        className="relative flex h-full flex-col rounded-3xl border border-slate-300/70 bg-[#f2f4f7] shadow-[0_16px_34px_rgba(15,23,42,0.1)]"
         style={{ fontFamily: "'Trebuchet MS', Verdana, sans-serif" }}
       >
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-300/70 px-4 py-3 sm:px-5 sm:py-4">
@@ -55,6 +59,7 @@ export const Unsupervised = () => {
               severity="secondary"
               outlined
               size="small"
+              onClick={() => setIsChartsVisible((currentState) => !currentState)}
             />
             <Button
               icon="pi pi-sitemap"
@@ -78,6 +83,14 @@ export const Unsupervised = () => {
         <div className="min-h-0 flex-1 p-3 pt-1 sm:p-4 sm:pt-2">
           <ClassroomMockup students={students} />
         </div>
+
+        <ChartsModal
+          visible={isChartsVisible}
+          onHide={() => setIsChartsVisible(false)}
+          socket={unsupervisedSocket}
+          title="Unsupervised Charts"
+          className="left-4 right-4 top-[112px] bottom-4"
+        />
       </div>
     </section>
   );
