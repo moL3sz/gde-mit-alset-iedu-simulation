@@ -12,6 +12,7 @@ export interface CreateSessionRequest {
   mode: SessionMode;
   topic: string;
   config?: SessionConfig;
+  classroomId:number
 }
 
 export interface CreateSessionResponse {

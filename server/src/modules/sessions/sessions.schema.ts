@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const createSessionSchema = z.object({
   mode: z.enum(['classroom', 'debate']),
   topic: z.string().trim().min(2).max(300),
+  classroomId: z.coerce.number().int().positive(),
   config: z
     .object({
       classroom: z

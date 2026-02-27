@@ -13,6 +13,7 @@ import type {
   WsSubscriptionPayload,
   WsTurnPayload,
 } from '../@types';
+import { registerSocketCommandHandlers } from './socketCommandHandlers';
 import { simulationRealtimeBus } from './simulationRealtimeBus';
 
 const SOCKET_IO_PATH = '/socket.io';
@@ -94,6 +95,8 @@ class SimulationSocketGateway {
   }
 
   private readonly handleConnection = (socket: Socket): void => {
+    registerSocketCommandHandlers(socket);
+
     const connectedPayload: WsConnectedPayload = {
       connectionId: socket.id,
       endpoint: '/socket.io',

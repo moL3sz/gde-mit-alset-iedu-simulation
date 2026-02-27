@@ -19,8 +19,8 @@ import { createLlmTool } from '../../core/tools/llm';
 export class SessionsService {
   public constructor(private readonly orchestrator: Orchestrator) {}
 
-  public createSession(payload: CreateSessionRequest): CreateSessionResponse {
-    const created = this.orchestrator.createSession(payload);
+  public async createSession(payload: CreateSessionRequest): Promise<CreateSessionResponse> {
+    const created = await this.orchestrator.createSession(payload);
 
     try {
       const summary = this.orchestrator.getSessionSummary(created.sessionId);

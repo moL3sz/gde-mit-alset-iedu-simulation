@@ -4,14 +4,14 @@ import type { CreateSessionBody, PostTurnBody } from './sessions.schema';
 import { createSessionSchema, postTurnSchema } from './sessions.schema';
 import { sessionsService } from './sessions.service';
 
-export const createSession: RequestHandler<never, unknown, CreateSessionBody> = (
+export const createSession: RequestHandler<never, unknown, CreateSessionBody> = async (
   req,
   res,
   next,
 ) => {
   try {
     const payload = createSessionSchema.parse(req.body);
-    const response = sessionsService.createSession(payload);
+    const response = await sessionsService.createSession(payload);
     res.status(201).json(response);
   } catch (error: unknown) {
     next(error);

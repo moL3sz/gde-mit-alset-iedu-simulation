@@ -28,6 +28,8 @@ import {
 import type { LlmTool } from './tools/llm';
 import { scoreDebateRubric } from './tools/rubric';
 import { applySafetyGuards } from './tools/safety';
+import { AppDataSource } from '../database/data-source';
+import { ClassRoom } from '../database/entities/ClassRoom';
 
 const TEACHER_AGENT_ID = 'teacher';
 
@@ -56,13 +58,23 @@ export class Orchestrator {
     private readonly llmTool: LlmTool,
   ) {}
 
-  public createSession(input: CreateSessionRequest): CreateSessionResponse {
+  public async createSession(input: CreateSessionRequest): Promise<CreateSessionResponse> {
+    console.log("Input", input)
     const mode = input.mode;
-    const agents = this.buildDefaultAgents(mode);
+    const classroomId = input.classroomId;
+
+     if (!classroomId){
+      throw new AppError(400, 'Classrom Identifier is requried');
+    }
+
+    const agents = await this.buildDefaultAgents(mode, classroomId);
+    
 
     if (!input.topic.trim()) {
       throw new AppError(400, 'Topic is required.');
     }
+
+   
 
     const communicationGraph = createSessionCommunicationGraph(mode, agents, input.config);
 
@@ -657,7 +669,22 @@ export class Orchestrator {
     return activation;
   }
 
-  private buildDefaultAgents(mode: SessionMode): AgentProfile[] {
+  private async buildDefaultAgents(mode: SessionMode, classroomId:number): Promise<AgentProfile[]> {
+
+
+    const classroomRep = AppDataSource.getRepository(ClassRoom);
+
+    const classroom = await classroomRep.findOne({
+      where: {
+        id: classroomId
+      },
+      relations: {
+        students:true
+      }
+    });
+
+    console.log(classroom);
+
     const teacher: AgentProfile = {
       id: TEACHER_AGENT_ID,
       kind: 'teacher',
