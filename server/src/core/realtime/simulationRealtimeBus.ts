@@ -13,16 +13,14 @@ const round = (value: number): number => Number(value.toFixed(4));
 const cloneState = (
   state: StudentPersonalitySnapshot['state'],
 ): StudentPersonalitySnapshot['state'] => ({
-  attention: state.attention,
-  boredom: state.boredom,
-  fatigue: state.fatigue,
-  knowledgeRetention: state.knowledgeRetention,
-  eslSupportNeeded: state.eslSupportNeeded,
-  emotion: state.emotion,
-  misconceptions: [...state.misconceptions],
+  attentiveness: state.attentiveness,
+  behavior: state.behavior,
+  comprehension: state.comprehension,
+  profile: state.profile,
 });
 
-const isStudentAgent = (agent: AgentProfile): boolean => agent.kind.startsWith('student_');
+const isStudentAgent = (agent: AgentProfile): boolean =>
+  agent.kind === 'ADHD' || agent.kind === 'Autistic' || agent.kind === 'Typical';
 
 export const extractStudentPersonalitySnapshots = (
   agents: AgentProfile[],
@@ -56,12 +54,9 @@ export const calculateStudentPersonalityChanges = (
         previousState: cloneState(oldValue.state),
         currentState: cloneState(student.state),
         deltas: {
-          attention: round(student.state.attention - oldValue.state.attention),
-          boredom: round(student.state.boredom - oldValue.state.boredom),
-          fatigue: round(student.state.fatigue - oldValue.state.fatigue),
-          knowledgeRetention: round(
-            student.state.knowledgeRetention - oldValue.state.knowledgeRetention,
-          ),
+          attentiveness: round(student.state.attentiveness - oldValue.state.attentiveness),
+          behavior: round(student.state.behavior - oldValue.state.behavior),
+          comprehension: round(student.state.comprehension - oldValue.state.comprehension),
         },
       };
     })

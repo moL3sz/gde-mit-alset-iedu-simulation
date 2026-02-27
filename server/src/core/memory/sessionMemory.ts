@@ -52,10 +52,9 @@ const defaultMetrics = (): SessionMetrics => ({
   misconceptionsDetected: 0,
   turnCount: 0,
   studentStateAverages: {
-    attention: 0,
-    boredom: 0,
-    fatigue: 0,
-    knowledgeRetention: 0,
+    attentiveness: 0,
+    behavior: 0,
+    comprehension: 0,
   },
 });
 

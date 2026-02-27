@@ -4,7 +4,7 @@ import type { Agent, AgentRunContext, AgentRunInput, AgentRunResult } from './Ag
 
 export class TeacherAgent implements Agent {
   public readonly id: string;
-  public readonly kind = 'teacher' as const;
+  public readonly kind = 'Teacher' as const;
   public readonly name: string;
 
   public constructor(profile: AgentProfile) {

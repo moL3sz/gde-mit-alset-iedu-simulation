@@ -28,7 +28,6 @@ export type ClassroomMockupProps = {
 
 type StudentState = "engaged" | "steady" | "distracted";
 
-const DESK_GROUP_COUNT = 6;
 const STUDENTS_PER_DESK = 2;
 const STUDENT_BUBBLE_AUTO_HIDE_MS = 9000;
 
@@ -76,20 +75,20 @@ const normalizeScore = (value: number | undefined, fallback: number): number => 
     return fallback;
   }
 
-  return clamp(Math.round(value), 0, 100);
+  return clamp(Math.round(value), 0, 10);
 };
 
 const getStudentState = (student: ClassroomStudent, index: number): StudentState => {
-  const attentiveness = normalizeScore(student.attentiveness, 55 + ((index * 7) % 20));
-  const behavior = normalizeScore(student.behavior, 50 + ((index * 11) % 25));
-  const comprehension = normalizeScore(student.comprehension, 52 + ((index * 9) % 20));
+  const attentiveness = normalizeScore(student.attentiveness, 5 + ((index * 2) % 3));
+  const behavior = normalizeScore(student.behavior, 5 + ((index * 2) % 3));
+  const comprehension = normalizeScore(student.comprehension, 5 + ((index * 2) % 3));
   const weightedFocus = attentiveness * 0.45 + behavior * 0.3 + comprehension * 0.25;
 
-  if (weightedFocus >= 70) {
+  if (weightedFocus >= 7) {
     return "engaged";
   }
 
-  if (weightedFocus <= 47) {
+  if (weightedFocus <= 4) {
     return "distracted";
   }
 
@@ -133,25 +132,22 @@ const ClassroomMockup = ({
   const messageByNodeRef = useRef<Record<string, string>>({});
   const hideTimerByNodeRef = useRef<Record<string, number>>({});
 
-  const seatStudents = Array.from(
-    { length: DESK_GROUP_COUNT * STUDENTS_PER_DESK },
-    (_, index): ClassroomStudent => {
-      const source = students[index];
-      const candidateName = source?.name?.trim();
+  const seatStudents = students.map((source, index): ClassroomStudent => {
+    const candidateName = source?.name?.trim();
 
-      return {
-        name: candidateName && candidateName.length > 0 ? candidateName : toFallbackName(index),
-        profile: source?.profile,
-        attentiveness: source?.attentiveness,
-        comprehension: source?.comprehension,
-        behavior: source?.behavior,
-      };
-    },
-  );
+    return {
+      name: candidateName && candidateName.length > 0 ? candidateName : toFallbackName(index),
+      profile: source?.profile,
+      attentiveness: source?.attentiveness,
+      comprehension: source?.comprehension,
+      behavior: source?.behavior,
+    };
+  });
 
   const seatNodeIds = Array.from({ length: seatStudents.length }, (_, index) => {
     return studentNodeIds[index] ?? toFallbackNodeId(index);
   });
+  const deskGroupCount = Math.ceil(seatStudents.length / STUDENTS_PER_DESK);
 
   const bubbleByNodeId = useMemo(() => {
     return new Map(nodeBubbles.map((bubble) => [bubble.nodeId, bubble]));
@@ -342,19 +338,25 @@ const ClassroomMockup = ({
 
           <div className="absolute right-0 top-[20%] h-16 w-6 rounded-l-lg bg-[#c2baaf] sm:h-20 sm:w-7" />
 
-          <div className="absolute inset-x-3 bottom-2 top-[42%] grid grid-cols-3 grid-rows-2 gap-2 sm:inset-x-5 sm:bottom-3 sm:top-[44%] sm:gap-4">
-            {Array.from({ length: DESK_GROUP_COUNT }, (_, deskIndex) => {
+          <div className="absolute inset-x-3 bottom-2 top-[42%] grid grid-cols-1 gap-2 sm:inset-x-5 sm:bottom-3 sm:top-[44%] sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+            {Array.from({ length: deskGroupCount }, (_, deskIndex) => {
               const firstSeatIndex = deskIndex * STUDENTS_PER_DESK;
               const secondSeatIndex = firstSeatIndex + 1;
               const first = seatStudents[firstSeatIndex];
               const second = seatStudents[secondSeatIndex];
               const firstNodeId = seatNodeIds[firstSeatIndex];
               const secondNodeId = seatNodeIds[secondSeatIndex];
+              if (!first || !firstNodeId) {
+                return null;
+              }
+
               const firstName = first.name ?? toFallbackName(firstSeatIndex);
-              const secondName = second.name ?? toFallbackName(secondSeatIndex);
               const firstState = getStudentState(first, firstSeatIndex);
-              const secondState = getStudentState(second, secondSeatIndex);
               const firstStyle = STATE_STYLES[firstState];
+              const secondName = second?.name ?? toFallbackName(secondSeatIndex);
+              const secondState = second
+                ? getStudentState(second, secondSeatIndex)
+                : "steady";
               const secondStyle = STATE_STYLES[secondState];
 
               return (
@@ -387,25 +389,33 @@ const ClassroomMockup = ({
                         {renderBubble(firstNodeId, false)}
                       </div>
 
-                      <div
-                        className={`flex min-h-[48px] flex-col items-center justify-center rounded-2xl border px-1 py-1 text-center sm:min-h-[56px] ${secondStyle.panelClass}`}
-                      >
-                        <div ref={attachAnchor(secondNodeId)}>
-                          <Avatar
-                            label={toInitials(secondName)}
-                            shape="circle"
-                            className="!h-6 !w-6 !bg-slate-300 !text-[9px] !font-semibold !text-slate-700 sm:!h-7 sm:!w-7"
+                      {second && secondNodeId ? (
+                        <div
+                          className={`flex min-h-[48px] flex-col items-center justify-center rounded-2xl border px-1 py-1 text-center sm:min-h-[56px] ${secondStyle.panelClass}`}
+                        >
+                          <div ref={attachAnchor(secondNodeId)}>
+                            <Avatar
+                              label={toInitials(secondName)}
+                              shape="circle"
+                              className="!h-6 !w-6 !bg-slate-300 !text-[9px] !font-semibold !text-slate-700 sm:!h-7 sm:!w-7"
+                            />
+                          </div>
+                          <span className="mt-0.5 truncate text-[8px] font-semibold leading-tight sm:text-[9px]">
+                            {secondName}
+                          </span>
+                          <Tag
+                            value={secondStyle.label}
+                            className={`!mt-0.5 !text-[7px] ${secondStyle.tagClass}`}
                           />
+                          {renderBubble(secondNodeId, false)}
                         </div>
-                        <span className="mt-0.5 truncate text-[8px] font-semibold leading-tight sm:text-[9px]">
-                          {secondName}
-                        </span>
-                        <Tag
-                          value={secondStyle.label}
-                          className={`!mt-0.5 !text-[7px] ${secondStyle.tagClass}`}
-                        />
-                        {renderBubble(secondNodeId, false)}
-                      </div>
+                      ) : (
+                        <div className="flex min-h-[48px] items-center justify-center rounded-2xl border border-dashed border-slate-300 px-1 py-1 text-center sm:min-h-[56px]">
+                          <span className="text-[9px] font-semibold text-slate-400">
+                            Empty seat
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex justify-center gap-1">
@@ -413,10 +423,12 @@ const ClassroomMockup = ({
                         value={first.profile ?? "Typical"}
                         className="!bg-slate-100 !text-slate-700 !text-[8px]"
                       />
-                      <Tag
-                        value={second.profile ?? "Typical"}
-                        className="!bg-slate-100 !text-slate-700 !text-[8px]"
-                      />
+                      {second ? (
+                        <Tag
+                          value={second.profile ?? "Typical"}
+                          className="!bg-slate-100 !text-slate-700 !text-[8px]"
+                        />
+                      ) : null}
                     </div>
                   </div>
                 </Card>

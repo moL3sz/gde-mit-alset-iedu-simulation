@@ -63,15 +63,12 @@ const buildFallbackKnowledgeFromRecentTurns = (recentTurns: Turn[], studentId: s
 
 const getKnowledgeWindow = (state: AgentState): number => {
   const memorySignal = clamp(
-    state.knowledgeRetention * 0.55 +
-      state.attention * 0.2 -
-      state.fatigue * 0.15 -
-      state.boredom * 0.1,
+    state.comprehension * 0.5 + state.attentiveness * 0.35 + state.behavior * 0.15,
     0,
-    1,
+    10,
   );
 
-  return Math.max(1, Math.round(1 + memorySignal * 7));
+  return Math.max(1, Math.round(1 + (memorySignal / 10) * 7));
 };
 
 const buildMemoryConstrainedPrompt = (instruction: string, knowledgeLines: string[]): string => {
@@ -97,66 +94,35 @@ const updateState = (kind: AgentKind, state: AgentState, message: string): Parti
   const exampleCue = hasExampleCue(message);
   const assessmentCue = hasAssessmentCue(message);
 
-  let nextFatigue = clamp(
-    state.fatigue + 0.04 + complexity * 0.07 - (interactiveCue ? 0.015 : 0),
+  let nextAttentiveness = clamp(
+    state.attentiveness + (interactiveCue ? 1.1 : -0.7) - complexity * 1.8,
     0,
-    1,
+    10,
+  );
+  let nextBehavior = clamp(
+    state.behavior + (interactiveCue ? 0.7 : -0.4) - (assessmentCue ? 0.4 : 0),
+    0,
+    10,
+  );
+  let nextComprehension = clamp(
+    state.comprehension + (exampleCue ? 1.4 : 0.6) + (interactiveCue ? 0.4 : 0) - complexity * 0.7,
+    0,
+    10,
   );
 
-  let nextBoredom = clamp(
-    state.boredom + complexity * 0.08 - (interactiveCue ? 0.07 : 0.01) - (exampleCue ? 0.03 : 0),
-    0,
-    1,
-  );
-
-  let nextKnowledgeRetention = clamp(
-    state.knowledgeRetention +
-      0.03 +
-      (exampleCue ? 0.08 : 0) -
-      nextBoredom * 0.06 -
-      nextFatigue * 0.05,
-    0,
-    1,
-  );
-
-  if (kind === 'student_distracted') {
-    nextBoredom = clamp(nextBoredom + 0.08, 0, 1);
-    nextKnowledgeRetention = clamp(nextKnowledgeRetention - 0.06, 0, 1);
+  if (kind === 'ADHD') {
+    nextAttentiveness = clamp(nextAttentiveness - 0.8, 0, 10);
+    nextBehavior = clamp(nextBehavior - 0.6, 0, 10);
   }
 
-  if (kind === 'student_fast') {
-    nextFatigue = clamp(nextFatigue - 0.03, 0, 1);
-    nextKnowledgeRetention = clamp(nextKnowledgeRetention + 0.05, 0, 1);
-  }
-
-  if (kind === 'student_esl' && exampleCue) {
-    nextKnowledgeRetention = clamp(nextKnowledgeRetention + 0.04, 0, 1);
-  }
-
-  const nextAttention = clamp(
-    state.attention + (interactiveCue ? 0.05 : -0.02) - nextBoredom * 0.06 - nextFatigue * 0.05,
-    0.2,
-    1,
-  );
-
-  let nextEmotion: AgentState['emotion'] = state.emotion;
-
-  if (assessmentCue && kind === 'student_emotional') {
-    nextEmotion = 'anxious';
-  } else if (nextFatigue > 0.78) {
-    nextEmotion = 'frustrated';
-  } else if (nextBoredom < 0.35 && nextKnowledgeRetention > 0.62) {
-    nextEmotion = 'engaged';
-  } else {
-    nextEmotion = 'calm';
+  if (kind === 'Autistic' && exampleCue) {
+    nextComprehension = clamp(nextComprehension + 0.8, 0, 10);
   }
 
   return {
-    attention: nextAttention,
-    boredom: nextBoredom,
-    fatigue: nextFatigue,
-    knowledgeRetention: nextKnowledgeRetention,
-    emotion: nextEmotion,
+    attentiveness: Math.round(nextAttentiveness),
+    behavior: Math.round(nextBehavior),
+    comprehension: Math.round(nextComprehension),
   };
 };
 

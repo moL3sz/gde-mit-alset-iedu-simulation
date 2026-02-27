@@ -26,10 +26,9 @@ export interface StudentPersonalityChange {
   previousState: AgentState;
   currentState: AgentState;
   deltas: {
-    attention: number;
-    boredom: number;
-    fatigue: number;
-    knowledgeRetention: number;
+    attentiveness: number;
+    behavior: number;
+    comprehension: number;
   };
 }
 
