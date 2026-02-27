@@ -28,11 +28,15 @@ Chart.register(
 type MetricsLineChartProps = {
   title: string;
   labels: string[];
-  redValues: Array<number | null>;
-  notListeningValues: Array<number | null>;
+  attentionValues: Array<number | null>;
+  boredomValues: Array<number | null>;
+  emotionValues: Array<number | null>;
+  highlightedValues: Array<number | null>;
   teacherActions: string[];
-  redActions: Array<string | null>;
-  redSeriesLabel: string;
+  studentActions: Array<string | null>;
+  attentionSeriesLabel: string;
+  boredomSeriesLabel: string;
+  emotionSeriesLabel: string;
   yAxisTitle: string;
   xAxisTitle: string;
 };
@@ -45,7 +49,7 @@ const translateStudentAction = (action: string | null | undefined) => {
   const normalizedAction = action.toLowerCase();
 
   if (normalizedAction === "listen") {
-    return "figyel";
+    return "listening";
   }
 
   if (
@@ -53,37 +57,37 @@ const translateStudentAction = (action: string | null | undefined) => {
     normalizedAction.includes("doesnt listen") ||
     normalizedAction.includes("nem listen")
   ) {
-    return "nem figyel";
+    return "not listening";
   }
 
   if (normalizedAction === "talking") {
-    return "beszélget";
+    return "talking";
   }
 
   return action;
 };
 
 const translateTeacherAction = (action: string | null | undefined) => {
-  if (!action || action === "n/a" || action === "nincs adat") {
+  if (!action || action === "n/a" || action === "no data") {
     return "n/a";
   }
 
   const normalizedAction = action.toLowerCase();
 
   if (normalizedAction === "education") {
-    return "oktat";
+    return "teaching";
   }
 
   if (normalizedAction === "interactive education") {
-    return "interaktívan oktat";
+    return "interactive teaching";
   }
 
   if (normalizedAction === "kidding") {
-    return "poénkodik";
+    return "joking";
   }
 
   if (normalizedAction === "moderation") {
-    return "moderál";
+    return "moderating";
   }
 
   return action;
@@ -92,11 +96,15 @@ const translateTeacherAction = (action: string | null | undefined) => {
 export const MetricsLineChart = ({
   title,
   labels,
-  redValues,
-  notListeningValues,
+  attentionValues,
+  boredomValues,
+  emotionValues,
+  highlightedValues,
   teacherActions,
-  redActions,
-  redSeriesLabel,
+  studentActions,
+  attentionSeriesLabel,
+  boredomSeriesLabel,
+  emotionSeriesLabel,
   yAxisTitle,
   xAxisTitle,
 }: MetricsLineChartProps) => {
@@ -110,11 +118,11 @@ export const MetricsLineChart = ({
 
     chartRef.current?.destroy();
 
-    const hasNotListeningPoints = notListeningValues.some((value) => value !== null);
+    const hasHighlightedPoints = highlightedValues.some((value) => value !== null);
     const datasets: ChartDataset<"line", Array<number | null>>[] = [
       {
-        label: redSeriesLabel,
-        data: redValues,
+        label: attentionSeriesLabel,
+        data: attentionValues,
         borderColor: "#dc2626",
         backgroundColor: "rgba(220, 38, 38, 0.2)",
         tension: 0.25,
@@ -123,12 +131,36 @@ export const MetricsLineChart = ({
         borderWidth: 2,
         spanGaps: true,
       },
+      {
+        label: boredomSeriesLabel,
+        data: boredomValues,
+        borderColor: "#eab308",
+        backgroundColor: "rgba(234, 179, 8, 0.2)",
+        hidden: true,
+        tension: 0.25,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        borderWidth: 2,
+        spanGaps: true,
+      },
+      {
+        label: emotionSeriesLabel,
+        data: emotionValues,
+        borderColor: "#16a34a",
+        backgroundColor: "rgba(22, 163, 74, 0.2)",
+        hidden: true,
+        tension: 0.25,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        borderWidth: 2,
+        spanGaps: true,
+      },
     ];
 
-    if (hasNotListeningPoints) {
+    if (hasHighlightedPoints) {
       datasets.push({
-        label: "nem figyel / beszélget",
-        data: notListeningValues,
+        label: "not listening / talking",
+        data: highlightedValues,
         borderColor: "transparent",
         backgroundColor: "#dc2626",
         clip: false,
@@ -232,7 +264,7 @@ export const MetricsLineChart = ({
                   return "";
                 }
 
-                return `${rawLabel}. perc`;
+                return `${rawLabel} min`;
               },
               label: () => {
                 return [];
@@ -244,10 +276,10 @@ export const MetricsLineChart = ({
                   return [];
                 }
 
-                const studentAction = translateStudentAction(redActions[pointIndex]);
+                const studentAction = translateStudentAction(studentActions[pointIndex]);
                 const teacherAction = translateTeacherAction(teacherActions[pointIndex]);
 
-                return [`diák: ${studentAction}`, `tanár: ${teacherAction}`];
+                return [`student: ${studentAction}`, `teacher: ${teacherAction}`];
               },
             },
           },
@@ -260,8 +292,8 @@ export const MetricsLineChart = ({
             },
           },
           y: {
-            min: 0,
-            max: 10,
+            min: -2,
+            max: 15,
             title: {
               display: true,
               text: yAxisTitle,
@@ -276,11 +308,15 @@ export const MetricsLineChart = ({
       chartRef.current = null;
     };
   }, [
+    attentionSeriesLabel,
+    attentionValues,
+    boredomSeriesLabel,
+    boredomValues,
+    emotionSeriesLabel,
+    emotionValues,
+    highlightedValues,
     labels,
-    notListeningValues,
-    redActions,
-    redSeriesLabel,
-    redValues,
+    studentActions,
     teacherActions,
     title,
     xAxisTitle,
@@ -288,7 +324,7 @@ export const MetricsLineChart = ({
   ]);
 
   return (
-    <div className="h-[440px] w-full rounded-xl bg-white p-4 shadow-sm">
+    <div className="h-full min-h-[340px] w-full rounded-xl bg-white p-3 shadow-sm">
       <canvas ref={canvasRef} />
     </div>
   );
