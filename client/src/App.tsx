@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route} from "react-router-dom";
 import { StartPage } from "./pages/StartPage.tsx";
 import { Simulation } from "./pages/Simulation.tsx";
 import { Students } from "./pages/Students.tsx";
+import { ClassRoom } from "./pages/ClassRoom.tsx";
 
 function App() {
   
@@ -18,7 +19,7 @@ function App() {
         <Route path="/" element={<Students/>}/>
         <Route path="/start" element={<StartPage/>}/>
         <Route path="/simulation" element={<Simulation/>}/>
-        <Route path="/classrom" element={<Simulation/>}/>
+        <Route path="/classrom" element={<ClassRoom/>}/>
       </Routes>
     </BrowserRouter>
   );
