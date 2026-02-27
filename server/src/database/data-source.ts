@@ -1,0 +1,19 @@
+import 'reflect-metadata';
+
+import { DataSource } from 'typeorm';
+
+import { env } from '../config/env';
+
+export const AppDataSource = new DataSource({
+  type: 'postgres',
+  host: env.DB_HOST,
+  port: env.DB_PORT,
+  username: env.DB_USERNAME,
+  password: env.DB_PASSWORD,
+  database: env.DB_NAME,
+  synchronize: false,
+  logging: env.DB_LOGGING,
+  entities: [],
+  migrations: ['src/database/migrations/*.{ts,js}', 'dist/database/migrations/*.{ts,js}'],
+  migrationsTableName: 'typeorm_migrations',
+});
