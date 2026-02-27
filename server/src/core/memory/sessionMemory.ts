@@ -16,6 +16,7 @@ export interface CreateSessionInput {
   mode: SessionMode;
   topic: string;
   config?: SessionConfig;
+  channel?: 'supervised' | 'unsupervised';
   agents: AgentProfile[];
   communicationGraph: CommunicationGraph;
 }
@@ -31,6 +32,12 @@ export interface SessionMemoryStore {
     patch: Partial<AgentProfile['state']>,
   ): Session;
   updateMetrics(sessionId: string, patch: Partial<SessionMetrics>): Session;
+  pushSupervisorHint(sessionId: string, hintText: string): void;
+  consumeSupervisorHint(sessionId: string): string | undefined;
+  updateClassroomRuntime(
+    sessionId: string,
+    updater: (current: unknown) => unknown,
+  ): Session;
 }
 
 const nowIso = (): string => new Date().toISOString();
@@ -50,6 +57,7 @@ const defaultMetrics = (): SessionMetrics => ({
 
 export class SessionMemory implements SessionMemoryStore {
   private readonly sessions = new Map<string, Session>();
+  private readonly supervisorHints = new Map<string, string[]>();
 
   public createSession(input: CreateSessionInput): Session {
     const createdAt = nowIso();
@@ -66,8 +74,29 @@ export class SessionMemory implements SessionMemoryStore {
       createdAt,
       updatedAt: createdAt,
     };
+    const mutableSession = session as Session & {
+      channel?: 'supervised' | 'unsupervised';
+      classroomRuntime?: {
+        lessonTurn: number;
+        phase: 'lecture' | 'practice' | 'review';
+        paused: boolean;
+        pendingTaskAssignment: boolean;
+      };
+    };
+
+    mutableSession.channel = input.channel ?? 'unsupervised';
+
+    if (input.mode === 'classroom') {
+      mutableSession.classroomRuntime = {
+        lessonTurn: 1,
+        phase: 'lecture',
+        paused: false,
+        pendingTaskAssignment: false,
+      };
+    }
 
     this.sessions.set(session.id, session);
+    this.supervisorHints.set(session.id, []);
     return session;
   }
 
@@ -124,6 +153,35 @@ export class SessionMemory implements SessionMemoryStore {
     };
     session.updatedAt = nowIso();
 
+    return session;
+  }
+
+  public pushSupervisorHint(sessionId: string, hintText: string): void {
+    this.mustGetSession(sessionId);
+    const queue = this.supervisorHints.get(sessionId) ?? [];
+    queue.push(hintText);
+    this.supervisorHints.set(sessionId, queue);
+  }
+
+  public consumeSupervisorHint(sessionId: string): string | undefined {
+    this.mustGetSession(sessionId);
+    const queue = this.supervisorHints.get(sessionId);
+    if (!queue || queue.length === 0) {
+      return undefined;
+    }
+
+    const value = queue.shift();
+    this.supervisorHints.set(sessionId, queue);
+    return value;
+  }
+
+  public updateClassroomRuntime(
+    sessionId: string,
+    updater: (current: unknown) => unknown,
+  ): Session {
+    const session = this.mustGetSession(sessionId) as Session & { classroomRuntime?: unknown };
+    session.classroomRuntime = updater(session.classroomRuntime);
+    session.updatedAt = nowIso();
     return session;
   }
 

@@ -343,12 +343,20 @@ export const useSimulationChannel = ({
         })),
       );
       setStudentNodeIds(studentNodes.map((node) => node.id));
-      setNodeBubbles(
-        buildBubblesFromActivations(
+      setNodeBubbles((previous) => {
+        const graphBubbles = buildBubblesFromActivations(
           envelope.payload.currentTurnActivations,
           envelope.payload.turnId,
-        ),
-      );
+        );
+        const byNode = new Map(graphBubbles.map((bubble) => [bubble.nodeId, bubble]));
+
+        const previousTeacherBubble = previous.find((bubble) => bubble.nodeId === "teacher");
+        if (!byNode.has("teacher") && previousTeacherBubble) {
+          byNode.set("teacher", previousTeacherBubble);
+        }
+
+        return Array.from(byNode.values());
+      });
     };
 
     const handleSupervisorHint = (envelope: WsEnvelope<SupervisorHintPayload>) => {

@@ -1,6 +1,7 @@
-import { memo } from "react";
+import { memo, useEffect, useMemo, useRef } from "react";
 import { Avatar } from "primereact/avatar";
 import { Card } from "primereact/card";
+import { OverlayPanel } from "primereact/overlaypanel";
 import { Tag } from "primereact/tag";
 
 export type ClassroomStudent = {
@@ -11,14 +12,25 @@ export type ClassroomStudent = {
   behavior?: number;
 };
 
+export type CommunicationBubble = {
+  nodeId: string;
+  fromNodeId: string;
+  actionType: string;
+  text: string;
+  messageId: string;
+};
+
 export type ClassroomMockupProps = {
   students?: ClassroomStudent[];
+  studentNodeIds?: string[];
+  nodeBubbles?: CommunicationBubble[];
 };
 
 type StudentState = "engaged" | "steady" | "distracted";
 
 const DESK_GROUP_COUNT = 6;
 const STUDENTS_PER_DESK = 2;
+const STUDENT_BUBBLE_AUTO_HIDE_MS = 9000;
 
 const CONTAINER_PT = {
   body: { style: { padding: 0 } },
@@ -85,6 +97,7 @@ const getStudentState = (student: ClassroomStudent, index: number): StudentState
 };
 
 const toFallbackName = (index: number): string => `Student ${index + 1}`;
+const toFallbackNodeId = (index: number): string => `student-${index + 1}`;
 
 const toInitials = (name: string): string => {
   const parts = name
@@ -103,7 +116,23 @@ const toInitials = (name: string): string => {
   return `${parts[0]!.slice(0, 1)}${parts[1]!.slice(0, 1)}`.toUpperCase();
 };
 
-const ClassroomMockup = ({ students = [] }: ClassroomMockupProps) => {
+const toActionLabel = (value: string): string => {
+  return value
+    .split("_")
+    .map((chunk) => chunk.charAt(0).toUpperCase() + chunk.slice(1))
+    .join(" ");
+};
+
+const ClassroomMockup = ({
+  students = [],
+  studentNodeIds = [],
+  nodeBubbles = [],
+}: ClassroomMockupProps) => {
+  const anchorByNodeRef = useRef<Record<string, HTMLElement | null>>({});
+  const overlayByNodeRef = useRef<Record<string, OverlayPanel | null>>({});
+  const messageByNodeRef = useRef<Record<string, string>>({});
+  const hideTimerByNodeRef = useRef<Record<string, number>>({});
+
   const seatStudents = Array.from(
     { length: DESK_GROUP_COUNT * STUDENTS_PER_DESK },
     (_, index): ClassroomStudent => {
@@ -119,6 +148,129 @@ const ClassroomMockup = ({ students = [] }: ClassroomMockupProps) => {
       };
     },
   );
+
+  const seatNodeIds = Array.from({ length: seatStudents.length }, (_, index) => {
+    return studentNodeIds[index] ?? toFallbackNodeId(index);
+  });
+
+  const bubbleByNodeId = useMemo(() => {
+    return new Map(nodeBubbles.map((bubble) => [bubble.nodeId, bubble]));
+  }, [nodeBubbles]);
+
+  useEffect(() => {
+    const currentNodeIds = new Set(nodeBubbles.map((bubble) => bubble.nodeId));
+
+    for (const nodeId of Object.keys(messageByNodeRef.current)) {
+      if (currentNodeIds.has(nodeId)) {
+        continue;
+      }
+
+      overlayByNodeRef.current[nodeId]?.hide();
+      delete messageByNodeRef.current[nodeId];
+
+      if (hideTimerByNodeRef.current[nodeId]) {
+        window.clearTimeout(hideTimerByNodeRef.current[nodeId]);
+        delete hideTimerByNodeRef.current[nodeId];
+      }
+    }
+
+    for (const bubble of nodeBubbles) {
+      if (messageByNodeRef.current[bubble.nodeId] === bubble.messageId) {
+        continue;
+      }
+
+      const anchor = anchorByNodeRef.current[bubble.nodeId];
+      const overlay = overlayByNodeRef.current[bubble.nodeId];
+
+      if (!anchor || !overlay) {
+        continue;
+      }
+
+      overlay.hide();
+      overlay.show(undefined, anchor);
+      messageByNodeRef.current[bubble.nodeId] = bubble.messageId;
+
+      if (hideTimerByNodeRef.current[bubble.nodeId]) {
+        window.clearTimeout(hideTimerByNodeRef.current[bubble.nodeId]);
+      }
+
+      const messageId = bubble.messageId;
+      if (bubble.nodeId === "teacher") {
+        continue;
+      }
+
+      hideTimerByNodeRef.current[bubble.nodeId] = window.setTimeout(() => {
+        if (messageByNodeRef.current[bubble.nodeId] !== messageId) {
+          return;
+        }
+
+        overlayByNodeRef.current[bubble.nodeId]?.hide();
+      }, STUDENT_BUBBLE_AUTO_HIDE_MS);
+    }
+
+    const teacherBubble = nodeBubbles.find((bubble) => bubble.nodeId === "teacher");
+    if (teacherBubble) {
+      const teacherAnchor = anchorByNodeRef.current.teacher;
+      const teacherOverlay = overlayByNodeRef.current.teacher;
+
+      if (teacherAnchor && teacherOverlay && !teacherOverlay.isVisible()) {
+        teacherOverlay.show(undefined, teacherAnchor);
+      }
+    }
+  }, [nodeBubbles]);
+
+  useEffect(() => {
+    return () => {
+      for (const timer of Object.values(hideTimerByNodeRef.current)) {
+        window.clearTimeout(timer);
+      }
+    };
+  }, []);
+
+  const attachAnchor = (nodeId: string) => (element: HTMLElement | null) => {
+    anchorByNodeRef.current[nodeId] = element;
+  };
+
+  const attachOverlay = (nodeId: string) => (overlay: OverlayPanel | null) => {
+    overlayByNodeRef.current[nodeId] = overlay;
+  };
+
+  const renderBubble = (nodeId: string, isTeacher: boolean) => {
+    const bubble = bubbleByNodeId.get(nodeId);
+
+    return (
+      <OverlayPanel
+        ref={attachOverlay(nodeId)}
+        dismissable={false}
+        closeOnEscape={false}
+        showCloseIcon={false}
+        pt={{
+          root: {
+            className:
+              "!rounded-xl !border !border-slate-300 !bg-white/95 !shadow-[0_10px_24px_rgba(15,23,42,0.18)]",
+            style: { maxWidth: isTeacher ? "24rem" : "18rem" },
+          },
+          content: { className: "!p-3" },
+        }}
+      >
+        {bubble ? (
+          <div className="space-y-1">
+            <Tag
+              value={toActionLabel(bubble.actionType)}
+              className="!border !border-slate-300 !bg-slate-100 !text-slate-700 !text-[10px]"
+            />
+            <p
+              className={`${
+                isTeacher ? "text-sm leading-5" : "text-xs leading-5"
+              } whitespace-pre-wrap text-slate-700`}
+            >
+              {bubble.text}
+            </p>
+          </div>
+        ) : null}
+      </OverlayPanel>
+    );
+  };
 
   return (
     <Card
@@ -177,12 +329,15 @@ const ClassroomMockup = ({ students = [] }: ClassroomMockupProps) => {
           </Card>
 
           <div className="absolute left-1/2 top-[11%] flex -translate-x-1/2 flex-col items-center gap-1">
-            <Avatar
-              label="T"
-              shape="circle"
-              className="!h-16 !w-16 !border !border-[#9e97a0] !bg-[#d9d5da] !text-[#5f5860] sm:!h-20 sm:!w-20"
-            />
+            <div ref={attachAnchor("teacher")}>
+              <Avatar
+                label="T"
+                shape="circle"
+                className="!h-16 !w-16 !border !border-[#9e97a0] !bg-[#d9d5da] !text-[#5f5860] sm:!h-20 sm:!w-20"
+              />
+            </div>
             <Tag value="Teacher" className="!bg-slate-100 !text-slate-700 !text-[10px]" />
+            {renderBubble("teacher", true)}
           </div>
 
           <div className="absolute right-0 top-[20%] h-16 w-6 rounded-l-lg bg-[#c2baaf] sm:h-20 sm:w-7" />
@@ -193,6 +348,8 @@ const ClassroomMockup = ({ students = [] }: ClassroomMockupProps) => {
               const secondSeatIndex = firstSeatIndex + 1;
               const first = seatStudents[firstSeatIndex];
               const second = seatStudents[secondSeatIndex];
+              const firstNodeId = seatNodeIds[firstSeatIndex];
+              const secondNodeId = seatNodeIds[secondSeatIndex];
               const firstName = first.name ?? toFallbackName(firstSeatIndex);
               const secondName = second.name ?? toFallbackName(secondSeatIndex);
               const firstState = getStudentState(first, firstSeatIndex);
@@ -213,11 +370,13 @@ const ClassroomMockup = ({ students = [] }: ClassroomMockupProps) => {
                       <div
                         className={`flex min-h-[48px] flex-col items-center justify-center rounded-2xl border px-1 py-1 text-center sm:min-h-[56px] ${firstStyle.panelClass}`}
                       >
-                        <Avatar
-                          label={toInitials(firstName)}
-                          shape="circle"
-                          className="!h-6 !w-6 !bg-slate-300 !text-[9px] !font-semibold !text-slate-700 sm:!h-7 sm:!w-7"
-                        />
+                        <div ref={attachAnchor(firstNodeId)}>
+                          <Avatar
+                            label={toInitials(firstName)}
+                            shape="circle"
+                            className="!h-6 !w-6 !bg-slate-300 !text-[9px] !font-semibold !text-slate-700 sm:!h-7 sm:!w-7"
+                          />
+                        </div>
                         <span className="mt-0.5 truncate text-[8px] font-semibold leading-tight sm:text-[9px]">
                           {firstName}
                         </span>
@@ -225,16 +384,19 @@ const ClassroomMockup = ({ students = [] }: ClassroomMockupProps) => {
                           value={firstStyle.label}
                           className={`!mt-0.5 !text-[7px] ${firstStyle.tagClass}`}
                         />
+                        {renderBubble(firstNodeId, false)}
                       </div>
 
                       <div
                         className={`flex min-h-[48px] flex-col items-center justify-center rounded-2xl border px-1 py-1 text-center sm:min-h-[56px] ${secondStyle.panelClass}`}
                       >
-                        <Avatar
-                          label={toInitials(secondName)}
-                          shape="circle"
-                          className="!h-6 !w-6 !bg-slate-300 !text-[9px] !font-semibold !text-slate-700 sm:!h-7 sm:!w-7"
-                        />
+                        <div ref={attachAnchor(secondNodeId)}>
+                          <Avatar
+                            label={toInitials(secondName)}
+                            shape="circle"
+                            className="!h-6 !w-6 !bg-slate-300 !text-[9px] !font-semibold !text-slate-700 sm:!h-7 sm:!w-7"
+                          />
+                        </div>
                         <span className="mt-0.5 truncate text-[8px] font-semibold leading-tight sm:text-[9px]">
                           {secondName}
                         </span>
@@ -242,6 +404,7 @@ const ClassroomMockup = ({ students = [] }: ClassroomMockupProps) => {
                           value={secondStyle.label}
                           className={`!mt-0.5 !text-[7px] ${secondStyle.tagClass}`}
                         />
+                        {renderBubble(secondNodeId, false)}
                       </div>
                     </div>
 

@@ -1,7 +1,15 @@
 import type { RequestHandler } from 'express';
 
-import type { CreateSessionBody, PostTurnBody } from './sessions.schema';
-import { createSessionSchema, postTurnSchema } from './sessions.schema';
+import type {
+  CreateSessionBody,
+  PostTurnBody,
+  SubmitTaskAssignmentBody,
+} from './sessions.schema';
+import {
+  createSessionSchema,
+  postTurnSchema,
+  submitTaskAssignmentSchema,
+} from './sessions.schema';
 import { sessionsService } from './sessions.service';
 
 export const createSession: RequestHandler<never, unknown, CreateSessionBody> = (
@@ -35,6 +43,20 @@ export const postTurn: RequestHandler<{ id: string }, unknown, PostTurnBody> = a
   try {
     const payload = postTurnSchema.parse(req.body);
     const response = await sessionsService.postTurn(req.params.id, payload);
+    res.status(200).json(response);
+  } catch (error: unknown) {
+    next(error);
+  }
+};
+
+export const submitTaskAssignment: RequestHandler<
+  { id: string },
+  unknown,
+  SubmitTaskAssignmentBody
+> = (req, res, next) => {
+  try {
+    const payload = submitTaskAssignmentSchema.parse(req.body);
+    const response = sessionsService.submitTaskAssignment(req.params.id, payload);
     res.status(200).json(response);
   } catch (error: unknown) {
     next(error);

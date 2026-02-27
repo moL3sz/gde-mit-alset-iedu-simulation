@@ -5,6 +5,7 @@ import { env } from './config/env';
 import { attachSimulationWebSocketGateway } from './core/realtime/websocketGateway';
 import { logger } from './core/shared/logger';
 import { AppDataSource } from './database/data-source';
+import { sessionsService } from './modules/sessions/sessions.service';
 
 const bootstrap = async (): Promise<void> => {
   await AppDataSource.initialize();
@@ -20,7 +21,11 @@ const bootstrap = async (): Promise<void> => {
     });
   });
 
-  const webSocketGateway = attachSimulationWebSocketGateway(server);
+  const webSocketGateway = attachSimulationWebSocketGateway(server, {
+    submitSupervisorHint: (sessionId, hintText) => {
+      return sessionsService.submitSupervisorHint(sessionId, hintText);
+    },
+  });
 
   const shutdown = (signal: NodeJS.Signals): void => {
     logger.info('shutdown_signal_received', { signal });
