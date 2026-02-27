@@ -42,11 +42,13 @@ import {
 import type { LlmTool } from './tools/llm';
 import { scoreDebateRubric } from './tools/rubric';
 import { applySafetyGuards } from './tools/safety';
+import { AppDataSource } from '../database/data-source';
+import { ClassRoom } from '../database/entities/ClassRoom';
 
 const TEACHER_AGENT_ID = 'teacher';
 const PRACTICE_PHASE_START_TURN = Math.ceil(FRACTIONS_LESSON_TOTAL_TURNS / 3) + 1;
 const REVIEW_PHASE_START_TURN = Math.ceil((FRACTIONS_LESSON_TOTAL_TURNS * 2) / 3) + 1;
-const STUDENT_TO_STUDENT_BOREDOM_THRESHOLD = 0.42;
+const STUDENT_TO_STUDENT_BOREDOM_THRESHOLD = 4.2;
 
 const nowIso = (): string => new Date().toISOString();
 
@@ -58,12 +60,15 @@ const clampInt = (value: number, min: number, max: number): number => {
   return clamp(Math.floor(value), min, max);
 };
 
+const estimateBoredness = (state: AgentProfile['state']): number => {
+  return clamp(10 - (state.attentiveness * 0.6 + state.behavior * 0.4), 0, 10);
+};
+
 const isStudentKind = (kind: AgentKind): boolean => {
   return (
-    kind === 'student_fast' ||
-    kind === 'student_esl' ||
-    kind === 'student_distracted' ||
-    kind === 'student_emotional'
+    kind === 'ADHD' ||
+    kind === 'Autistic' ||
+    kind === 'Typical'
   );
 };
 
@@ -87,13 +92,16 @@ export class Orchestrator {
   public async createSession(input: CreateSessionRequest): Promise<CreateSessionResponse> {
     const mode = input.mode;
     const channel: SimulationChannel = input.channel ?? 'unsupervised';
-    const agents = this.buildDefaultAgents(mode);
+    const classroomId = input.classroomId;
+
+    if (!classroomId) {
+      throw new AppError(400, 'ClassroomId is required.');
+    }
+    const agents = await this.buildDefaultAgents(mode, classroomId);
 
     if (!input.topic.trim()) {
       throw new AppError(400, 'Topic is required.');
     }
-
-   
 
     const communicationGraph = createSessionCommunicationGraph(mode, agents, input.config);
 
@@ -339,7 +347,7 @@ export class Orchestrator {
     onAgentTurnEmission?: AgentTurnEmissionHandler,
   ): Promise<void> {
     const session = this.mustGetSession(sessionId);
-    const teacherProfile = session.agents.find((agent) => agent.kind === 'teacher');
+    const teacherProfile = session.agents.find((agent) => agent.kind === 'Teacher');
     const studentProfiles = session.agents.filter((agent) => isStudentKind(agent.kind));
 
     if (!teacherProfile) {
@@ -479,7 +487,7 @@ export class Orchestrator {
       ? this.describeTaskAssignment(runtime.activeTaskAssignment)
       : 'No active task assignment.';
     const studentStateSnapshot = selectedStudents.map((student) => {
-      return `${student.name} => boredom=${student.state.boredom.toFixed(2)}, fatigue=${student.state.fatigue.toFixed(2)}, retention=${student.state.knowledgeRetention.toFixed(2)}, emotion=${student.state.emotion}`;
+      return `${student.name} => attentiveness=${student.state.attentiveness}, behavior=${student.state.behavior}, comprehension=${student.state.comprehension}, profile=${student.state.profile}`;
     });
     const recentStudentSignals = session.turns
       .filter(
@@ -765,7 +773,7 @@ export class Orchestrator {
         const leftState = latestStudentById.get(left.id)?.state;
         const rightState = latestStudentById.get(right.id)?.state;
 
-        if (leftState && leftState.boredom <= STUDENT_TO_STUDENT_BOREDOM_THRESHOLD) {
+        if (leftState && estimateBoredness(leftState) <= STUDENT_TO_STUDENT_BOREDOM_THRESHOLD) {
           this.activateGraphEdgeWithEvent(sessionId, requestTurn.id, eventCollector, {
             from: left.id,
             to: right.id,
@@ -778,7 +786,7 @@ export class Orchestrator {
           });
         }
 
-        if (rightState && rightState.boredom <= STUDENT_TO_STUDENT_BOREDOM_THRESHOLD) {
+        if (rightState && estimateBoredness(rightState) <= STUDENT_TO_STUDENT_BOREDOM_THRESHOLD) {
           this.activateGraphEdgeWithEvent(sessionId, requestTurn.id, eventCollector, {
             from: right.id,
             to: left.id,
@@ -815,7 +823,7 @@ export class Orchestrator {
     onAgentTurnEmission?: AgentTurnEmissionHandler,
   ): Promise<void> {
     const session = this.mustGetSession(sessionId);
-    const teacherProfile = session.agents.find((agent) => agent.kind === 'teacher');
+    const teacherProfile = session.agents.find((agent) => agent.kind === 'Teacher');
 
     if (!teacherProfile) {
       throw new AppError(500, 'Debate mode requires a teacher agent.');
@@ -1129,22 +1137,20 @@ export class Orchestrator {
         }
 
         const performanceSignal =
-          student.state.attention * 0.35 +
-          student.state.knowledgeRetention * 0.45 +
-          (1 - student.state.boredom) * 0.2 -
-          student.state.fatigue * 0.2;
-        const solved = performanceSignal >= 0.45;
-        const retentionDelta = solved ? 0.06 : -0.05;
-        const boredomDelta = solved ? -0.04 : 0.05;
+          student.state.attentiveness * 0.35 +
+          student.state.comprehension * 0.45 +
+          student.state.behavior * 0.2;
+        const solved = performanceSignal >= 5.5;
+        const comprehensionDelta = solved ? 1 : -1;
+        const behaviorDelta = solved ? 1 : -1;
 
         this.memory.updateAgentState(sessionId, student.id, {
-          knowledgeRetention: clamp(
-            student.state.knowledgeRetention + retentionDelta,
+          comprehension: clamp(
+            student.state.comprehension + comprehensionDelta,
             0,
-            1,
+            10,
           ),
-          boredom: clamp(student.state.boredom + boredomDelta, 0, 1),
-          emotion: solved ? 'engaged' : 'frustrated',
+          behavior: clamp(student.state.behavior + behaviorDelta, 0, 10),
         });
 
         this.activateGraphEdgeWithEvent(sessionId, turnId, eventCollector, {
@@ -1154,8 +1160,8 @@ export class Orchestrator {
           payload: {
             actionType: 'task_feedback',
             text: solved
-              ? 'Teacher check: solution accepted, retention increased.'
-              : 'Teacher check: correction needed, retention decreased.',
+              ? 'Teacher check: solution accepted, comprehension improved.'
+              : 'Teacher check: correction needed, comprehension reduced.',
             solved,
             assignmentMode: assignment.mode,
           },
@@ -1210,9 +1216,6 @@ export class Orchestrator {
       .filter((turn) => turn.role === 'agent' && turn.agentId === student.id)
       .slice(-2)
       .map((turn) => `I said earlier: ${this.truncatePayloadText(turn.content, 170)}`);
-    const misconceptionMemory = student.state.misconceptions
-      .slice(0, 1)
-      .map((misconception) => `My known misconception: ${this.truncatePayloadText(misconception, 120)}`);
 
     const graphInputSummary =
       directGraphMessages.length > 0
@@ -1224,7 +1227,6 @@ export class Orchestrator {
       `Task assignment context: ${this.truncatePayloadText(assignmentContext, 170)}`,
       ...graphInputSummary,
       ...selfMemory,
-      ...misconceptionMemory,
     ];
   }
 
@@ -1389,38 +1391,33 @@ export class Orchestrator {
 
     const totals = students.reduce(
       (acc, student) => {
-        acc.attention += student.state.attention;
-        acc.boredom += student.state.boredom;
-        acc.fatigue += student.state.fatigue;
-        acc.knowledgeRetention += student.state.knowledgeRetention;
-        acc.misconceptions += student.state.misconceptions.length;
+        acc.attentiveness += student.state.attentiveness;
+        acc.behavior += student.state.behavior;
+        acc.comprehension += student.state.comprehension;
         return acc;
       },
       {
-        attention: 0,
-        boredom: 0,
-        fatigue: 0,
-        knowledgeRetention: 0,
-        misconceptions: 0,
+        attentiveness: 0,
+        behavior: 0,
+        comprehension: 0,
       },
     );
 
     const averages = {
-      attention: Number((totals.attention / students.length).toFixed(4)),
-      boredom: Number((totals.boredom / students.length).toFixed(4)),
-      fatigue: Number((totals.fatigue / students.length).toFixed(4)),
-      knowledgeRetention: Number((totals.knowledgeRetention / students.length).toFixed(4)),
+      attentiveness: Number((totals.attentiveness / students.length).toFixed(4)),
+      behavior: Number((totals.behavior / students.length).toFixed(4)),
+      comprehension: Number((totals.comprehension / students.length).toFixed(4)),
     };
 
-    const engagement = Math.round(clamp(averages.attention * (1 - averages.boredom), 0, 1) * 100);
-    const clarity = Math.round(
-      clamp(averages.knowledgeRetention * (1 - averages.fatigue * 0.4), 0, 1) * 100,
+    const engagement = Math.round(
+      clamp((averages.attentiveness * 0.6 + averages.behavior * 0.4) / 10, 0, 1) * 100,
     );
+    const clarity = Math.round(clamp(averages.comprehension / 10, 0, 1) * 100);
 
     this.memory.updateMetrics(sessionId, {
       engagement,
       clarity,
-      misconceptionsDetected: totals.misconceptions,
+      misconceptionsDetected: 0,
       studentStateAverages: averages,
     });
   }
@@ -1515,84 +1512,55 @@ export class Orchestrator {
     return activation;
   }
 
-  private buildDefaultAgents(mode: SessionMode): AgentProfile[] {
+  private async buildDefaultAgents(
+    mode: SessionMode,
+    classroomId: number,
+  ): Promise<AgentProfile[]> {
+    const classroomRep = AppDataSource.getRepository(ClassRoom);
+
+    const classroom = await classroomRep.findOne({
+      where: { id: classroomId },
+      relations: {
+        students: true,
+      },
+    });
+
+    if (!classroom) {
+      throw new AppError(404, `Classroom ${classroomId} not found.`);
+    }
+
     const teacher: AgentProfile = {
       id: TEACHER_AGENT_ID,
-      kind: 'teacher',
+      kind: 'Teacher',
       name: 'Teacher Agent',
       state: {
-        attention: 0.96,
-        boredom: 0.05,
-        fatigue: 0.15,
-        knowledgeRetention: 0.95,
-        eslSupportNeeded: false,
-        emotion: 'engaged',
-        misconceptions: [],
+        attentiveness: 10,
+        behavior: 10,
+        comprehension: 10,
+        profile: 'Teacher',
       },
     };
 
-    if (mode === 'classroom') {
-      return [
-        teacher,
-        {
-          id: 'student_fast_1',
-          kind: 'student_fast',
-          name: 'Ava (fast learner)',
-          state: {
-            attention: 0.9,
-            boredom: 0.15,
-            fatigue: 0.2,
-            knowledgeRetention: 0.82,
-            eslSupportNeeded: false,
-            emotion: 'engaged',
-            misconceptions: [],
-          },
-        },
-        {
-          id: 'student_esl_1',
-          kind: 'student_esl',
-          name: 'Mateo (ESL)',
-          state: {
-            attention: 0.75,
-            boredom: 0.25,
-            fatigue: 0.28,
-            knowledgeRetention: 0.58,
-            eslSupportNeeded: true,
-            emotion: 'calm',
-            misconceptions: ['complex wording'],
-          },
-        },
-        {
-          id: 'student_distracted_1',
-          kind: 'student_distracted',
-          name: 'Jordan (distracted)',
-          state: {
-            attention: 0.58,
-            boredom: 0.52,
-            fatigue: 0.38,
-            knowledgeRetention: 0.44,
-            eslSupportNeeded: false,
-            emotion: 'calm',
-            misconceptions: ['skips setup steps'],
-          },
-        },
-        {
-          id: 'student_emotional_1',
-          kind: 'student_emotional',
-          name: 'Noa (anxious)',
-          state: {
-            attention: 0.7,
-            boredom: 0.35,
-            fatigue: 0.42,
-            knowledgeRetention: 0.55,
-            eslSupportNeeded: false,
-            emotion: 'anxious',
-            misconceptions: ['self-doubt under pressure'],
-          },
-        },
-      ];
+    if (mode !== 'classroom') {
+      return [teacher];
     }
 
-    return [teacher];
+    const studentAgents: AgentProfile[] = classroom.students.map((student) => ({
+      id: `student_agent_${student.id}`,
+      kind: student.profile,
+      name: student.name,
+      state: {
+        attentiveness: student.attentiveness,
+        behavior: student.behavior,
+        comprehension: student.comprehension,
+        profile: student.profile,
+      },
+    }));
+
+    if (studentAgents.length === 0) {
+      throw new AppError(400, `Classroom ${classroomId} has no students.`);
+    }
+
+    return [teacher, ...studentAgents];
   }
 }

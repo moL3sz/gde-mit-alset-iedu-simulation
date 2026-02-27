@@ -27,7 +27,8 @@ const USER_NODE_ID = 'user';
 
 const toEdgeId = (from: string, to: string): string => `edge_${from}__${to}`;
 
-const isStudentKind = (kind: AgentKind): boolean => kind.startsWith('student_');
+const isStudentKind = (kind: AgentKind): boolean =>
+  kind === 'ADHD' || kind === 'Autistic' || kind === 'Typical';
 
 const createNode = (
   id: string,
@@ -78,31 +79,24 @@ const buildStudentRelationship = (
 ): { quality: RelationshipQuality; reason: string } => {
   const sortedPair = [kindA, kindB].sort().join('|');
 
-  if (sortedPair === 'student_esl|student_fast') {
+  if (sortedPair === 'Autistic|Typical') {
     return {
       quality: 'good',
-      reason: 'Mentoring-compatible dynamic between fast learner and ESL student.',
+      reason: 'Clear and structured communication can support both students.',
     };
   }
 
-  if (sortedPair === 'student_emotional|student_esl') {
-    return {
-      quality: 'good',
-      reason: 'Both benefit from supportive and structured communication.',
-    };
-  }
-
-  if (sortedPair === 'student_distracted|student_fast') {
+  if (sortedPair === 'ADHD|Typical') {
     return {
       quality: 'bad',
-      reason: 'Fast pacing can conflict with distracted participation style.',
+      reason: 'Pacing mismatch can reduce focus and coordination.',
     };
   }
 
-  if (sortedPair === 'student_distracted|student_emotional') {
+  if (sortedPair === 'ADHD|Autistic') {
     return {
       quality: 'bad',
-      reason: 'Anxiety and attention drift can negatively reinforce each other.',
+      reason: 'Different regulation needs can create friction without support.',
     };
   }
 
@@ -178,7 +172,7 @@ const buildClassroomGraph = (
   agents: AgentProfile[],
   classroomConfig?: SessionConfig['classroom'],
 ): CommunicationGraph => {
-  const teacher = agents.find((agent) => agent.kind === 'teacher');
+  const teacher = agents.find((agent) => agent.kind === 'Teacher');
   const students = agents.filter((agent) => isStudentKind(agent.kind));
 
   const graph: CommunicationGraph = {
@@ -233,7 +227,7 @@ const buildClassroomGraph = (
 };
 
 const buildDebateGraph = (agents: AgentProfile[]): CommunicationGraph => {
-  const teacher = agents.find((agent) => agent.kind === 'teacher');
+  const teacher = agents.find((agent) => agent.kind === 'Teacher');
   const graph: CommunicationGraph = {
     nodes: [
       createNode(USER_NODE_ID, 'User', 'user'),

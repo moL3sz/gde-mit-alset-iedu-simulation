@@ -28,6 +28,25 @@ type GraphPayload = {
   currentTurnActivations: CommunicationActivation[];
 };
 
+type StudentStateSnapshot = {
+  attentiveness?: number;
+  behavior?: number;
+  comprehension?: number;
+  profile?: string;
+};
+
+type StudentSnapshot = {
+  id: string;
+  name: string;
+  kind: string;
+  state: StudentStateSnapshot;
+};
+
+type StudentStatesPayload = {
+  turnId?: string;
+  studentStates?: StudentSnapshot[];
+};
+
 type EmittedTurnPayload = {
   id: string;
   role: string;
@@ -274,6 +293,8 @@ export const useSimulationChannel = ({
   const creatingSessionRef = useRef(false);
   const turnInFlightRef = useRef(false);
   const turnStepRef = useRef(0);
+  const studentNodeIdsRef = useRef<string[]>([]);
+  const studentSnapshotByNodeIdRef = useRef<Record<string, ClassroomStudent>>({});
 
   useEffect(() => {
     if (!socket || creatingSessionRef.current || sessionId) {
@@ -357,14 +378,19 @@ export const useSimulationChannel = ({
 
       const nodes = envelope.payload.communicationGraph.nodes;
       const studentNodes = nodes.filter((node) => node.kind === "student");
+      const nextStudentNodeIds = studentNodes.map((node) => node.id);
+      studentNodeIdsRef.current = nextStudentNodeIds;
 
       setStudents(
         studentNodes.map((node) => ({
-          name: node.label,
-          profile: "Agent",
+          name: studentSnapshotByNodeIdRef.current[node.id]?.name ?? node.label,
+          profile: studentSnapshotByNodeIdRef.current[node.id]?.profile,
+          attentiveness: studentSnapshotByNodeIdRef.current[node.id]?.attentiveness,
+          behavior: studentSnapshotByNodeIdRef.current[node.id]?.behavior,
+          comprehension: studentSnapshotByNodeIdRef.current[node.id]?.comprehension,
         })),
       );
-      setStudentNodeIds(studentNodes.map((node) => node.id));
+      setStudentNodeIds(nextStudentNodeIds);
       setNodeBubbles((previous) => {
         const graphBubbles = buildBubblesFromActivations(
           envelope.payload.currentTurnActivations,
@@ -379,6 +405,42 @@ export const useSimulationChannel = ({
 
         return Array.from(byNode.values());
       });
+    };
+
+    const handleStudentStatesUpdated = (envelope: WsEnvelope<StudentStatesPayload>) => {
+      if (envelope.sessionId !== sessionId) {
+        return;
+      }
+
+      const studentStates = envelope.payload.studentStates ?? [];
+
+      for (const studentState of studentStates) {
+        studentSnapshotByNodeIdRef.current[studentState.id] = {
+          name: studentState.name,
+          profile: studentState.state.profile,
+          attentiveness: studentState.state.attentiveness,
+          behavior: studentState.state.behavior,
+          comprehension: studentState.state.comprehension,
+        };
+      }
+
+      const orderedNodeIds = studentNodeIdsRef.current;
+      if (orderedNodeIds.length === 0) {
+        return;
+      }
+
+      setStudents((previous) =>
+        orderedNodeIds.map((nodeId, index) => {
+          const snapshot = studentSnapshotByNodeIdRef.current[nodeId];
+          return {
+            name: snapshot?.name ?? previous[index]?.name,
+            profile: snapshot?.profile ?? previous[index]?.profile,
+            attentiveness: snapshot?.attentiveness ?? previous[index]?.attentiveness,
+            behavior: snapshot?.behavior ?? previous[index]?.behavior,
+            comprehension: snapshot?.comprehension ?? previous[index]?.comprehension,
+          };
+        }),
+      );
     };
 
     const handleSupervisorHint = (envelope: WsEnvelope<SupervisorHintPayload>) => {
@@ -438,6 +500,7 @@ export const useSimulationChannel = ({
     };
 
     socket.on("simulation.graph_updated", handleGraphUpdated);
+    socket.on("simulation.student_states_updated", handleStudentStatesUpdated);
     socket.on("simulation.agent_turn_emitted", handleAgentTurnEmitted);
     socket.on("simulation.task_assignment_required", handleTaskAssignmentRequired);
     socket.on("simulation.supervisor_hint", handleSupervisorHint);
@@ -445,6 +508,7 @@ export const useSimulationChannel = ({
 
     return () => {
       socket.off("simulation.graph_updated", handleGraphUpdated);
+      socket.off("simulation.student_states_updated", handleStudentStatesUpdated);
       socket.off("simulation.agent_turn_emitted", handleAgentTurnEmitted);
       socket.off("simulation.task_assignment_required", handleTaskAssignmentRequired);
       socket.off("simulation.supervisor_hint", handleSupervisorHint);

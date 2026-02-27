@@ -102,6 +102,8 @@ export const Simulation = () => {
     return unsupervisedOk;
   };
 
+  console.log(supervisedRuntime.students)
+
   return (
     <div className="flex min-h-screen w-full flex-col overflow-hidden bg-slate-200">
       <div className="border-b border-slate-300/80 bg-slate-100 px-4 py-3">

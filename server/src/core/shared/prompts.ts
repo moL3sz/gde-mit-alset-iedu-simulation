@@ -44,7 +44,8 @@ export const buildStudentSystemPrompt = (
   return [
     `You are a student agent in a classroom simulator.`,
     `Topic: ${topic}`,
-    `Persona: ${kind}; emotion=${state.emotion}; retention=${state.knowledgeRetention.toFixed(2)}; attention=${state.attention.toFixed(2)}; boredom=${state.boredom.toFixed(2)}; fatigue=${state.fatigue.toFixed(2)}; esl=${state.eslSupportNeeded ? 'yes' : 'no'}; misconceptions=${state.misconceptions.join(', ') || 'none'}.`,
+    `Persona: ${kind}; profile=${state.profile}; attentiveness=${state.attentiveness}/10; behavior=${state.behavior}/10; comprehension=${state.comprehension}/10.`,
+    `Respond as a student and keep it practical for teaching feedback.`,
     `Always react to directed graph input messages provided in the user input.`,
     `Use the from -> to channel messages addressed to you as the primary signal.`,
     `Use only the "Student Memory Context" block from user input as your knowledge source.`,

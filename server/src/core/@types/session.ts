@@ -2,11 +2,12 @@ export type SessionMode = 'classroom' | 'debate';
 export type SimulationChannel = 'supervised' | 'unsupervised';
 
 export type AgentKind =
-  | 'teacher'
-  | 'student_fast'
-  | 'student_esl'
-  | 'student_distracted'
-  | 'student_emotional';
+  | 'Teacher'
+  | 'ADHD'
+  | 'Autistic'
+  | 'Typical';
+
+export type StudentProfile = Exclude<AgentKind, 'Teacher'>;
 
 export type TurnRole = 'teacher' | 'user' | 'agent' | 'system';
 export type ClassroomPhase = 'lecture' | 'practice' | 'review';
@@ -128,13 +129,10 @@ export interface ClassroomRuntime {
 }
 
 export interface AgentState {
-  attention: number;
-  boredom: number;
-  fatigue: number;
-  knowledgeRetention: number;
-  eslSupportNeeded: boolean;
-  emotion: 'calm' | 'engaged' | 'anxious' | 'frustrated';
-  misconceptions: string[];
+  attentiveness: number;
+  behavior: number;
+  comprehension: number;
+  profile: AgentKind;
 }
 
 export interface AgentProfile {
@@ -179,10 +177,9 @@ export interface SessionMetrics {
   misconceptionsDetected: number;
   turnCount: number;
   studentStateAverages?: {
-    attention: number;
-    boredom: number;
-    fatigue: number;
-    knowledgeRetention: number;
+    attentiveness: number;
+    behavior: number;
+    comprehension: number;
   };
   rubric?: DebateRubric;
 }
