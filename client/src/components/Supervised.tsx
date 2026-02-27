@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useState } from "react";
 import { Button } from "primereact/button";
 import { Checkbox } from "primereact/checkbox";
@@ -16,6 +17,16 @@ import ClassroomMockup, {
   type CommunicationBubble,
 } from "./ClassroomMockup";
 import ChartsModal from "./ChartsModal";
+=======
+import { useMemo, useRef, useState } from "react";
+import { Button } from "primereact/button";
+import { InputTextarea } from "primereact/inputtextarea";
+import { OverlayPanel } from "primereact/overlaypanel";
+
+import ClassroomMockup, { type ClassroomStudent } from "./ClassroomMockup";
+import ChartsModal from "./ChartsModal";
+import { useSockets } from "../context/SocketContext";
+>>>>>>> 39641d91906d4f06d73f2e3ffa13fca65a47018e
 
 export type SupervisedProps = {
   sessionId: string | null;
@@ -86,6 +97,7 @@ export const Supervised = ({
     }));
   };
 
+<<<<<<< HEAD
   const submitTaskAssignment = async () => {
     const input: SubmitTaskAssignmentInput = {
       mode: workMode,
@@ -99,6 +111,25 @@ export const Supervised = ({
     if (ok) {
       setGroupDraftByStudent({});
     }
+=======
+export const Supervised = () => {
+  const students = useMemo(() => readStoredStudents(), []);
+  const { supervisedSocket } = useSockets();
+  const chatOverlayRef = useRef<OverlayPanel>(null);
+  const [isChartsVisible, setIsChartsVisible] = useState(false);
+  const [instructionText, setInstructionText] = useState("");
+
+  const handleSendInstruction = () => {
+    const message = instructionText.trim();
+
+    if (!message) {
+      return;
+    }
+
+    console.log("Teacher instruction:", message);
+    setInstructionText("");
+    chatOverlayRef.current?.hide();
+>>>>>>> 39641d91906d4f06d73f2e3ffa13fca65a47018e
   };
 
   return (
@@ -119,12 +150,23 @@ export const Supervised = ({
 
           <div className="flex items-center gap-2">
             <Button
+              icon="pi pi-comment"
+              label="Chat"
+              onClick={(event) => chatOverlayRef.current?.toggle(event)}
+            />
+            <Button
               icon="pi pi-chart-bar"
               label="Charts"
               severity="secondary"
               outlined
               size="small"
+<<<<<<< HEAD
               onClick={() => setIsChartsVisible((currentState) => !currentState)}
+=======
+              onClick={() =>
+                setIsChartsVisible((currentState) => !currentState)
+              }
+>>>>>>> 39641d91906d4f06d73f2e3ffa13fca65a47018e
             />
             <Button
               icon="pi pi-sitemap"
@@ -170,6 +212,7 @@ export const Supervised = ({
           />
         </div>
 
+<<<<<<< HEAD
         {isPausedForTaskAssignment && taskAssignmentRequired ? (
           <div className="mx-4 mb-2 rounded-xl border border-amber-300 bg-amber-50 p-3 sm:mx-5">
             <div className="mb-2 flex items-center justify-between">
@@ -233,6 +276,32 @@ export const Supervised = ({
             nodeBubbles={nodeBubbles}
           />
         </div>
+=======
+        <OverlayPanel
+          ref={chatOverlayRef}
+          showCloseIcon
+          style={{ width: "min(92vw, 420px)" }}
+        >
+          <div className="flex flex-col gap-2">
+            <InputTextarea
+              value={instructionText}
+              onChange={(event) => setInstructionText(event.target.value)}
+              rows={3}
+              autoResize
+              placeholder="Send instructions to the teacher..."
+            />
+            <div className="flex justify-end">
+              <Button
+                icon="pi pi-send"
+                label="Send"
+                size="small"
+                onClick={handleSendInstruction}
+                disabled={instructionText.trim().length === 0}
+              />
+            </div>
+          </div>
+        </OverlayPanel>
+>>>>>>> 39641d91906d4f06d73f2e3ffa13fca65a47018e
 
         <ChartsModal
           visible={isChartsVisible}

@@ -5,13 +5,17 @@ import { env } from './config/env';
 import { attachSimulationWebSocketGateway } from './core/realtime/websocketGateway';
 import { logger } from './core/shared/logger';
 import { AppDataSource } from './database/data-source';
+<<<<<<< HEAD
 import { sessionsService } from './modules/sessions/sessions.service';
+=======
+>>>>>>> 39641d91906d4f06d73f2e3ffa13fca65a47018e
 
 const bootstrap = async (): Promise<void> => {
   await AppDataSource.initialize();
   logger.info('database_connected', {
     host: env.DB_HOST,
     database: env.DB_NAME,
+<<<<<<< HEAD
   });
 
   const server: Server = app.listen(env.PORT, () => {
@@ -19,12 +23,24 @@ const bootstrap = async (): Promise<void> => {
       port: env.PORT,
       nodeEnv: env.NODE_ENV,
     });
+=======
+>>>>>>> 39641d91906d4f06d73f2e3ffa13fca65a47018e
   });
 
+<<<<<<< HEAD
   const webSocketGateway = attachSimulationWebSocketGateway(server, {
     submitSupervisorHint: (sessionId, hintText) =>
       sessionsService.submitSupervisorHint(sessionId, hintText),
   });
+=======
+  const server: Server = app.listen(env.PORT, () => {
+    logger.info('server_started', {
+      port: env.PORT,
+      nodeEnv: env.NODE_ENV,
+    });
+  });
+  const webSocketGateway = attachSimulationWebSocketGateway(server);
+>>>>>>> 39641d91906d4f06d73f2e3ffa13fca65a47018e
 
   const shutdown = (signal: NodeJS.Signals): void => {
     logger.info('shutdown_signal_received', { signal });

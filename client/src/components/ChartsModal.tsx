@@ -18,8 +18,11 @@ const ChartsModal = ({
   title,
   className = "",
 }: ChartsModalProps) => {
+<<<<<<< HEAD
   const socketStatus = socket?.connected ? "Live socket" : "Socket idle";
 
+=======
+>>>>>>> 39641d91906d4f06d73f2e3ffa13fca65a47018e
   const chartData = useMemo(
     () => ({
       labels: ["08:00", "08:10", "08:20", "08:30", "08:40", "08:50", "09:00"],
@@ -78,10 +81,14 @@ const ChartsModal = ({
       className={`absolute z-20 overflow-hidden rounded-lg border border-slate-300/70 bg-white p-3 shadow-lg ${className}`}
     >
       <div className="flex items-center justify-between gap-2">
+<<<<<<< HEAD
         <div>
           <h3 className="text-base font-semibold">{title}</h3>
           <p className="text-[11px] text-slate-500">{socketStatus}</p>
         </div>
+=======
+        <h3 className="text-base font-semibold">{title}</h3>
+>>>>>>> 39641d91906d4f06d73f2e3ffa13fca65a47018e
         <Button icon="pi pi-times" rounded text size="small" onClick={onHide} />
       </div>
       <div className="mt-2 flex h-[95%] flex-col gap-2 overflow-x-hidden text-sm">

@@ -2,8 +2,6 @@
 
 Production-oriented Express + TypeScript API for classroom simulation and teacher-led debate practice with deterministic mock LLM fallback.
 
-`LLM_API_KEY` is treated as OpenAI API key. With key configured the backend uses OpenAI `gpt-4.1-mini` (or `LLM_MODEL`), without key it falls back to deterministic mock text.
-
 ## Quick start
 
 ```bash

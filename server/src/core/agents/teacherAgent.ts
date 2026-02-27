@@ -1,6 +1,5 @@
 import type { AgentProfile } from '../@types';
 import { buildTeacherSystemPrompt } from '../shared/prompts';
-import { limitToSentences } from '../shared/text';
 import type { Agent, AgentRunContext, AgentRunInput, AgentRunResult } from './Agent';
 
 export class TeacherAgent implements Agent {
@@ -20,14 +19,11 @@ export class TeacherAgent implements Agent {
       userPrompt: input.teacherOrUserMessage,
       temperature: 0.35,
     });
-    const message =
-      limitToSentences(llmResult.text, 10) ||
-      'Let us reset with one concise step, then check understanding.';
 
-    context.emitToken(message.split(/\s+/).slice(0, 8).join(' '));
+    context.emitToken(llmResult.text.split(/\s+/).slice(0, 8).join(' '));
 
     return {
-      message,
+      message: llmResult.text,
       metadata: {
         model: llmResult.model,
         provider: llmResult.provider,

@@ -1,7 +1,6 @@
-import { memo, useEffect, useRef } from "react";
+import { memo } from "react";
 import { Avatar } from "primereact/avatar";
 import { Card } from "primereact/card";
-import { OverlayPanel } from "primereact/overlaypanel";
 import { Tag } from "primereact/tag";
 
 export type ClassroomStudent = {
@@ -12,18 +11,8 @@ export type ClassroomStudent = {
   behavior?: number;
 };
 
-export type CommunicationBubble = {
-  nodeId: string;
-  fromNodeId: string;
-  actionType: string;
-  text: string;
-  messageId?: string;
-};
-
 export type ClassroomMockupProps = {
   students?: ClassroomStudent[];
-  studentNodeIds?: string[];
-  nodeBubbles?: CommunicationBubble[];
 };
 
 type StudentState = "engaged" | "steady" | "distracted";
@@ -114,82 +103,7 @@ const toInitials = (name: string): string => {
   return `${parts[0]!.slice(0, 1)}${parts[1]!.slice(0, 1)}`.toUpperCase();
 };
 
-const toActionLabel = (actionType: string): string =>
-  actionType
-    .split("_")
-    .map((chunk) => chunk.charAt(0).toUpperCase() + chunk.slice(1))
-    .join(" ");
-
-type BubbleOverlayTriggerProps = {
-  bubble: CommunicationBubble;
-  anchorElement: HTMLElement | null;
-  size?: "teacher" | "student";
-};
-
-const BubbleOverlayTrigger = ({
-  bubble,
-  anchorElement,
-  size = "student",
-}: BubbleOverlayTriggerProps) => {
-  const overlayRef = useRef<OverlayPanel>(null);
-  const bubbleSignatureRef = useRef<string>("");
-  const isTeacher = size === "teacher";
-
-  useEffect(() => {
-    const overlay = overlayRef.current;
-    const anchor = anchorElement;
-
-    if (!overlay || !anchor) {
-      return;
-    }
-
-    const nextSignature =
-      bubble.messageId ?? `${bubble.fromNodeId}|${bubble.actionType}|${bubble.text}`;
-    if (bubbleSignatureRef.current === nextSignature) {
-      return;
-    }
-
-    bubbleSignatureRef.current = nextSignature;
-    overlay.show(undefined, anchor);
-
-   
-  }, [anchorElement, bubble.actionType, bubble.fromNodeId, bubble.text, isTeacher]);
-
-  return (
-    <>
-      <OverlayPanel
-        ref={overlayRef}
-        showCloseIcon={false}
-        className={
-          isTeacher ? "max-w-[320px] !rounded-xl !shadow-xl" : "max-w-[220px] !rounded-xl !shadow-lg"
-        }
-      >
-        <div className="space-y-1">
-          <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-            {toActionLabel(bubble.actionType)}
-          </div>
-          <div
-            className={
-              isTeacher
-                ? "whitespace-normal break-words text-[12px] leading-snug text-slate-700"
-                : "whitespace-normal break-words text-[11px] leading-snug text-slate-700"
-            }
-          >
-            {bubble.text}
-          </div>
-        </div>
-      </OverlayPanel>
-    </>
-  );
-};
-
-const ClassroomMockup = ({
-  students = [],
-  studentNodeIds = [],
-  nodeBubbles = [],
-}: ClassroomMockupProps) => {
-  const teacherAvatarRef = useRef<HTMLSpanElement | null>(null);
-  const studentAvatarRefs = useRef<Array<HTMLSpanElement | null>>([]);
+const ClassroomMockup = ({ students = [] }: ClassroomMockupProps) => {
   const seatStudents = Array.from(
     { length: DESK_GROUP_COUNT * STUDENTS_PER_DESK },
     (_, index): ClassroomStudent => {
@@ -205,12 +119,11 @@ const ClassroomMockup = ({
       };
     },
   );
-  const bubblesByNodeId = new Map(nodeBubbles.map((bubble) => [bubble.nodeId, bubble]));
-  const teacherBubble = bubblesByNodeId.get("teacher");
 
   return (
-    <div
-      className="w-full overflow-hidden  bg-[#f2f4f7] shadow-[0_18px_32px_rgba(22,35,60,0.08)]"
+    <Card
+      className="w-full overflow-hidden rounded-3xl border border-slate-300/70 bg-[#f2f4f7] shadow-[0_18px_32px_rgba(22,35,60,0.08)]"
+      pt={CONTAINER_PT}
       style={{ fontFamily: "'Trebuchet MS', Verdana, sans-serif" }}
     >
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-300/80 px-4 py-3">
@@ -264,21 +177,12 @@ const ClassroomMockup = ({
           </Card>
 
           <div className="absolute left-1/2 top-[11%] flex -translate-x-1/2 flex-col items-center gap-1">
-            <span ref={teacherAvatarRef} className="inline-flex">
-              <Avatar
-                label="T"
-                shape="circle"
-                className="!h-16 !w-16 !border !border-[#9e97a0] !bg-[#d9d5da] !text-[#5f5860] sm:!h-20 sm:!w-20"
-              />
-            </span>
+            <Avatar
+              label="T"
+              shape="circle"
+              className="!h-16 !w-16 !border !border-[#9e97a0] !bg-[#d9d5da] !text-[#5f5860] sm:!h-20 sm:!w-20"
+            />
             <Tag value="Teacher" className="!bg-slate-100 !text-slate-700 !text-[10px]" />
-            {teacherBubble ? (
-              <BubbleOverlayTrigger
-                bubble={teacherBubble}
-                size="teacher"
-                anchorElement={teacherAvatarRef.current}
-              />
-            ) : null}
           </div>
 
           <div className="absolute right-0 top-[20%] h-16 w-6 rounded-l-lg bg-[#c2baaf] sm:h-20 sm:w-7" />
@@ -295,10 +199,6 @@ const ClassroomMockup = ({
               const secondState = getStudentState(second, secondSeatIndex);
               const firstStyle = STATE_STYLES[firstState];
               const secondStyle = STATE_STYLES[secondState];
-              const firstNodeId = studentNodeIds[firstSeatIndex];
-              const secondNodeId = studentNodeIds[secondSeatIndex];
-              const firstBubble = firstNodeId ? bubblesByNodeId.get(firstNodeId) : undefined;
-              const secondBubble = secondNodeId ? bubblesByNodeId.get(secondNodeId) : undefined;
 
               return (
                 <Card
@@ -311,27 +211,16 @@ const ClassroomMockup = ({
 
                     <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
                       <div
-                        className={`relative flex min-h-12 flex-col items-center justify-center rounded-2xl border px-1 py-1 text-center sm:min-h-[56px] ${firstStyle.panelClass}`}
+                        className={`flex min-h-[48px] flex-col items-center justify-center rounded-2xl border px-1 py-1 text-center sm:min-h-[56px] ${firstStyle.panelClass}`}
                       >
-                        {firstBubble ? (
-                          <BubbleOverlayTrigger
-                            bubble={firstBubble}
-                            anchorElement={studentAvatarRefs.current[firstSeatIndex] ?? null}
-                          />
-                        ) : null}
-                        <span
-                          ref={(element) => {
-                            studentAvatarRefs.current[firstSeatIndex] = element;
-                          }}
-                          className="inline-flex"
-                        >
-                          <Avatar
-                            label={toInitials(firstName)}
-                            shape="circle"
-                            className="!h-6 !w-6 !bg-slate-300 !text-[9px] !font-semibold !text-slate-700 sm:!h-7 sm:!w-7"
-                          />
+                        <Avatar
+                          label={toInitials(firstName)}
+                          shape="circle"
+                          className="!h-6 !w-6 !bg-slate-300 !text-[9px] !font-semibold !text-slate-700 sm:!h-7 sm:!w-7"
+                        />
+                        <span className="mt-0.5 truncate text-[8px] font-semibold leading-tight sm:text-[9px]">
+                          {firstName}
                         </span>
-
                         <Tag
                           value={firstStyle.label}
                           className={`!mt-0.5 !text-[7px] ${firstStyle.tagClass}`}
@@ -339,27 +228,16 @@ const ClassroomMockup = ({
                       </div>
 
                       <div
-                        className={`relative flex min-h-[48px] flex-col items-center justify-center rounded-2xl border px-1 py-1 text-center sm:min-h-[56px] ${secondStyle.panelClass}`}
+                        className={`flex min-h-[48px] flex-col items-center justify-center rounded-2xl border px-1 py-1 text-center sm:min-h-[56px] ${secondStyle.panelClass}`}
                       >
-                        {secondBubble ? (
-                          <BubbleOverlayTrigger
-                            bubble={secondBubble}
-                            anchorElement={studentAvatarRefs.current[secondSeatIndex] ?? null}
-                          />
-                        ) : null}
-                        <span
-                          ref={(element) => {
-                            studentAvatarRefs.current[secondSeatIndex] = element;
-                          }}
-                          className="inline-flex"
-                        >
-                          <Avatar
-                            label={toInitials(secondName)}
-                            shape="circle"
-                            className="!h-6 !w-6 !bg-slate-300 !text-[9px] !font-semibold !text-slate-700 sm:!h-7 sm:!w-7"
-                          />
+                        <Avatar
+                          label={toInitials(secondName)}
+                          shape="circle"
+                          className="!h-6 !w-6 !bg-slate-300 !text-[9px] !font-semibold !text-slate-700 sm:!h-7 sm:!w-7"
+                        />
+                        <span className="mt-0.5 truncate text-[8px] font-semibold leading-tight sm:text-[9px]">
+                          {secondName}
                         </span>
-                       
                         <Tag
                           value={secondStyle.label}
                           className={`!mt-0.5 !text-[7px] ${secondStyle.tagClass}`}
@@ -384,7 +262,7 @@ const ClassroomMockup = ({
           </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
 };
 
