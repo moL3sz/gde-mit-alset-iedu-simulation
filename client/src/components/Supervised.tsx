@@ -36,7 +36,7 @@ export const Supervised = () => {
   return (
     <section className="h-full w-full p-2 md:w-1/2 md:p-3">
       <div
-        className="flex h-full flex-col rounded-3xl border border-slate-300/60 bg-[#eef2f7] shadow-[0_20px_45px_rgba(28,49,83,0.14)]"
+        className="flex h-full flex-col rounded-3xl border border-slate-300/60 bg-[#f2f4f7] shadow-[0_16px_34px_rgba(28,49,83,0.1)]"
         style={{ fontFamily: "'Trebuchet MS', Verdana, sans-serif" }}
       >
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-300/70 px-4 py-3 sm:px-5 sm:py-4">
@@ -68,10 +68,10 @@ export const Supervised = () => {
         </div>
 
         <div className="flex items-center justify-between gap-2 px-4 py-2 sm:px-5">
-          <span className="rounded-full bg-white/80 px-3 py-1 text-[11px] font-bold tracking-wide text-slate-700 shadow-sm sm:text-xs">
+          <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold tracking-wide text-slate-700 shadow-sm sm:text-xs">
             Aktív diákhelyek: {students.length > 0 ? students.length : 12}
           </span>
-          <span className="rounded-full bg-slate-200 px-3 py-1 text-[11px] font-bold tracking-wide text-slate-700 shadow-sm sm:text-xs">
+          <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold tracking-wide text-slate-700 shadow-sm sm:text-xs">
             Realtime vizualizáció
           </span>
         </div>

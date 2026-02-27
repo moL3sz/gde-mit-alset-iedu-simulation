@@ -1,26 +1,82 @@
+import { useMemo } from "react";
 import { Button } from "primereact/button";
 
+import ClassroomMockup, { type ClassroomStudent } from "./ClassroomMockup";
+
+type StudentSetupPayload = {
+  students?: ClassroomStudent[];
+};
+
+const readStoredStudents = (): ClassroomStudent[] => {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  const raw = window.localStorage.getItem("studentsSetup");
+
+  if (!raw) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as StudentSetupPayload;
+    if (!Array.isArray(parsed.students)) {
+      return [];
+    }
+
+    return parsed.students;
+  } catch {
+    return [];
+  }
+};
+
 export const Unsupervised = () => {
+  const students = useMemo(() => readStoredStudents(), []);
+
   return (
     <section className="h-full w-full p-2 md:w-1/2 md:p-3">
       <div
-        className="flex h-full flex-col rounded-3xl border border-slate-300/70 bg-[#edf0f4] p-4 shadow-[0_18px_35px_rgba(15,23,42,0.12)] sm:p-5"
+        className="flex h-full flex-col rounded-3xl border border-slate-300/70 bg-[#f2f4f7] shadow-[0_16px_34px_rgba(15,23,42,0.1)]"
         style={{ fontFamily: "'Trebuchet MS', Verdana, sans-serif" }}
       >
-        <div className="mb-4 flex items-center justify-between">
-          <h1 className="text-xl font-black uppercase tracking-[0.14em] text-slate-700 sm:text-2xl">
-            Unsupervised
-          </h1>
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-300/70 px-4 py-3 sm:px-5 sm:py-4">
+          <div className="min-w-0">
+            <h1 className="truncate text-xl font-black uppercase tracking-[0.14em] text-slate-700 sm:text-2xl">
+              Unsupervised
+            </h1>
+            <p className="mt-1 text-xs font-semibold tracking-wide text-slate-600 sm:text-sm">
+              Önálló interakciók vizualizációja
+            </p>
+          </div>
           <div className="flex items-center gap-2">
-            <Button icon="pi pi-chart-bar" rounded severity="secondary" tooltip="Charts" />
-            <Button icon="pi pi-sitemap" rounded severity="secondary" tooltip="Graph" />
+            <Button
+              icon="pi pi-chart-bar"
+              label="Charts"
+              severity="secondary"
+              outlined
+              size="small"
+            />
+            <Button
+              icon="pi pi-sitemap"
+              label="Graph"
+              severity="secondary"
+              outlined
+              size="small"
+            />
           </div>
         </div>
 
-        <div className="flex min-h-0 flex-1 items-center justify-center rounded-2xl border border-dashed border-slate-400/70 bg-white/70 p-4 text-center">
-          <p className="max-w-xs text-sm font-semibold text-slate-600">
-            Ez a panel az önálló interakciókhoz lesz használva.
-          </p>
+        <div className="flex items-center justify-between gap-2 px-4 py-2 sm:px-5">
+          <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold tracking-wide text-slate-700 shadow-sm sm:text-xs">
+            Aktív diákhelyek: {students.length > 0 ? students.length : 12}
+          </span>
+          <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold tracking-wide text-slate-700 shadow-sm sm:text-xs">
+            Classroom nézet
+          </span>
+        </div>
+
+        <div className="min-h-0 flex-1 p-3 pt-1 sm:p-4 sm:pt-2">
+          <ClassroomMockup students={students} />
         </div>
       </div>
     </section>
