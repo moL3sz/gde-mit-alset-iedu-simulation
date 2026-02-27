@@ -7,6 +7,12 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(3001),
   LLM_API_KEY: z.string().trim().min(1).optional(),
   LLM_MODEL: z.string().trim().min(1).default('gpt-4.1-mini'),
+  DB_HOST: z.string().trim(),
+  DB_PORT: z.coerce.number().int().positive().default(5432),
+  DB_USERNAME: z.string().trim(),
+  DB_PASSWORD: z.string().trim(),
+  DB_NAME: z.string().trim(),
+  DB_LOGGING: z.coerce.boolean().default(true),
 });
 
 const parsed = envSchema.safeParse(process.env);

@@ -4,20 +4,20 @@ import type {
   GetSessionResponse,
   PostTurnRequest,
   PostTurnResponse,
+  SubmitSupervisorHintResponse,
   SubmitTaskAssignmentRequest,
   SubmitTaskAssignmentResponse,
-  SubmitSupervisorHintResponse,
-} from '../../@types';
-import { env } from '../../../config/env';
-import { SessionMemory } from '../../memory/sessionMemory';
-import { Orchestrator, type AgentTurnEmission } from '../../orchestrator';
+} from '../../core/@types';
+import { env } from '../../config/env';
+import { SessionMemory } from '../../core/memory/sessionMemory';
+import { Orchestrator, type AgentTurnEmission } from '../../core/orchestrator';
 import {
   calculateStudentPersonalityChanges,
   extractStudentPersonalitySnapshots,
   simulationRealtimeBus,
-} from '../../realtime/simulationRealtimeBus';
-import { logger } from '../../shared/logger';
-import { createLlmTool } from '../../tools/llm';
+} from '../../core/realtime/simulationRealtimeBus';
+import { logger } from '../../core/shared/logger';
+import { createLlmTool } from '../../core/tools/llm';
 
 export class SessionsService {
   public constructor(private readonly orchestrator: Orchestrator) {}

@@ -3,6 +3,9 @@
     "target": "ES2022",
     "module": "CommonJS",
     "moduleResolution": "Node",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "useDefineForClassFields": false,
     "rootDir": "src",
     "outDir": "dist",
     "strict": true,
@@ -14,5 +17,5 @@
     "types": ["node"]
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts"],
-  "exclude": ["node_modules", "dist", "src/database", "src/modules", "src/routes", "src/shared"]
+  "exclude": ["node_modules", "dist", "src/modules", "src/routes", "src/shared"]
 }
