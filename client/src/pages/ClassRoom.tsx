@@ -3,12 +3,19 @@ import { useNavigate } from "react-router-dom";
 import { Avatar } from "primereact/avatar";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
+import { InputText } from "primereact/inputtext";
 import { ListBox } from "primereact/listbox";
 import { OverlayPanel } from "primereact/overlaypanel";
+
+type StudentProfile = "ADHD" | "Autistic" | "Typical";
 
 type StoredStudent = {
   id: number;
   name: string;
+  attentiveness: number;
+  comprehension: number;
+  behavior: number;
+  profile: StudentProfile;
 };
 
 type StudentSetupStorage = {
@@ -16,15 +23,25 @@ type StudentSetupStorage = {
   students?: Array<{
     id?: number;
     name?: string;
+    attentiveness?: number;
+    comprehension?: number;
+    behavior?: number;
+    profile?: string;
   }>;
 };
 
 type ClassroomSetupStorage = {
   assignments?: Record<string, number | null>;
+  classroomName?: string;
+  classroomId?: number;
+  classroom?: { name?: string } | null;
+  localToDbStudentIdMap?: Record<string, number>;
 };
 
 const STORAGE_KEY = "studentsSetup";
 const CLASSROOM_STORAGE_KEY = "classroomSetup";
+const CLASSROOM_ID_STORAGE_KEY = "classroomId";
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000/api";
 const AVATAR_COLORS = [
   "#0ea5e9",
   "#10b981",
@@ -40,6 +57,44 @@ const AVATAR_COLORS = [
 
 const createSeatIds = (count: number) => Array.from({ length: count }, (_, i) => i + 1);
 const getAvatarColor = (studentId: number) => AVATAR_COLORS[(studentId - 1) % AVATAR_COLORS.length];
+const isStudentProfile = (value: unknown): value is StudentProfile =>
+  value === "ADHD" || value === "Autistic" || value === "Typical";
+const normalizeScore = (value: unknown) => {
+  const numericValue = typeof value === "number" ? value : Number(value);
+
+  if (Number.isNaN(numericValue)) {
+    return 5;
+  }
+
+  return Math.min(10, Math.max(0, Math.floor(numericValue)));
+};
+
+type ClassroomEntity = {
+  id: number;
+  name: string;
+  students?: Array<{ id: number; name: string }>;
+};
+
+type StudentEntity = {
+  id: number;
+};
+
+const requestJson = async <T,>(path: string, init?: RequestInit): Promise<T> => {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      ...(init?.headers ?? {}),
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || `Request failed with status ${response.status}`);
+  }
+
+  return (await response.json()) as T;
+};
 
 const getInitials = (name: string) => {
   const chunks = name
@@ -62,6 +117,9 @@ export const ClassRoom = () => {
   const [seatIds, setSeatIds] = useState<number[]>([]);
   const [assignments, setAssignments] = useState<Record<number, number | null>>({});
   const [activeSeatId, setActiveSeatId] = useState<number | null>(null);
+  const [classroomName, setClassroomName] = useState("Classroom");
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -82,6 +140,10 @@ export const ClassRoom = () => {
           typeof student.name === "string" && student.name.trim().length > 0
             ? student.name
             : `Student ${index + 1}`,
+        attentiveness: normalizeScore(student.attentiveness),
+        comprehension: normalizeScore(student.comprehension),
+        behavior: normalizeScore(student.behavior),
+        profile: isStudentProfile(student.profile) ? student.profile : "Typical",
       }));
 
       const fallbackCount =
@@ -94,12 +156,22 @@ export const ClassRoom = () => {
         acc[seatId] = null;
         return acc;
       }, {});
+      let restoredClassroomName: string | null = null;
       const validStudentIds = new Set(sanitizedStudents.map((student) => student.id));
       const storedClassroomRaw = localStorage.getItem(CLASSROOM_STORAGE_KEY);
 
       if (storedClassroomRaw) {
         try {
           const parsedClassroom = JSON.parse(storedClassroomRaw) as ClassroomSetupStorage;
+          const byKey =
+            typeof parsedClassroom.classroomName === "string"
+              ? parsedClassroom.classroomName.trim()
+              : "";
+          const byEntity =
+            typeof parsedClassroom.classroom?.name === "string"
+              ? parsedClassroom.classroom.name.trim()
+              : "";
+          restoredClassroomName = byKey || byEntity || null;
           const storedAssignments = parsedClassroom.assignments ?? {};
           const alreadyAssigned = new Set<number>();
 
@@ -123,10 +195,12 @@ export const ClassRoom = () => {
       setStudents(sanitizedStudents);
       setSeatIds(seats);
       setAssignments(initialAssignments);
+      setClassroomName(restoredClassroomName ?? "Classroom");
     } catch {
       setStudents([]);
       setSeatIds([]);
       setAssignments({});
+      setClassroomName("Classroom");
     }
   }, []);
 
@@ -139,9 +213,10 @@ export const ClassRoom = () => {
       CLASSROOM_STORAGE_KEY,
       JSON.stringify({
         assignments,
+        classroomName,
       }),
     );
-  }, [assignments, seatIds]);
+  }, [assignments, classroomName, seatIds]);
 
   const deskGroups = useMemo(() => {
     const groups: number[][] = [];
@@ -194,15 +269,74 @@ export const ClassRoom = () => {
     setActiveSeatId(null);
   };
 
-  const handleContinue = () => {
-    localStorage.setItem(
-      CLASSROOM_STORAGE_KEY,
-      JSON.stringify({
-        assignments,
-      }),
-    );
+  const handleContinue = async () => {
+    const trimmedClassroomName = classroomName.trim();
 
-    navigate("/start");
+    if (!trimmedClassroomName) {
+      setSaveError("Classroom name is required.");
+      return;
+    }
+
+    try {
+      setSaveError(null);
+      setIsSaving(true);
+
+      const createdClassroom = await requestJson<ClassroomEntity>("/classrooms", {
+        method: "POST",
+        body: JSON.stringify({ name: trimmedClassroomName }),
+      });
+
+      const createdStudents = await Promise.all(
+        students.map(async (student) => {
+          const createdStudent = await requestJson<StudentEntity>("/students", {
+            method: "POST",
+            body: JSON.stringify({
+              name: student.name,
+              attentiveness: student.attentiveness,
+              comprehension: student.comprehension,
+              behavior: student.behavior,
+              profile: student.profile,
+              classroomId: createdClassroom.id,
+            }),
+          });
+
+          return {
+            localId: student.id,
+            dbId: createdStudent.id,
+          };
+        }),
+      );
+
+      const localToDbStudentIdMap = createdStudents.reduce<Record<string, number>>(
+        (accumulator, item) => {
+          accumulator[String(item.localId)] = item.dbId;
+          return accumulator;
+        },
+        {},
+      );
+
+      const classroomWithStudents = await requestJson<ClassroomEntity>(
+        `/classrooms/${createdClassroom.id}`,
+      );
+
+      localStorage.setItem(CLASSROOM_ID_STORAGE_KEY, String(createdClassroom.id));
+      localStorage.setItem(
+        CLASSROOM_STORAGE_KEY,
+        JSON.stringify({
+          assignments,
+          classroomName: trimmedClassroomName,
+          classroomId: createdClassroom.id,
+          classroom: classroomWithStudents,
+          localToDbStudentIdMap,
+        } satisfies ClassroomSetupStorage),
+      );
+
+      navigate("/start");
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : "Failed to save classroom.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (seatIds.length === 0) {
@@ -218,13 +352,28 @@ export const ClassRoom = () => {
 
   return (
     <div className="p-4">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-semibold">Classroom Seating</h1>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm">Classroom name</span>
+          <InputText
+            value={classroomName}
+            onChange={(event) => setClassroomName(event.target.value)}
+            placeholder="Enter classroom name"
+            className="p-inputtext-sm w-56"
+          />
           <Button label="Back" severity="secondary" outlined onClick={() => navigate("/")} />
-          <Button label="Continue" icon="pi pi-arrow-right" iconPos="right" onClick={handleContinue} />
+          <Button
+            label="Continue"
+            icon="pi pi-arrow-right"
+            iconPos="right"
+            onClick={handleContinue}
+            loading={isSaving}
+            disabled={isSaving || classroomName.trim().length === 0}
+          />
         </div>
       </div>
+      {saveError ? <small className="mb-3 block text-red-600">{saveError}</small> : null}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {deskGroups.map((deskSeatIds, deskIndex) => (

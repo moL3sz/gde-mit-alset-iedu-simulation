@@ -6,6 +6,12 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(3001),
   LLM_API_KEY: z.string().trim().min(1).optional(),
+  DB_HOST: z.string().trim(),
+  DB_PORT: z.coerce.number().int().positive().default(5432),
+  DB_USERNAME:z.string().trim(),
+  DB_PASSWORD:z.string().trim(),
+  DB_NAME:z.string().trim(),
+  DB_LOGGING:z.coerce.boolean().default(true)
 });
 
 const parsed = envSchema.safeParse(process.env);

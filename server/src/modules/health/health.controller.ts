@@ -1,8 +1,12 @@
 import type { RequestHandler } from 'express';
 
-export const healthCheck: RequestHandler = (_req, res) => {
-  res.status(200).json({
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-  });
+import type { HealthResponse } from '../../core/@types';
+
+export const getHealth: RequestHandler = (_req, res) => {
+  const response: HealthResponse = {
+    ok: true,
+    uptime: process.uptime(),
+  };
+
+  res.status(200).json(response);
 };
