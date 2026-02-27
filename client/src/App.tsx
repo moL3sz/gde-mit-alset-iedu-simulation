@@ -7,6 +7,7 @@ import { StartPage } from "./pages/StartPage.tsx";
 import { Simulation } from "./pages/Simulation.tsx";
 import { Students } from "./pages/Students.tsx";
 import { ClassRoom } from "./pages/ClassRoom.tsx";
+import { Statics } from "./pages/Statics.tsx";
 
 function App() {
   
@@ -20,6 +21,7 @@ function App() {
         <Route path="/start" element={<StartPage/>}/>
         <Route path="/simulation" element={<Simulation/>}/>
         <Route path="/classrom" element={<ClassRoom/>}/>
+        <Route path="/statics" element={<Statics/>}/>
       </Routes>
     </BrowserRouter>
   );
