@@ -1,8 +1,12 @@
 import { Button } from "primereact/button";
-import { Dropdown } from 'primereact/dropdown';
+import { Dropdown, type DropdownChangeEvent } from 'primereact/dropdown';
 import EduCover from "../assets/edu.jpg"
 import { useSockets } from ".././context/SocketContext.tsx";
+import { useEffect, useState } from "react";
 
+const START_STORAGE_KEY = "startSetup";
+const STUDENTS_STORAGE_KEY = "studentsSetup";
+const CLASSROOM_STORAGE_KEY = "classroomSetup";
 
 const subjects = [
   "Mathematics",
@@ -15,11 +19,59 @@ const subjects = [
   "Computer Science",
 ]
 
+const safeParse = (value: string | null) => {
+  if (!value) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+};
 
 export const StartPage = () =>{
 
     const { initializeSockets } = useSockets();
-    const startSimulation = () => initializeSockets();
+    const [subject, setSubject] = useState<string | null>(null);
+
+    useEffect(() => {
+      const stored = safeParse(localStorage.getItem(START_STORAGE_KEY)) as { subject?: string } | null;
+      if (stored?.subject && subjects.includes(stored.subject)) {
+        setSubject(stored.subject);
+      }
+    }, []);
+
+    const handleSubjectChange = (event: DropdownChangeEvent) => {
+      const selectedSubject = event.value as string | null;
+      setSubject(selectedSubject);
+
+      localStorage.setItem(
+        START_STORAGE_KEY,
+        JSON.stringify({
+          subject: selectedSubject,
+        }),
+      );
+    };
+
+    const startSimulation = () => {
+      localStorage.setItem(
+        START_STORAGE_KEY,
+        JSON.stringify({
+          subject,
+        }),
+      );
+
+      const simulationPayload = {
+        studentsSetup: safeParse(localStorage.getItem(STUDENTS_STORAGE_KEY)),
+        classroomSetup: safeParse(localStorage.getItem(CLASSROOM_STORAGE_KEY)),
+        startSetup: safeParse(localStorage.getItem(START_STORAGE_KEY)),
+      };
+
+      console.log("Simulation setup:", simulationPayload);
+      initializeSockets();
+    };
 
     return <div className="flex flex-col items-center justify-center h-screen">
       <div className="flex flex-col items-center gap-4 h-auto shadow-sm w-[50vh] rounded-lg">
@@ -40,7 +92,12 @@ export const StartPage = () =>{
         </p>
         <div className="p-4 flex justify-around items-center w-full">
           <Button icon="pi pi-play-circle" label="Start simulation" onClick={startSimulation}/>
-          <Dropdown options={subjects} placeholder="Select subject..." />
+          <Dropdown
+            options={subjects}
+            value={subject}
+            onChange={handleSubjectChange}
+            placeholder="Select subject..."
+          />
         </div>
       </div>
 
@@ -48,4 +105,3 @@ export const StartPage = () =>{
     </div>
 
 }
-

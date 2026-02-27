@@ -19,16 +19,31 @@ type StudentCard = {
   profile: StudentProfile;
 };
 
+type StoredStudentCard = {
+  id?: number;
+  name?: string;
+  attentiveness?: number;
+  comprehension?: number;
+  behavior?: number;
+  profile?: string;
+};
+
+type StudentsSetupStorage = {
+  studentCount?: number;
+  students?: StoredStudentCard[];
+};
+
 const STUDENT_MIN = 1;
-const STUDENT_MAX = 30;
+const STUDENT_MAX = 12;
 const PROFILE_OPTIONS: StudentProfile[] = ["ADHD", "Autistic", "Typical"];
+const STORAGE_KEY = "studentsSetup";
 
 const createStudent = (id: number): StudentCard => ({
   id,
   name: `Student ${id}`,
-  attentiveness: 50,
-  comprehension: 50,
-  behavior: 50,
+  attentiveness: 5,
+  comprehension: 5,
+  behavior: 5,
   profile: "Typical",
 });
 
@@ -40,12 +55,84 @@ const normalizeCount = (value: number) => {
   return Math.min(STUDENT_MAX, Math.max(STUDENT_MIN, Math.floor(value)));
 };
 
+const normalizeScore = (value: unknown) => {
+  const numericValue = typeof value === "number" ? value : Number(value);
+
+  if (Number.isNaN(numericValue)) {
+    return 5;
+  }
+
+  return Math.min(10, Math.max(0, Math.floor(numericValue)));
+};
+
+const isStudentProfile = (value: unknown): value is StudentProfile =>
+  value === "ADHD" || value === "Autistic" || value === "Typical";
+
+const getInitialStudentsState = (): { studentCount: number; students: StudentCard[] } => {
+  const defaultStudents = Array.from({ length: 4 }, (_, i) => createStudent(i + 1));
+
+  if (typeof window === "undefined") {
+    return { studentCount: 4, students: defaultStudents };
+  }
+
+  const raw = localStorage.getItem(STORAGE_KEY);
+
+  if (!raw) {
+    return { studentCount: 4, students: defaultStudents };
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as StudentsSetupStorage;
+    const rawStudents = Array.isArray(parsed.students) ? parsed.students : [];
+    const sanitizedStudents = rawStudents.map((storedStudent, index) => ({
+      id: index + 1,
+      name:
+        typeof storedStudent.name === "string" && storedStudent.name.trim().length > 0
+          ? storedStudent.name
+          : `Student ${index + 1}`,
+      attentiveness: normalizeScore(storedStudent.attentiveness),
+      comprehension: normalizeScore(storedStudent.comprehension),
+      behavior: normalizeScore(storedStudent.behavior),
+      profile: isStudentProfile(storedStudent.profile) ? storedStudent.profile : "Typical",
+    }));
+
+    const hasStoredCount = typeof parsed.studentCount === "number" && !Number.isNaN(parsed.studentCount);
+    const storedCount = hasStoredCount ? normalizeCount(parsed.studentCount as number) : undefined;
+    const targetCount = storedCount ?? (sanitizedStudents.length > 0 ? sanitizedStudents.length : 4);
+
+    if (sanitizedStudents.length > targetCount) {
+      return {
+        studentCount: targetCount,
+        students: sanitizedStudents.slice(0, targetCount),
+      };
+    }
+
+    if (sanitizedStudents.length < targetCount) {
+      const appendedStudents = Array.from(
+        { length: targetCount - sanitizedStudents.length },
+        (_, i) => createStudent(sanitizedStudents.length + i + 1),
+      );
+
+      return {
+        studentCount: targetCount,
+        students: [...sanitizedStudents, ...appendedStudents],
+      };
+    }
+
+    return {
+      studentCount: targetCount,
+      students: sanitizedStudents,
+    };
+  } catch {
+    return { studentCount: 4, students: defaultStudents };
+  }
+};
+
 export const Students = () => {
   const navigate = useNavigate();
-  const [studentCount, setStudentCount] = useState<number>(4);
-  const [students, setStudents] = useState<StudentCard[]>(() =>
-    Array.from({ length: 4 }, (_, i) => createStudent(i + 1)),
-  );
+  const [initialState] = useState(() => getInitialStudentsState());
+  const [studentCount, setStudentCount] = useState<number>(initialState.studentCount);
+  const [students, setStudents] = useState<StudentCard[]>(initialState.students);
 
   useEffect(() => {
     setStudents((prevStudents) => {
@@ -84,7 +171,7 @@ export const Students = () => {
 
   const handleContinue = () => {
     localStorage.setItem(
-      "studentsSetup",
+      STORAGE_KEY,
       JSON.stringify({
         studentCount,
         students,
@@ -113,7 +200,7 @@ export const Students = () => {
       <Slider
         value={value}
         min={0}
-        max={100}
+        max={10}
         onChange={(event) => updateStudent(student.id, key, Number(event.value))}
       />
     </div>
