@@ -5,6 +5,8 @@ export interface AgentRunInput {
   teacherOrUserMessage: string;
   session: Session;
   recentTurns: Turn[];
+  allowedKnowledge?: string[];
+  stateStimulusText?: string;
 }
 
 export interface AgentRunContext {

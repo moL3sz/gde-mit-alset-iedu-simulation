@@ -32,6 +32,7 @@ import { AppError } from './shared/errors/app-error';
 import {
   FRACTIONS_LESSON_TOTAL_TURNS,
   getFractionsLessonStep,
+  type FractionsLessonStep,
 } from './shared/prompts';
 import {
   activateCommunicationEdge,
@@ -489,20 +490,6 @@ export class Orchestrator {
         const student = selectedStudents.find((candidate) => candidate.id === turn.agentId);
         return `${student?.name ?? turn.agentId}: ${turn.content}`;
       });
-    const sharedClassroomInput = [
-      `Live classroom loop (parallel mode): all participants respond in the same cycle without waiting.`,
-      `Lesson turn: ${lessonStep.turn}/${FRACTIONS_LESSON_TOTAL_TURNS}`,
-      `Classroom phase: ${phase}`,
-      `Lesson focus: ${lessonStep.title}`,
-      `Teacher delivery goal: ${lessonStep.deliveryGoal}`,
-      `Task assignment context: ${assignmentContext}`,
-      `Current external instruction: ${requestTurn.content}`,
-      supervisorHint ? `Supervisor hint to apply: ${supervisorHint}` : undefined,
-      `Respond to the current lesson focus immediately.`,
-    ]
-      .filter((line): line is string => Boolean(line))
-      .join('\n');
-
     const teacherInput = [
       `You are in parallel real-time classroom loop mode.`,
       `Lesson turn: ${lessonStep.turn}/${FRACTIONS_LESSON_TOTAL_TURNS}`,
@@ -526,6 +513,28 @@ export class Orchestrator {
     ]
       .filter((line): line is string => Boolean(line))
       .join('\n');
+    const studentInputById = new Map<string, { prompt: string; memoryLines: string[] }>();
+
+    for (const profile of selectedStudents) {
+      const memoryLines = this.buildStudentMemoryLines(
+        session,
+        profile,
+        lessonStep,
+        phase,
+        assignmentContext,
+        requestTurn.content,
+      );
+      const prompt = this.buildStudentClassroomInput(
+        profile,
+        lessonStep,
+        phase,
+        assignmentContext,
+        requestTurn.content,
+        memoryLines,
+      );
+
+      studentInputById.set(profile.id, { prompt, memoryLines });
+    }
 
     const teacherAgent = new TeacherAgent(teacherProfile);
     const studentMessages = new Map<string, string>();
@@ -636,11 +645,23 @@ export class Orchestrator {
     const studentRuns = selectedStudents.map((profile) => {
       return (async (): Promise<void> => {
         const agent = new StudentAgent(profile);
+        const studentInput = studentInputById.get(profile.id);
         const result = await agent.run(
           {
-            teacherOrUserMessage: sharedClassroomInput,
+            teacherOrUserMessage:
+              studentInput?.prompt ??
+              this.buildStudentClassroomInput(
+                profile,
+                lessonStep,
+                phase,
+                assignmentContext,
+                requestTurn.content,
+                [],
+              ),
             session: this.mustGetSession(sessionId),
             recentTurns: this.mustGetSession(sessionId).turns.slice(-8),
+            allowedKnowledge: studentInput?.memoryLines ?? [],
+            stateStimulusText: requestTurn.content,
           },
           {
             llm: this.llmTool,
@@ -1142,6 +1163,63 @@ export class Orchestrator {
     ).length;
 
     return clampInt(instructorTurns, 1, FRACTIONS_LESSON_TOTAL_TURNS);
+  }
+
+  private buildStudentMemoryLines(
+    session: Session,
+    student: AgentProfile,
+    lessonStep: FractionsLessonStep,
+    phase: ClassroomPhase,
+    assignmentContext: string,
+    currentInstruction: string,
+  ): string[] {
+    const teacherMemory = session.turns
+      .filter((turn) => turn.role === 'teacher')
+      .slice(-6)
+      .map((turn) => `Teacher previously said: ${this.truncatePayloadText(turn.content, 170)}`);
+    const selfMemory = session.turns
+      .filter((turn) => turn.role === 'agent' && turn.agentId === student.id)
+      .slice(-4)
+      .map((turn) => `I said earlier: ${this.truncatePayloadText(turn.content, 170)}`);
+    const misconceptionMemory = student.state.misconceptions
+      .slice(0, 2)
+      .map((misconception) => `My known misconception: ${this.truncatePayloadText(misconception, 120)}`);
+
+    return [
+      `Current lesson turn ${lessonStep.turn}/${FRACTIONS_LESSON_TOTAL_TURNS}: ${lessonStep.title}`,
+      `Current classroom phase: ${phase}`,
+      `Teacher goal for this turn: ${lessonStep.deliveryGoal}`,
+      `Instruction I hear now: ${this.truncatePayloadText(currentInstruction, 170)}`,
+      `Task assignment context: ${this.truncatePayloadText(assignmentContext, 170)}`,
+      ...teacherMemory,
+      ...selfMemory,
+      ...misconceptionMemory,
+    ];
+  }
+
+  private buildStudentClassroomInput(
+    student: AgentProfile,
+    lessonStep: FractionsLessonStep,
+    phase: ClassroomPhase,
+    assignmentContext: string,
+    currentInstruction: string,
+    memoryLines: string[],
+  ): string {
+    return [
+      `Live classroom loop (parallel mode): students respond in the same cycle without waiting.`,
+      `You are ${student.name} (${student.kind}).`,
+      `Lesson turn: ${lessonStep.turn}/${FRACTIONS_LESSON_TOTAL_TURNS}`,
+      `Classroom phase: ${phase}`,
+      `Lesson focus: ${lessonStep.title}`,
+      `Teacher delivery goal: ${lessonStep.deliveryGoal}`,
+      `Task assignment context: ${this.truncatePayloadText(assignmentContext, 180)}`,
+      `Current classroom instruction: ${this.truncatePayloadText(currentInstruction, 180)}`,
+      `Knowledge rule: answer using only your own memory context provided in this prompt.`,
+      memoryLines.length > 0
+        ? `Memory items available for this turn: ${memoryLines.length}.`
+        : `Memory items available for this turn: 0. If needed, say you do not remember enough yet.`,
+      `Respond to the teacher with one concise student action now.`,
+    ].join('\n');
   }
 
   private buildPeerMessageForGraph(studentName: string, message?: string): string {

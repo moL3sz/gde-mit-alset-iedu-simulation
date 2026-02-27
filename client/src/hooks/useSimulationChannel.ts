@@ -73,6 +73,7 @@ type UseSimulationChannelInput = {
   channel: SimulationChannel;
   socket: Socket | null;
   topic: string;
+  forcedPause?: boolean;
 };
 
 type UseSimulationChannelResult = {
@@ -239,6 +240,7 @@ export const useSimulationChannel = ({
   channel,
   socket,
   topic,
+  forcedPause = false,
 }: UseSimulationChannelInput): UseSimulationChannelResult => {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [students, setStudents] = useState<ClassroomStudent[]>([]);
@@ -248,6 +250,7 @@ export const useSimulationChannel = ({
   const [isPausedForTaskAssignment, setIsPausedForTaskAssignment] = useState(false);
   const [taskAssignmentRequired, setTaskAssignmentRequired] =
     useState<TaskAssignmentRequiredPayload | null>(null);
+  const isEffectivelyPaused = isPausedForTaskAssignment || forcedPause;
 
   const creatingSessionRef = useRef(false);
   const turnInFlightRef = useRef(false);
@@ -431,7 +434,7 @@ export const useSimulationChannel = ({
         return;
       }
 
-      if (isPausedForTaskAssignment) {
+      if (isEffectivelyPaused) {
         return;
       }
 
@@ -477,7 +480,7 @@ export const useSimulationChannel = ({
       cancelled = true;
       window.clearInterval(intervalId);
     };
-  }, [channel, isPausedForTaskAssignment, sessionId, topic]);
+  }, [channel, isEffectivelyPaused, sessionId, topic]);
 
   const sendSupervisorHint = useCallback(
     (hintText: string): boolean => {
@@ -553,13 +556,13 @@ export const useSimulationChannel = ({
       nodeBubbles,
       isSocketConnected: Boolean(socket?.connected),
       lastError,
-      isPausedForTaskAssignment,
+      isPausedForTaskAssignment: isEffectivelyPaused,
       taskAssignmentRequired,
       submitTaskAssignment,
       sendSupervisorHint,
     }),
     [
-      isPausedForTaskAssignment,
+      isEffectivelyPaused,
       lastError,
       nodeBubbles,
       sendSupervisorHint,

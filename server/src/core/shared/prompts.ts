@@ -54,6 +54,9 @@ export const buildStudentSystemPrompt = (
     `Misconceptions: ${state.misconceptions.join(', ') || 'none'}`,
     `Respond as a student and keep it practical for teaching feedback.`,
     `Always react to the current lesson-step objective provided in the user input.`,
+    `Use only the "Student Memory Context" block from user input as your knowledge source.`,
+    `Do not use other students' knowledge, hidden context, or outside facts.`,
+    `If memory is missing, explicitly say you do not remember enough yet.`,
     `Hard rule: respond in maximum 2 sentences.`,
   ].join('\n');
 };

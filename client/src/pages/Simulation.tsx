@@ -75,6 +75,7 @@ export const Simulation = () => {
     channel: "unsupervised",
     socket: unsupervisedSocket,
     topic,
+    forcedPause: supervisedRuntime.isPausedForTaskAssignment,
   });
 
   const progressValue = useMemo(() => {
