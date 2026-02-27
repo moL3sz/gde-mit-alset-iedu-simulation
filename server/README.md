@@ -1,6 +1,6 @@
 # Server API (Agent Mode)
 
-Production-oriented Express + TypeScript API for classroom simulation and debate coaching with deterministic mock LLM fallback.
+Production-oriented Express + TypeScript API for classroom simulation and teacher-led debate practice with deterministic mock LLM fallback.
 
 ## Quick start
 

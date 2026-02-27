@@ -1,15 +1,13 @@
 export type SessionMode = 'classroom' | 'debate';
 
 export type AgentKind =
+  | 'teacher'
   | 'student_fast'
   | 'student_esl'
   | 'student_distracted'
-  | 'student_emotional'
-  | 'observer'
-  | 'debate_coach'
-  | 'judge';
+  | 'student_emotional';
 
-export type TurnRole = 'teacher' | 'user' | 'agent' | 'observer' | 'coach' | 'judge' | 'system';
+export type TurnRole = 'teacher' | 'user' | 'agent' | 'system';
 
 export type SessionEventType =
   | 'session_created'
@@ -24,10 +22,7 @@ export type SessionEventType =
 export type CommunicationNodeKind =
   | 'teacher'
   | 'student'
-  | 'observer'
   | 'user'
-  | 'coach'
-  | 'judge'
   | 'system';
 
 export type RelationshipQuality = 'good' | 'neutral' | 'bad';
@@ -37,10 +32,8 @@ export type InteractionType =
   | 'teacher_to_student'
   | 'student_to_teacher'
   | 'student_to_student'
-  | 'observer_to_teacher'
-  | 'user_to_coach'
-  | 'coach_to_user'
-  | 'judge_to_user';
+  | 'user_to_teacher'
+  | 'teacher_to_user';
 
 export interface StudentRelationshipOverride {
   fromStudentId: string;
@@ -89,7 +82,6 @@ export interface CommunicationGraph {
 export interface ClassroomModeConfig {
   minResponders?: number;
   maxResponders?: number;
-  observerEnabled?: boolean;
   relationshipOverrides?: StudentRelationshipOverride[];
 }
 

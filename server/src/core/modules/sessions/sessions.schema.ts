@@ -9,7 +9,6 @@ export const createSessionSchema = z.object({
         .object({
           minResponders: z.coerce.number().int().min(1).max(4).optional(),
           maxResponders: z.coerce.number().int().min(1).max(4).optional(),
-          observerEnabled: z.boolean().optional(),
           relationshipOverrides: z
             .array(
               z.object({
