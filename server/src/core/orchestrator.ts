@@ -515,27 +515,25 @@ export class Orchestrator {
     ]
       .filter((line): line is string => Boolean(line))
       .join('\n');
-    const studentInputById = new Map<string, { prompt: string; memoryLines: string[] }>();
+    const studentInputById = new Map<
+      string,
+      { prompt: string; memoryLines: string[]; stimulusText: string }
+    >();
 
     for (const profile of selectedStudents) {
       const memoryLines = this.buildStudentMemoryLines(
         session,
         profile,
-        lessonStep,
-        phase,
         assignmentContext,
-        requestTurn.content,
       );
       const prompt = this.buildStudentClassroomInput(
         profile,
-        lessonStep,
-        phase,
         assignmentContext,
-        requestTurn.content,
         memoryLines,
       );
+      const stimulusText = this.buildStudentStimulusFromGraph(session, profile.id);
 
-      studentInputById.set(profile.id, { prompt, memoryLines });
+      studentInputById.set(profile.id, { prompt, memoryLines, stimulusText });
     }
 
     const teacherAgent = new TeacherAgent(teacherProfile);
@@ -654,16 +652,13 @@ export class Orchestrator {
               studentInput?.prompt ??
               this.buildStudentClassroomInput(
                 profile,
-                lessonStep,
-                phase,
                 assignmentContext,
-                requestTurn.content,
                 [],
               ),
             session: this.mustGetSession(sessionId),
             recentTurns: this.mustGetSession(sessionId).turns.slice(-8),
             allowedKnowledge: studentInput?.memoryLines ?? [],
-            stateStimulusText: requestTurn.content,
+            stateStimulusText: studentInput?.stimulusText ?? requestTurn.content,
           },
           {
             llm: this.llmTool,
@@ -1170,15 +1165,23 @@ export class Orchestrator {
   private buildStudentMemoryLines(
     session: Session,
     student: AgentProfile,
-    lessonStep: FractionsLessonStep,
-    phase: ClassroomPhase,
     assignmentContext: string,
-    currentInstruction: string,
   ): string[] {
-    const teacherMemory = session.turns
-      .filter((turn) => turn.role === 'teacher')
-      .slice(-6)
-      .map((turn) => `Teacher previously said: ${this.truncatePayloadText(turn.content, 170)}`);
+    const nodeLabelById = new Map(
+      session.communicationGraph.nodes.map((node) => [node.id, node.label]),
+    );
+    const directGraphMessages = session.communicationGraph.currentTurnActivations
+      .filter((activation) => activation.to === student.id)
+      .slice(-10)
+      .map((activation) => {
+        const fromLabel = nodeLabelById.get(activation.from) ?? activation.from;
+        const payloadText =
+          typeof activation.payload?.text === 'string' && activation.payload.text.trim().length > 0
+            ? this.truncatePayloadText(activation.payload.text, 180)
+            : `Action=${activation.interactionType}`;
+
+        return `Direct graph message: ${fromLabel} -> ${student.name} (${activation.interactionType}): ${payloadText}`;
+      });
     const selfMemory = session.turns
       .filter((turn) => turn.role === 'agent' && turn.agentId === student.id)
       .slice(-4)
@@ -1187,13 +1190,15 @@ export class Orchestrator {
       .slice(0, 2)
       .map((misconception) => `My known misconception: ${this.truncatePayloadText(misconception, 120)}`);
 
+    const graphInputSummary =
+      directGraphMessages.length > 0
+        ? directGraphMessages
+        : ['No direct graph message reached me this cycle.'];
+
     return [
-      `Current lesson turn ${lessonStep.turn}/${FRACTIONS_LESSON_TOTAL_TURNS}: ${lessonStep.title}`,
-      `Current classroom phase: ${phase}`,
-      `Teacher goal for this turn: ${lessonStep.deliveryGoal}`,
-      `Instruction I hear now: ${this.truncatePayloadText(currentInstruction, 170)}`,
+      `Graph-driven mode: only use direct channel messages addressed to me.`,
       `Task assignment context: ${this.truncatePayloadText(assignmentContext, 170)}`,
-      ...teacherMemory,
+      ...graphInputSummary,
       ...selfMemory,
       ...misconceptionMemory,
     ];
@@ -1201,27 +1206,38 @@ export class Orchestrator {
 
   private buildStudentClassroomInput(
     student: AgentProfile,
-    lessonStep: FractionsLessonStep,
-    phase: ClassroomPhase,
     assignmentContext: string,
-    currentInstruction: string,
     memoryLines: string[],
   ): string {
     return [
       `Live classroom loop (parallel mode): students respond in the same cycle without waiting.`,
       `You are ${student.name} (${student.kind}).`,
-      `Lesson turn: ${lessonStep.turn}/${FRACTIONS_LESSON_TOTAL_TURNS}`,
-      `Classroom phase: ${phase}`,
-      `Lesson focus: ${lessonStep.title}`,
-      `Teacher delivery goal: ${lessonStep.deliveryGoal}`,
+      `Mode: graph-driven student reasoning.`,
       `Task assignment context: ${this.truncatePayloadText(assignmentContext, 180)}`,
-      `Current classroom instruction: ${this.truncatePayloadText(currentInstruction, 180)}`,
-      `Knowledge rule: answer using only your own memory context provided in this prompt.`,
+      `Knowledge rule: answer using only direct graph messages addressed to you in Student Memory Context.`,
+      `Ignore global lesson-plan instructions unless explicitly present in your direct graph messages.`,
       memoryLines.length > 0
         ? `Memory items available for this turn: ${memoryLines.length}.`
         : `Memory items available for this turn: 0. If needed, say you do not remember enough yet.`,
-      `Respond to the teacher with one concise student action now.`,
+      `Respond to the sender (typically teacher broadcast or teacher_to_student) with one concise student action now.`,
     ].join('\n');
+  }
+
+  private buildStudentStimulusFromGraph(session: Session, studentId: string): string {
+    const texts = session.communicationGraph.currentTurnActivations
+      .filter((activation) => activation.to === studentId)
+      .map((activation) => {
+        return typeof activation.payload?.text === 'string'
+          ? activation.payload.text.trim()
+          : '';
+      })
+      .filter((value) => value.length > 0);
+
+    if (texts.length === 0) {
+      return 'No direct graph input received for this student in this cycle.';
+    }
+
+    return texts.join('\n');
   }
 
   private buildPeerMessageForGraph(studentName: string, message?: string): string {

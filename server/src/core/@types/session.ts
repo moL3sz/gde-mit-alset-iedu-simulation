@@ -1,4 +1,5 @@
 export type SessionMode = 'classroom' | 'debate';
+export type SimulationChannel = 'supervised' | 'unsupervised';
 
 export type AgentKind =
   | 'teacher'
@@ -8,6 +9,9 @@ export type AgentKind =
   | 'student_emotional';
 
 export type TurnRole = 'teacher' | 'user' | 'agent' | 'system';
+export type ClassroomPhase = 'lecture' | 'practice' | 'review';
+export type AssignmentAuthority = 'teacher_agent' | 'supervisor_user';
+export type TaskWorkMode = 'individual' | 'pair' | 'group';
 
 export type SessionEventType =
   | 'session_created'
@@ -17,7 +21,12 @@ export type SessionEventType =
   | 'agent_done'
   | 'score_update'
   | 'safety_notice'
-  | 'graph_edge_activated';
+  | 'graph_edge_activated'
+  | 'supervisor_hint_received'
+  | 'supervisor_hint_applied'
+  | 'task_assignment_required'
+  | 'task_assignment_submitted'
+  | 'task_review_completed';
 
 export type CommunicationNodeKind =
   | 'teacher'
@@ -96,6 +105,28 @@ export interface SessionConfig {
   debate?: DebateModeConfig;
 }
 
+export interface TaskGroup {
+  id: string;
+  studentIds: string[];
+}
+
+export interface TaskAssignment {
+  mode: TaskWorkMode;
+  groups: TaskGroup[];
+  assignedBy: AssignmentAuthority;
+  assignedAt: string;
+  lessonTurn: number;
+}
+
+export interface ClassroomRuntime {
+  lessonTurn: number;
+  phase: ClassroomPhase;
+  paused: boolean;
+  pendingTaskAssignment: boolean;
+  activeTaskAssignment?: TaskAssignment;
+  lastReviewTurn?: number;
+}
+
 export interface AgentState {
   attention: number;
   boredom: number;
@@ -159,10 +190,12 @@ export interface SessionMetrics {
 export interface Session {
   id: string;
   mode: SessionMode;
+  channel: SimulationChannel;
   topic: string;
   config: SessionConfig;
   agents: AgentProfile[];
   communicationGraph: CommunicationGraph;
+  classroomRuntime?: ClassroomRuntime;
   turns: Turn[];
   events: SessionEvent[];
   metrics: SessionMetrics;

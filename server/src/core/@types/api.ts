@@ -1,10 +1,15 @@
 import type {
+  AssignmentAuthority,
   AgentProfile,
+  ClassroomRuntime,
   CommunicationGraph,
   SessionConfig,
   SessionEvent,
   SessionMetrics,
+  SimulationChannel,
   SessionMode,
+  TaskGroup,
+  TaskWorkMode,
   Turn,
 } from './session';
 
@@ -12,26 +17,26 @@ export interface CreateSessionRequest {
   mode: SessionMode;
   topic: string;
   config?: SessionConfig;
-  channel?: 'supervised' | 'unsupervised';
+  channel?: SimulationChannel;
   classroomId?: number;
 }
 
 export interface CreateSessionResponse {
   sessionId: string;
   mode: SessionMode;
-  channel?: 'supervised' | 'unsupervised';
+  channel: SimulationChannel;
 }
 
 export interface GetSessionResponse {
   sessionId: string;
   mode: SessionMode;
-  channel?: 'supervised' | 'unsupervised';
+  channel: SimulationChannel;
   topic: string;
   agents: AgentProfile[];
   lastTurns: Turn[];
   metrics: SessionMetrics;
   communicationGraph: CommunicationGraph;
-  classroomRuntime?: unknown;
+  classroomRuntime?: ClassroomRuntime;
   createdAt: string;
   updatedAt: string;
 }
@@ -50,17 +55,10 @@ export interface PostTurnResponse {
 
 export interface SubmitSupervisorHintResponse {
   sessionId: string;
-  channel?: 'supervised' | 'unsupervised';
+  channel: SimulationChannel;
   hintText: string;
   createdAt: string;
   eventId?: string;
-}
-
-export type TaskWorkMode = 'individual' | 'pair' | 'group';
-
-export interface TaskGroup {
-  id: string;
-  studentIds: string[];
 }
 
 export interface SubmitTaskAssignmentRequest {
@@ -71,13 +69,13 @@ export interface SubmitTaskAssignmentRequest {
 
 export interface SubmitTaskAssignmentResponse {
   sessionId: string;
-  channel?: 'supervised' | 'unsupervised';
+  channel: SimulationChannel;
   mode: TaskWorkMode;
   groups: TaskGroup[];
-  assignedBy: 'teacher_agent' | 'supervisor_user';
+  assignedBy: AssignmentAuthority;
   createdAt: string;
   eventId?: string;
-  classroomRuntime?: unknown;
+  classroomRuntime?: ClassroomRuntime;
 }
 
 export interface HealthResponse {

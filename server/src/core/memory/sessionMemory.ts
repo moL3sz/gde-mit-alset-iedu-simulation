@@ -2,11 +2,13 @@ import { randomUUID } from 'node:crypto';
 
 import type {
   AgentProfile,
+  ClassroomRuntime,
   CommunicationGraph,
   Session,
   SessionConfig,
   SessionEvent,
   SessionMetrics,
+  SimulationChannel,
   SessionMode,
   Turn,
 } from '../@types';
@@ -16,7 +18,7 @@ export interface CreateSessionInput {
   mode: SessionMode;
   topic: string;
   config?: SessionConfig;
-  channel?: 'supervised' | 'unsupervised';
+  channel?: SimulationChannel;
   agents: AgentProfile[];
   communicationGraph: CommunicationGraph;
 }
@@ -36,7 +38,9 @@ export interface SessionMemoryStore {
   consumeSupervisorHint(sessionId: string): string | undefined;
   updateClassroomRuntime(
     sessionId: string,
-    updater: (current: unknown) => unknown,
+    updater: (
+      current: Session['classroomRuntime'] | undefined,
+    ) => Session['classroomRuntime'] | undefined,
   ): Session;
 }
 
@@ -64,36 +68,26 @@ export class SessionMemory implements SessionMemoryStore {
     const session: Session = {
       id: randomUUID(),
       mode: input.mode,
+      channel: input.channel ?? 'unsupervised',
       topic: input.topic,
       config: input.config ?? {},
       agents: input.agents,
       communicationGraph: input.communicationGraph,
+      classroomRuntime:
+        input.mode === 'classroom'
+          ? {
+              lessonTurn: 1,
+              phase: 'lecture',
+              paused: false,
+              pendingTaskAssignment: false,
+            }
+          : undefined,
       turns: [],
       events: [],
       metrics: defaultMetrics(),
       createdAt,
       updatedAt: createdAt,
     };
-    const mutableSession = session as Session & {
-      channel?: 'supervised' | 'unsupervised';
-      classroomRuntime?: {
-        lessonTurn: number;
-        phase: 'lecture' | 'practice' | 'review';
-        paused: boolean;
-        pendingTaskAssignment: boolean;
-      };
-    };
-
-    mutableSession.channel = input.channel ?? 'unsupervised';
-
-    if (input.mode === 'classroom') {
-      mutableSession.classroomRuntime = {
-        lessonTurn: 1,
-        phase: 'lecture',
-        paused: false,
-        pendingTaskAssignment: false,
-      };
-    }
 
     this.sessions.set(session.id, session);
     this.supervisorHints.set(session.id, []);
@@ -177,9 +171,11 @@ export class SessionMemory implements SessionMemoryStore {
 
   public updateClassroomRuntime(
     sessionId: string,
-    updater: (current: unknown) => unknown,
+    updater: (
+      current: Session['classroomRuntime'] | undefined,
+    ) => Session['classroomRuntime'] | undefined,
   ): Session {
-    const session = this.mustGetSession(sessionId) as Session & { classroomRuntime?: unknown };
+    const session = this.mustGetSession(sessionId);
     session.classroomRuntime = updater(session.classroomRuntime);
     session.updatedAt = nowIso();
     return session;
