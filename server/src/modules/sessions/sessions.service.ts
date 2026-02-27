@@ -135,7 +135,13 @@ export class SessionsService {
 }
 
 const memory = new SessionMemory();
-const llmTool = createLlmTool(env.LLM_API_KEY, env.LLM_MODEL);
+const llmTool = createLlmTool({
+  azureApiKey: env.AZURE_OPENAI_API_KEY,
+  azureEndpoint: env.AZURE_OPENAI_ENDPOINT,
+  azureDeployment: env.AZURE_OPENAI_DEPLOYMENT,
+  azureApiVersion: env.AZURE_OPENAI_API_VERSION,
+  model: env.LLM_MODEL,
+});
 const orchestrator = new Orchestrator(memory, llmTool);
 
 export const sessionsService = new SessionsService(orchestrator);

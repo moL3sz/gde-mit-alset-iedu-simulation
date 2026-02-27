@@ -40,7 +40,7 @@ const normalizeKnowledgeLines = (lines: string[] | undefined): string[] => {
   }
 
   return lines
-    .map((line) => toCompactLine(line, 220))
+    .map((line) => toCompactLine(line, 150))
     .filter(Boolean)
     .filter((line, index, all) => all.indexOf(line) === index);
 };
@@ -54,10 +54,10 @@ const buildFallbackKnowledgeFromRecentTurns = (recentTurns: Turn[], studentId: s
     .slice(-6)
     .map((turn) => {
       if (turn.role === 'teacher') {
-        return `Teacher said: ${toCompactLine(turn.content, 160)}`;
+        return `Teacher said: ${toCompactLine(turn.content, 110)}`;
       }
 
-      return `I said earlier: ${toCompactLine(turn.content, 160)}`;
+      return `I said earlier: ${toCompactLine(turn.content, 110)}`;
     });
 };
 
@@ -71,22 +71,33 @@ const getKnowledgeWindow = (state: AgentState): number => {
     1,
   );
 
-  return Math.max(1, Math.round(1 + memorySignal * 7));
+  return Math.max(1, Math.round(1 + memorySignal * 3));
 };
 
 const buildMemoryConstrainedPrompt = (instruction: string, knowledgeLines: string[]): string => {
   return [
-    'Student Memory Context (ONLY allowed knowledge source):',
+    'Student Memory Context (allowed knowledge):',
     ...knowledgeLines.map((line, index) => `${index + 1}. ${line}`),
     '',
-    'Current classroom task:',
+    'Task:',
     instruction,
     '',
     'Response rules:',
-    '- Use only Student Memory Context.',
-    '- If memory is not enough, explicitly say you do not remember enough yet.',
-    '- Keep response concise for a classroom simulation.',
+    '- Use only Student Memory Context and keep it concise.',
+    '- If memory is not enough, say you do not remember enough yet.',
   ].join('\n');
+};
+
+const ensureTeacherQuestion = (message: string, eslSupportNeeded: boolean): string => {
+  if (/\?/.test(message)) {
+    return message;
+  }
+
+  const question = eslSupportNeeded
+    ? 'Teacher, can you repeat that with simpler words?'
+    : 'Teacher, can you give one quick example for this?';
+
+  return limitToSentences(`${message} ${question}`, 2);
 };
 
 const updateState = (kind: AgentKind, state: AgentState, message: string): Partial<AgentState> => {
@@ -183,7 +194,19 @@ export class StudentAgent implements Agent {
     const systemPrompt = buildStudentSystemPrompt(this.kind, profile.state, context.topic);
     const explicitKnowledge = normalizeKnowledgeLines(input.allowedKnowledge);
     const fallbackKnowledge = buildFallbackKnowledgeFromRecentTurns(input.recentTurns, this.id);
-    const knowledgePool = explicitKnowledge.length > 0 ? explicitKnowledge : fallbackKnowledge;
+    const stimulusFallback = toCompactLine(
+      input.stateStimulusText ?? input.teacherOrUserMessage,
+      140,
+    );
+    const minimumDirectKnowledge = stimulusFallback
+      ? [`Direct graph message fallback: ${stimulusFallback}`]
+      : [];
+    const knowledgePool =
+      explicitKnowledge.length > 0
+        ? explicitKnowledge
+        : fallbackKnowledge.length > 0
+          ? fallbackKnowledge
+          : minimumDirectKnowledge;
     const knowledgeWindow = getKnowledgeWindow(profile.state);
     const allowedKnowledge = knowledgePool.slice(-knowledgeWindow);
 
@@ -210,9 +233,16 @@ export class StudentAgent implements Agent {
       maxTokens: 180,
     });
 
-    const message =
+    const shouldAskTeacherFollowUp =
+      allowedKnowledge.length <= 1 ||
+      profile.state.knowledgeRetention < 0.62 ||
+      profile.state.boredom > 0.56;
+    const baseMessage =
       limitToSentences(llmResult.text, 2) ||
       'I need one short clarification before I can answer this clearly.';
+    const message = shouldAskTeacherFollowUp
+      ? ensureTeacherQuestion(baseMessage, profile.state.eslSupportNeeded)
+      : baseMessage;
     context.emitToken(message.split(' ').slice(0, 6).join(' '));
 
     return {

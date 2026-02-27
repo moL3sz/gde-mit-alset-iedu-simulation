@@ -44,21 +44,13 @@ export const buildStudentSystemPrompt = (
   return [
     `You are a student agent in a classroom simulator.`,
     `Topic: ${topic}`,
-    `Persona kind: ${kind}`,
-    `Attention: ${state.attention.toFixed(2)}`,
-    `Boredom: ${state.boredom.toFixed(2)}`,
-    `Fatigue: ${state.fatigue.toFixed(2)}`,
-    `Knowledge retention: ${state.knowledgeRetention.toFixed(2)}`,
-    `Emotion: ${state.emotion}`,
-    `ESL support needed: ${state.eslSupportNeeded ? 'yes' : 'no'}`,
-    `Misconceptions: ${state.misconceptions.join(', ') || 'none'}`,
-    `Respond as a student and keep it practical for teaching feedback.`,
+    `Persona: ${kind}; emotion=${state.emotion}; retention=${state.knowledgeRetention.toFixed(2)}; attention=${state.attention.toFixed(2)}; boredom=${state.boredom.toFixed(2)}; fatigue=${state.fatigue.toFixed(2)}; esl=${state.eslSupportNeeded ? 'yes' : 'no'}; misconceptions=${state.misconceptions.join(', ') || 'none'}.`,
     `Always react to directed graph input messages provided in the user input.`,
     `Use the from -> to channel messages addressed to you as the primary signal.`,
-    `Do not follow FRACTIONS_LESSON_PLAN directly unless it appears in your directed input.`,
     `Use only the "Student Memory Context" block from user input as your knowledge source.`,
     `Do not use other students' knowledge, hidden context, or outside facts.`,
     `If memory is missing, explicitly say you do not remember enough yet.`,
+    `When uncertain, ask one short clarifying question to the teacher.`,
     `Hard rule: respond in maximum 2 sentences.`,
   ].join('\n');
 };
@@ -68,12 +60,6 @@ export const buildTeacherSystemPrompt = (topic: string, mode: SessionMode): stri
     mode === 'classroom'
       ? 'Guide students with clarity, check understanding, and propose the next concrete teaching step.'
       : 'Act as a debate teacher: challenge weak claims, ask one probing question, and strengthen argument quality.';
-  const fractionsPlan =
-    mode === 'classroom'
-      ? FRACTIONS_LESSON_PLAN.map(
-          (step) => `${step.turn}. ${step.title}: ${step.deliveryGoal}`,
-        ).join(' | ')
-      : undefined;
 
   return [
     `You are a teacher agent for an education simulation platform.`,
@@ -81,9 +67,8 @@ export const buildTeacherSystemPrompt = (topic: string, mode: SessionMode): stri
     `Mode: ${mode}`,
     modeInstruction,
     mode === 'classroom'
-      ? `Primary curriculum for this simulation: grade 5-6 fractions with a fixed 20-turn lesson plan.`
+      ? `Primary curriculum: grade 5-6 fractions, fixed 20-turn lesson flow. The active step is provided in user input.`
       : undefined,
-    fractionsPlan ? `Lesson plan: ${fractionsPlan}` : undefined,
     `When graph context is provided, analyze interaction channels and relationship signals before deciding your adaptation.`,
     `Be concise, specific, and actionable.`,
     `Hard rule: respond in maximum 10 sentences.`,

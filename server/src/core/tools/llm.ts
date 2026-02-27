@@ -10,7 +10,7 @@ export interface GenerateChatCompletionInput {
 export interface GenerateChatCompletionOutput {
   text: string;
   model: string;
-  provider: 'mock' | 'openai';
+  provider: 'mock' | 'azure_openai';
 }
 
 export interface LlmTool {
@@ -31,6 +31,11 @@ const FOLLOW_UPS = [
   'Can we compare this with an alternative strategy?',
 ];
 
+const DEFAULT_COMPLETION_TOKENS = 300;
+const MIN_COMPLETION_TOKENS = 64;
+const MAX_COMPLETION_TOKENS = 1200;
+const RECOVERY_COMPLETION_TOKENS = 220;
+
 const stableHash = (value: string): number => {
   let hash = 0;
 
@@ -39,6 +44,40 @@ const stableHash = (value: string): number => {
   }
 
   return hash;
+};
+
+const clampCompletionTokens = (requested?: number): number => {
+  if (typeof requested !== 'number' || !Number.isFinite(requested)) {
+    return DEFAULT_COMPLETION_TOKENS;
+  }
+
+  return Math.max(
+    MIN_COMPLETION_TOKENS,
+    Math.min(MAX_COMPLETION_TOKENS, Math.floor(requested)),
+  );
+};
+
+const calculateRetryTokens = (baseMaxTokens: number): number => {
+  return Math.max(
+    baseMaxTokens,
+    Math.min(
+      MAX_COMPLETION_TOKENS,
+      Math.max(baseMaxTokens + 120, Math.floor(baseMaxTokens * 1.5)),
+    ),
+  );
+};
+
+const toSingleLine = (value: string): string => {
+  return value.replace(/\s+/g, ' ').trim();
+};
+
+const truncateText = (value: string, maxLength: number): string => {
+  const normalized = toSingleLine(value);
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+
+  return `${normalized.slice(0, maxLength - 1)}…`;
 };
 
 class DeterministicMockLlmTool implements LlmTool {
@@ -58,142 +97,422 @@ class DeterministicMockLlmTool implements LlmTool {
   }
 }
 
-interface OpenAiResponsesSuccess {
+const normalizeAzureBaseUrl = (endpoint: string): string => {
+  const trimmed = endpoint.trim().replace(/\/+$/, '');
+  if (/\/openai\/v1$/i.test(trimmed)) {
+    return `${trimmed}/`;
+  }
+
+  return `${trimmed}/openai/v1/`;
+};
+
+interface OpenAiChatCompletionContentPart {
+  type?: string;
+  text?: string;
+}
+
+interface OpenAiChatCompletionResponse {
   model?: string;
-  output_text?: string;
-  output?: Array<{
-    type?: string;
-    content?: Array<{
-      type?: string;
-      text?: string;
-    }>;
+  choices?: Array<{
+    finish_reason?: string | null;
+    message?: {
+      content?: string | OpenAiChatCompletionContentPart[] | null;
+    };
   }>;
 }
 
-const extractOpenAiText = (payload: unknown): string => {
-  if (typeof payload !== 'object' || payload === null) {
+interface OpenAiClient {
+  chat: {
+    completions: {
+      create(input: {
+        model: string;
+        max_completion_tokens?: number;
+        reasoning_effort?: 'minimal' | 'low' | 'medium' | 'high';
+        messages: Array<{
+          role: 'system' | 'user' | 'developer';
+          content: string;
+        }>;
+      }): Promise<OpenAiChatCompletionResponse>;
+    };
+  };
+}
+
+interface OpenAiCtor {
+  new (config: { apiKey: string; baseURL: string; timeout?: number }): OpenAiClient;
+}
+
+const loadOpenAiCtor = (): OpenAiCtor | undefined => {
+  try {
+    const moduleValue = require('openai') as OpenAiCtor | { default?: OpenAiCtor };
+    const ctor =
+      typeof moduleValue === 'function' ? moduleValue : moduleValue.default;
+
+    if (typeof ctor === 'function') {
+      return ctor;
+    }
+
+    return undefined;
+  } catch (error: unknown) {
+    logger.warn('openai_sdk_unavailable', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return undefined;
+  }
+};
+
+const extractAzureOpenAiText = (
+  completion: OpenAiChatCompletionResponse,
+): string => {
+  const content = completion.choices?.[0]?.message?.content;
+
+  if (typeof content === 'string' && content.trim().length > 0) {
+    return content.trim();
+  }
+
+  if (!Array.isArray(content)) {
     return '';
   }
 
-  const response = payload as OpenAiResponsesSuccess;
-
-  if (typeof response.output_text === 'string' && response.output_text.trim().length > 0) {
-    return response.output_text.trim();
-  }
-
-  const chunks =
-    response.output
-      ?.flatMap((item) => item.content ?? [])
-      .map((content) => (typeof content.text === 'string' ? content.text.trim() : ''))
-      .filter(Boolean) ?? [];
+  const chunks = content
+    .map((part) => {
+      if ('type' in part && part.type === 'text' && typeof part.text === 'string') {
+        return part.text.trim();
+      }
+      return '';
+    })
+    .filter(Boolean);
 
   return chunks.join('\n').trim();
 };
 
-const extractOpenAiModel = (payload: unknown): string | undefined => {
-  if (typeof payload !== 'object' || payload === null) {
-    return undefined;
-  }
-
-  const response = payload as OpenAiResponsesSuccess;
-  if (typeof response.model === 'string' && response.model.trim().length > 0) {
-    return response.model.trim();
-  }
-
-  return undefined;
-};
-
-class OpenAiLlmTool implements LlmTool {
-  private static readonly ENDPOINT = 'https://api.openai.com/v1/responses';
+class AzureOpenAiLlmTool implements LlmTool {
+  private readonly baseUrl: string;
+  private readonly client: OpenAiClient | undefined;
 
   public constructor(
     private readonly apiKey: string,
+    endpoint: string,
+    private readonly deployment: string,
     private readonly model: string,
     private readonly fallback: LlmTool,
-  ) {}
+  ) {
+    this.baseUrl = normalizeAzureBaseUrl(endpoint);
+    const openAiCtor = loadOpenAiCtor();
+    this.client = openAiCtor
+      ? new openAiCtor({
+          apiKey,
+          baseURL: this.baseUrl,
+          timeout: 30_000,
+        })
+      : undefined;
+  }
 
   public async generateChatCompletion(
     input: GenerateChatCompletionInput,
   ): Promise<GenerateChatCompletionOutput> {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30_000);
+    if (!this.client) {
+      return this.generateWithFetch(input);
+    }
+
+    const baseMaxTokens = clampCompletionTokens(input.maxTokens);
 
     try {
-      const response = await fetch(OpenAiLlmTool.ENDPOINT, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: this.model,
-          temperature: input.temperature ?? 0.4,
-          max_output_tokens: input.maxTokens ?? 350,
-          input: [
-            {
-              role: 'system',
-              content: [{ type: 'input_text', text: input.systemPrompt }],
-            },
-            {
-              role: 'user',
-              content: [{ type: 'input_text', text: input.userPrompt }],
-            },
-          ],
-        }),
-        signal: controller.signal,
-      });
+      let completion = await this.client.chat.completions.create(
+        this.buildCompletionRequest(input, baseMaxTokens, false),
+      );
+      let text = extractAzureOpenAiText(completion);
 
-      if (!response.ok) {
-        const body = await response.text();
-        logger.warn('openai_completion_failed', {
-          status: response.status,
-          statusText: response.statusText,
-          body: body.slice(0, 500),
+      const wasLengthTruncated = completion.choices?.[0]?.finish_reason === 'length';
+      if (!text && wasLengthTruncated) {
+        const retryMaxTokens = calculateRetryTokens(baseMaxTokens);
+        logger.warn('azure_openai_completion_truncated_retry', {
+          deployment: this.deployment,
+          transport: 'openai_sdk',
+          baseMaxTokens,
+          retryMaxTokens,
         });
-        return this.fallback.generateChatCompletion(input);
+
+        completion = await this.client.chat.completions.create(
+          this.buildCompletionRequest(input, retryMaxTokens, false),
+        );
+        text = extractAzureOpenAiText(completion);
       }
 
-      const data = (await response.json()) as unknown;
-      const text = extractOpenAiText(data);
+      const stillLengthTruncated = completion.choices?.[0]?.finish_reason === 'length';
+      if (!text && stillLengthTruncated) {
+        logger.warn('azure_openai_completion_recovery_attempt', {
+          deployment: this.deployment,
+          transport: 'openai_sdk',
+          recoveryMaxTokens: RECOVERY_COMPLETION_TOKENS,
+        });
+        completion = await this.client.chat.completions.create(
+          this.buildCompletionRequest(input, RECOVERY_COMPLETION_TOKENS, true),
+        );
+        text = extractAzureOpenAiText(completion);
+      }
 
       if (!text) {
-        logger.warn('openai_completion_empty');
+        logger.warn('azure_openai_completion_empty', {
+          deployment: this.deployment,
+          finishReason: completion.choices?.[0]?.finish_reason ?? null,
+        });
         return this.fallback.generateChatCompletion(input);
       }
 
       return {
         text,
-        model: extractOpenAiModel(data) ?? this.model,
-        provider: 'openai',
+        model: completion.model?.trim() || this.model,
+        provider: 'azure_openai',
       };
     } catch (error: unknown) {
-      logger.warn('openai_completion_exception', {
+      const maybeStatus =
+        typeof (error as { status?: unknown })?.status === 'number'
+          ? (error as { status: number }).status
+          : undefined;
+      logger.warn('azure_openai_completion_failed', {
+        status: maybeStatus,
         error: error instanceof Error ? error.message : String(error),
+        deployment: this.deployment,
+        transport: 'openai_sdk',
+      });
+      return this.generateWithFetch(input);
+    }
+  }
+
+  private async generateWithFetch(
+    input: GenerateChatCompletionInput,
+  ): Promise<GenerateChatCompletionOutput> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30_000);
+    const baseMaxTokens = clampCompletionTokens(input.maxTokens);
+
+    try {
+      let response = await fetch(`${this.baseUrl}chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'api-key': this.apiKey,
+          Authorization: `Bearer ${this.apiKey}`,
+        },
+        body: JSON.stringify(this.buildCompletionRequest(input, baseMaxTokens, false)),
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        const body = await response.text();
+        logger.warn('azure_openai_completion_failed', {
+          status: response.status,
+          statusText: response.statusText,
+          body: body.slice(0, 500),
+          deployment: this.deployment,
+          transport: 'fetch',
+        });
+        return this.fallback.generateChatCompletion(input);
+      }
+
+      let completion = (await response.json()) as OpenAiChatCompletionResponse;
+      let text = extractAzureOpenAiText(completion);
+      const wasLengthTruncated = completion.choices?.[0]?.finish_reason === 'length';
+
+      if (!text && wasLengthTruncated) {
+        const retryMaxTokens = calculateRetryTokens(baseMaxTokens);
+        logger.warn('azure_openai_completion_truncated_retry', {
+          deployment: this.deployment,
+          transport: 'fetch',
+          baseMaxTokens,
+          retryMaxTokens,
+        });
+
+        response = await fetch(`${this.baseUrl}chat/completions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'api-key': this.apiKey,
+            Authorization: `Bearer ${this.apiKey}`,
+          },
+          body: JSON.stringify(this.buildCompletionRequest(input, retryMaxTokens, false)),
+          signal: controller.signal,
+        });
+
+        if (response.ok) {
+          completion = (await response.json()) as OpenAiChatCompletionResponse;
+          text = extractAzureOpenAiText(completion);
+        } else {
+          const body = await response.text();
+          logger.warn('azure_openai_completion_retry_failed', {
+            status: response.status,
+            statusText: response.statusText,
+            body: body.slice(0, 500),
+            deployment: this.deployment,
+            transport: 'fetch',
+          });
+        }
+      }
+
+      const stillLengthTruncated = completion.choices?.[0]?.finish_reason === 'length';
+      if (!text && stillLengthTruncated) {
+        logger.warn('azure_openai_completion_recovery_attempt', {
+          deployment: this.deployment,
+          transport: 'fetch',
+          recoveryMaxTokens: RECOVERY_COMPLETION_TOKENS,
+        });
+
+        response = await fetch(`${this.baseUrl}chat/completions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'api-key': this.apiKey,
+            Authorization: `Bearer ${this.apiKey}`,
+          },
+          body: JSON.stringify(
+            this.buildCompletionRequest(input, RECOVERY_COMPLETION_TOKENS, true),
+          ),
+          signal: controller.signal,
+        });
+
+        if (response.ok) {
+          completion = (await response.json()) as OpenAiChatCompletionResponse;
+          text = extractAzureOpenAiText(completion);
+        } else {
+          const body = await response.text();
+          logger.warn('azure_openai_completion_recovery_failed', {
+            status: response.status,
+            statusText: response.statusText,
+            body: body.slice(0, 500),
+            deployment: this.deployment,
+            transport: 'fetch',
+          });
+        }
+      }
+
+      if (!text) {
+        logger.warn('azure_openai_completion_empty', {
+          deployment: this.deployment,
+          transport: 'fetch',
+          finishReason: completion.choices?.[0]?.finish_reason ?? null,
+        });
+        return this.fallback.generateChatCompletion(input);
+      }
+
+      return {
+        text,
+        model: completion.model?.trim() || this.model,
+        provider: 'azure_openai',
+      };
+    } catch (error: unknown) {
+      logger.warn('azure_openai_completion_failed', {
+        error: error instanceof Error ? error.message : String(error),
+        deployment: this.deployment,
+        transport: 'fetch',
       });
       return this.fallback.generateChatCompletion(input);
     } finally {
       clearTimeout(timeoutId);
     }
   }
+
+  private buildCompletionRequest(
+    input: GenerateChatCompletionInput,
+    maxTokens: number,
+    recoveryMode: boolean,
+  ): {
+    model: string;
+    max_completion_tokens: number;
+    reasoning_effort?: 'minimal';
+    messages: Array<{
+      role: 'system' | 'user' | 'developer';
+      content: string;
+    }>;
+  } {
+    const messages = recoveryMode
+      ? [
+          {
+            role: 'developer' as const,
+            content: 'Return plain text only, maximum 2 short sentences.',
+          },
+          {
+            role: 'system' as const,
+            content: truncateText(input.systemPrompt, 700),
+          },
+          {
+            role: 'user' as const,
+            content: truncateText(input.userPrompt, 900),
+          },
+        ]
+      : [
+          {
+            role: 'system' as const,
+            content: input.systemPrompt,
+          },
+          {
+            role: 'user' as const,
+            content: input.userPrompt,
+          },
+        ];
+
+    const request: {
+      model: string;
+      max_completion_tokens: number;
+      reasoning_effort?: 'minimal';
+      messages: Array<{
+        role: 'system' | 'user' | 'developer';
+        content: string;
+      }>;
+    } = {
+      model: this.deployment,
+      max_completion_tokens: clampCompletionTokens(maxTokens),
+      messages,
+    };
+
+    if (/gpt-5/i.test(this.deployment)) {
+      request.reasoning_effort = 'minimal';
+    }
+
+    return request;
+  }
 }
 
-export const createLlmTool = (
-  apiKey?: string,
-  model = 'gpt-4.1-mini',
-): LlmTool => {
+export interface CreateLlmToolInput {
+  azureApiKey?: string;
+  azureEndpoint?: string;
+  azureDeployment?: string;
+  azureApiVersion?: string;
+  model?: string;
+}
+
+export const createLlmTool = (input: CreateLlmToolInput): LlmTool => {
   const fallback = new DeterministicMockLlmTool();
 
-  if (!apiKey) {
+  if (!input.azureApiKey || !input.azureEndpoint || !input.azureDeployment) {
     return fallback;
   }
 
-  return new OpenAiLlmTool(apiKey, model, fallback);
+  return new AzureOpenAiLlmTool(
+    input.azureApiKey,
+    input.azureEndpoint,
+    input.azureDeployment,
+    input.model ?? 'gpt-5-mini',
+    fallback,
+  );
 };
 
 export const createDeterministicMockLlmTool = (): LlmTool => {
   return new DeterministicMockLlmTool();
 };
 
-export const createOpenAiLlmTool = (apiKey: string, model = 'gpt-4.1-mini'): LlmTool => {
-  return new OpenAiLlmTool(apiKey, model, new DeterministicMockLlmTool());
+export const createAzureOpenAiLlmTool = (
+  azureApiKey: string,
+  azureEndpoint: string,
+  azureDeployment: string,
+  options?: {
+    model?: string;
+  },
+): LlmTool => {
+  return new AzureOpenAiLlmTool(
+    azureApiKey,
+    azureEndpoint,
+    azureDeployment,
+    options?.model ?? 'gpt-5-mini',
+    new DeterministicMockLlmTool(),
+  );
 };

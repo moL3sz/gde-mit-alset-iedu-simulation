@@ -2,6 +2,8 @@
 
 Production-oriented Express + TypeScript API for classroom simulation and teacher-led debate practice with deterministic mock LLM fallback.
 
+Uses Azure OpenAI for model calls when Azure env vars are configured (`AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_DEPLOYMENT`).
+
 ## Quick start
 
 ```bash

@@ -46,6 +46,7 @@ import { applySafetyGuards } from './tools/safety';
 const TEACHER_AGENT_ID = 'teacher';
 const PRACTICE_PHASE_START_TURN = Math.ceil(FRACTIONS_LESSON_TOTAL_TURNS / 3) + 1;
 const REVIEW_PHASE_START_TURN = Math.ceil((FRACTIONS_LESSON_TOTAL_TURNS * 2) / 3) + 1;
+const STUDENT_TO_STUDENT_BOREDOM_THRESHOLD = 0.42;
 
 const nowIso = (): string => new Date().toISOString();
 
@@ -487,7 +488,7 @@ export class Orchestrator {
           Boolean(turn.agentId) &&
           selectedStudents.some((student) => student.id === turn.agentId),
       )
-      .slice(-Math.max(4, selectedStudents.length))
+      .slice(-Math.max(2, selectedStudents.length))
       .map((turn) => {
         const student = selectedStudents.find((candidate) => candidate.id === turn.agentId);
         return `${student?.name ?? turn.agentId}: ${turn.content}`;
@@ -517,7 +518,7 @@ export class Orchestrator {
       .join('\n');
     const studentInputById = new Map<
       string,
-      { prompt: string; memoryLines: string[]; stimulusText: string }
+      { prompt: string; memoryLines: string[]; allowedKnowledge: string[]; stimulusText: string }
     >();
 
     for (const profile of selectedStudents) {
@@ -532,8 +533,14 @@ export class Orchestrator {
         memoryLines,
       );
       const stimulusText = this.buildStudentStimulusFromGraph(session, profile.id);
+      const allowedKnowledge = this.buildAllowedKnowledgeFromGraphMemory(
+        profile,
+        memoryLines,
+        stimulusText,
+        requestTurn.content,
+      );
 
-      studentInputById.set(profile.id, { prompt, memoryLines, stimulusText });
+      studentInputById.set(profile.id, { prompt, memoryLines, allowedKnowledge, stimulusText });
     }
 
     const teacherAgent = new TeacherAgent(teacherProfile);
@@ -657,7 +664,7 @@ export class Orchestrator {
               ),
             session: this.mustGetSession(sessionId),
             recentTurns: this.mustGetSession(sessionId).turns.slice(-8),
-            allowedKnowledge: studentInput?.memoryLines ?? [],
+            allowedKnowledge: studentInput?.allowedKnowledge ?? [],
             stateStimulusText: studentInput?.stimulusText ?? requestTurn.content,
           },
           {
@@ -739,6 +746,13 @@ export class Orchestrator {
       throw new AppError(500, `Parallel classroom loop failed: ${String(firstFailure.reason)}`);
     }
 
+    const latestSession = this.mustGetSession(sessionId);
+    const latestStudentById = new Map(
+      latestSession.agents
+        .filter((agent) => isStudentKind(agent.kind))
+        .map((agent) => [agent.id, agent]),
+    );
+
     for (let index = 0; index < selectedStudents.length; index += 1) {
       for (let nested = index + 1; nested < selectedStudents.length; nested += 1) {
         const left = selectedStudents[index];
@@ -748,24 +762,34 @@ export class Orchestrator {
           continue;
         }
 
-        this.activateGraphEdgeWithEvent(sessionId, requestTurn.id, eventCollector, {
-          from: left.id,
-          to: right.id,
-          interactionType: 'student_to_student',
-          payload: {
-            actionType: 'student_to_student',
-            text: this.buildPeerMessageForGraph(left.name, studentMessages.get(left.id)),
-          },
-        });
-        this.activateGraphEdgeWithEvent(sessionId, requestTurn.id, eventCollector, {
-          from: right.id,
-          to: left.id,
-          interactionType: 'student_to_student',
-          payload: {
-            actionType: 'student_to_student',
-            text: this.buildPeerMessageForGraph(right.name, studentMessages.get(right.id)),
-          },
-        });
+        const leftState = latestStudentById.get(left.id)?.state;
+        const rightState = latestStudentById.get(right.id)?.state;
+
+        if (leftState && leftState.boredom <= STUDENT_TO_STUDENT_BOREDOM_THRESHOLD) {
+          this.activateGraphEdgeWithEvent(sessionId, requestTurn.id, eventCollector, {
+            from: left.id,
+            to: right.id,
+            interactionType: 'student_to_student',
+            payload: {
+              actionType: 'student_to_student',
+              trigger: 'low_boredom_engagement',
+              text: this.buildPeerMessageForGraph(left.name, studentMessages.get(left.id)),
+            },
+          });
+        }
+
+        if (rightState && rightState.boredom <= STUDENT_TO_STUDENT_BOREDOM_THRESHOLD) {
+          this.activateGraphEdgeWithEvent(sessionId, requestTurn.id, eventCollector, {
+            from: right.id,
+            to: left.id,
+            interactionType: 'student_to_student',
+            payload: {
+              actionType: 'student_to_student',
+              trigger: 'low_boredom_engagement',
+              text: this.buildPeerMessageForGraph(right.name, studentMessages.get(right.id)),
+            },
+          });
+        }
       }
     }
 
@@ -1172,7 +1196,7 @@ export class Orchestrator {
     );
     const directGraphMessages = session.communicationGraph.currentTurnActivations
       .filter((activation) => activation.to === student.id)
-      .slice(-10)
+      .slice(-4)
       .map((activation) => {
         const fromLabel = nodeLabelById.get(activation.from) ?? activation.from;
         const payloadText =
@@ -1184,10 +1208,10 @@ export class Orchestrator {
       });
     const selfMemory = session.turns
       .filter((turn) => turn.role === 'agent' && turn.agentId === student.id)
-      .slice(-4)
+      .slice(-2)
       .map((turn) => `I said earlier: ${this.truncatePayloadText(turn.content, 170)}`);
     const misconceptionMemory = student.state.misconceptions
-      .slice(0, 2)
+      .slice(0, 1)
       .map((misconception) => `My known misconception: ${this.truncatePayloadText(misconception, 120)}`);
 
     const graphInputSummary =
@@ -1240,6 +1264,27 @@ export class Orchestrator {
     return texts.join('\n');
   }
 
+  private buildAllowedKnowledgeFromGraphMemory(
+    student: AgentProfile,
+    memoryLines: string[],
+    stimulusText: string,
+    fallbackTeacherInput: string,
+  ): string[] {
+    const directedLines = memoryLines.filter((line) => line.startsWith('Direct graph message:'));
+    if (directedLines.length > 0) {
+      return directedLines;
+    }
+
+    const fallbackText = this.truncatePayloadText(
+      stimulusText.trim().length > 0 ? stimulusText : fallbackTeacherInput,
+      180,
+    );
+
+    return [
+      `Direct graph message: Teacher -> ${student.name} (teacher_broadcast): ${fallbackText}`,
+    ];
+  }
+
   private buildPeerMessageForGraph(studentName: string, message?: string): string {
     const cleanedName = studentName.trim() || 'Student';
     const cleanedMessage = typeof message === 'string' ? message.trim() : '';
@@ -1269,7 +1314,7 @@ export class Orchestrator {
     const relationshipSignals = session.communicationGraph.edges
       .filter((edge) => selectedNodeIds.has(edge.from) && selectedNodeIds.has(edge.to))
       .sort((left, right) => right.weight - left.weight)
-      .slice(0, 10)
+      .slice(0, 5)
       .map((edge) => {
         const from = nodeLabelById.get(edge.from) ?? edge.from;
         const to = nodeLabelById.get(edge.to) ?? edge.to;
@@ -1282,7 +1327,7 @@ export class Orchestrator {
 
     const activeChannelSignals = session.communicationGraph.currentTurnActivations
       .filter((activation) => selectedNodeIds.has(activation.from) && selectedNodeIds.has(activation.to))
-      .slice(-12)
+      .slice(-6)
       .map((activation) => {
         const from = nodeLabelById.get(activation.from) ?? activation.from;
         const to = nodeLabelById.get(activation.to) ?? activation.to;

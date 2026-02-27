@@ -18,6 +18,7 @@ export class TeacherAgent implements Agent {
       systemPrompt,
       userPrompt: input.teacherOrUserMessage,
       temperature: 0.35,
+      maxTokens: 320,
     });
 
     context.emitToken(llmResult.text.split(/\s+/).slice(0, 8).join(' '));
