@@ -1,144 +1,144 @@
 [
   {
     "name": "Peti",
-    "attention": 10,
-    "boredom": 1,
-    "emotion": 7,
+    "attention": 6,
+    "boredom": 3,
+    "emotion": 9,
     "action": "listen",
     "timestamp": "2026-03-02 08:00"
   },
   {
     "name": "Zsuzsa",
-    "attention": 10,
-    "boredom": 3,
-    "emotion": 7,
+    "attention": 9,
+    "boredom": 0,
+    "emotion": 10,
     "action": "listen",
     "timestamp": "2026-03-02 08:00"
   },
   {
     "name": "Karcsi",
-    "attention": 5,
-    "boredom": 3,
-    "emotion": 5,
+    "attention": 6,
+    "boredom": 10,
+    "emotion": 2,
     "action": "listen",
     "timestamp": "2026-03-02 08:00"
   },
   {
     "name": "Géza",
     "attention": 8,
-    "boredom": 4,
-    "emotion": 7,
+    "boredom": 3,
+    "emotion": 8,
     "action": "listen",
     "timestamp": "2026-03-02 08:00"
   },
   {
     "name": "Margó",
-    "attention": 10,
-    "boredom": 5,
+    "attention": 9,
+    "boredom": 4,
     "emotion": 4,
     "action": "listen",
     "timestamp": "2026-03-02 08:00"
   },
   {
     "name": "Sanyi",
-    "attention": 7,
-    "boredom": 5,
+    "attention": 6,
+    "boredom": 6,
     "emotion": 4,
     "action": "listen",
     "timestamp": "2026-03-02 08:00"
   },
   {
     "name": "Kristóf",
-    "attention": 10,
-    "boredom": 4,
-    "emotion": 4,
+    "attention": 7,
+    "boredom": 2,
+    "emotion": 7,
     "action": "listen",
     "timestamp": "2026-03-02 08:00"
   },
   {
     "name": "Bálint",
-    "attention": 9,
-    "boredom": 10,
-    "emotion": 0,
+    "attention": 7,
+    "boredom": 1,
+    "emotion": 7,
     "action": "listen",
     "timestamp": "2026-03-02 08:00"
   },
   {
     "name": "Adrián",
-    "attention": 9,
-    "boredom": 3,
-    "emotion": 6,
+    "attention": 8,
+    "boredom": 1,
+    "emotion": 9,
     "action": "listen",
     "timestamp": "2026-03-02 08:00"
   },
   {
     "name": "Réka",
-    "attention": 8,
-    "boredom": 6,
-    "emotion": 4,
+    "attention": 7,
+    "boredom": 9,
+    "emotion": 1,
     "action": "listen",
     "timestamp": "2026-03-02 08:00"
   },
   {
     "name": "Daniella",
-    "attention": 4,
-    "boredom": 1,
-    "emotion": 9,
-    "action": "talking",
-    "timestamp": "2026-03-02 08:00"
-  },
-  {
-    "name": "Panni",
     "attention": 5,
-    "boredom": 3,
+    "boredom": 7,
     "emotion": 5,
     "action": "listen",
     "timestamp": "2026-03-02 08:00"
   },
   {
-    "name": "Peti",
-    "attention": 7,
+    "name": "Panni",
+    "attention": 5,
     "boredom": 6,
-    "emotion": 4,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:00"
+  },
+  {
+    "name": "Peti",
+    "attention": 9,
+    "boredom": 4,
+    "emotion": 8,
     "action": "listen",
     "timestamp": "2026-03-02 08:01"
   },
   {
     "name": "Zsuzsa",
-    "attention": 5,
-    "boredom": 3,
-    "emotion": 9,
+    "attention": 7,
+    "boredom": 9,
+    "emotion": 0,
     "action": "listen",
     "timestamp": "2026-03-02 08:01"
   },
   {
     "name": "Karcsi",
     "attention": 10,
-    "boredom": 5,
-    "emotion": 4,
+    "boredom": 1,
+    "emotion": 7,
     "action": "listen",
     "timestamp": "2026-03-02 08:01"
   },
   {
     "name": "Géza",
     "attention": 10,
-    "boredom": 7,
-    "emotion": 4,
+    "boredom": 3,
+    "emotion": 7,
     "action": "listen",
     "timestamp": "2026-03-02 08:01"
   },
   {
     "name": "Margó",
-    "attention": 10,
-    "boredom": 7,
-    "emotion": 2,
+    "attention": 5,
+    "boredom": 3,
+    "emotion": 5,
     "action": "listen",
     "timestamp": "2026-03-02 08:01"
   },
   {
     "name": "Sanyi",
-    "attention": 7,
-    "boredom": 2,
+    "attention": 8,
+    "boredom": 4,
     "emotion": 7,
     "action": "listen",
     "timestamp": "2026-03-02 08:01"
@@ -146,7 +146,7 @@
   {
     "name": "Kristóf",
     "attention": 10,
-    "boredom": 8,
+    "boredom": 5,
     "emotion": 4,
     "action": "listen",
     "timestamp": "2026-03-02 08:01"
@@ -154,2234 +154,314 @@
   {
     "name": "Bálint",
     "attention": 7,
-    "boredom": 9,
-    "emotion": 2,
+    "boredom": 5,
+    "emotion": 4,
     "action": "listen",
     "timestamp": "2026-03-02 08:01"
   },
   {
     "name": "Adrián",
-    "attention": 4,
-    "boredom": 6,
+    "attention": 5,
+    "boredom": 4,
     "emotion": 4,
     "action": "doesn't listen",
     "timestamp": "2026-03-02 08:01"
   },
   {
     "name": "Réka",
+    "attention": 9,
+    "boredom": 10,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:01"
+  },
+  {
+    "name": "Daniella",
+    "attention": 9,
+    "boredom": 3,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:01"
+  },
+  {
+    "name": "Panni",
+    "attention": 8,
+    "boredom": 6,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:01"
+  },
+  {
+    "name": "Peti",
+    "attention": 10,
+    "boredom": 8,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:02"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 10,
+    "boredom": 5,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:02"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 6,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:02"
+  },
+  {
+    "name": "Géza",
+    "attention": 8,
+    "boredom": 4,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:02"
+  },
+  {
+    "name": "Margó",
+    "attention": 6,
+    "boredom": 9,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:02"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 6,
+    "boredom": 10,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:02"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 8,
+    "boredom": 10,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:02"
+  },
+  {
+    "name": "Bálint",
+    "attention": 6,
+    "boredom": 4,
+    "emotion": 5,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:02"
+  },
+  {
+    "name": "Adrián",
+    "attention": 6,
+    "boredom": 8,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:02"
+  },
+  {
+    "name": "Réka",
+    "attention": 7,
+    "boredom": 9,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:02"
+  },
+  {
+    "name": "Daniella",
+    "attention": 9,
+    "boredom": 6,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:02"
+  },
+  {
+    "name": "Panni",
+    "attention": 6,
+    "boredom": 2,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:02"
+  },
+  {
+    "name": "Peti",
+    "attention": 7,
+    "boredom": 1,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:03"
+  },
+  {
+    "name": "Zsuzsa",
     "attention": 1,
     "boredom": 2,
-    "emotion": 10,
-    "action": "doesn't listen",
-    "timestamp": "2026-03-02 08:01"
-  },
-  {
-    "name": "Daniella",
-    "attention": 8,
-    "boredom": 1,
     "emotion": 7,
     "action": "listen",
-    "timestamp": "2026-03-02 08:01"
-  },
-  {
-    "name": "Panni",
-    "attention": 5,
-    "boredom": 2,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:01"
-  },
-  {
-    "name": "Peti",
-    "attention": 10,
-    "boredom": 6,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:02"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 5,
-    "boredom": 6,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:02"
+    "timestamp": "2026-03-02 08:03"
   },
   {
     "name": "Karcsi",
-    "attention": 9,
-    "boredom": 7,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:02"
-  },
-  {
-    "name": "Géza",
-    "attention": 7,
-    "boredom": 8,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:02"
-  },
-  {
-    "name": "Margó",
-    "attention": 10,
+    "attention": 6,
     "boredom": 1,
     "emotion": 10,
     "action": "listen",
-    "timestamp": "2026-03-02 08:02"
+    "timestamp": "2026-03-02 08:03"
   },
   {
-    "name": "Sanyi",
-    "attention": 7,
-    "boredom": 10,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:02"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 5,
-    "boredom": 4,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:02"
-  },
-  {
-    "name": "Bálint",
+    "name": "Géza",
     "attention": 6,
     "boredom": 7,
-    "emotion": 1,
+    "emotion": 5,
     "action": "listen",
-    "timestamp": "2026-03-02 08:02"
+    "timestamp": "2026-03-02 08:03"
   },
   {
-    "name": "Adrián",
-    "attention": 10,
-    "boredom": 4,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:02"
-  },
-  {
-    "name": "Réka",
-    "attention": 6,
-    "boredom": 8,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:02"
-  },
-  {
-    "name": "Daniella",
-    "attention": 10,
-    "boredom": 4,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:02"
-  },
-  {
-    "name": "Panni",
+    "name": "Margó",
     "attention": 4,
-    "boredom": 1,
+    "boredom": 0,
     "emotion": 8,
-    "action": "talking",
-    "timestamp": "2026-03-02 08:02"
-  },
-  {
-    "name": "Peti",
-    "attention": 7,
-    "boredom": 2,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:03"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 9,
-    "boredom": 0,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:03"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 7,
-    "boredom": 7,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:03"
-  },
-  {
-    "name": "Géza",
-    "attention": 5,
-    "boredom": 5,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:03"
-  },
-  {
-    "name": "Margó",
-    "attention": 6,
-    "boredom": 0,
-    "emotion": 9,
     "action": "listen",
     "timestamp": "2026-03-02 08:03"
   },
   {
     "name": "Sanyi",
-    "attention": 9,
-    "boredom": 1,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:03"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 10,
-    "boredom": 7,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:03"
-  },
-  {
-    "name": "Bálint",
-    "attention": 9,
-    "boredom": 2,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:03"
-  },
-  {
-    "name": "Adrián",
-    "attention": 10,
-    "boredom": 7,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:03"
-  },
-  {
-    "name": "Réka",
-    "attention": 6,
-    "boredom": 4,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:03"
-  },
-  {
-    "name": "Daniella",
-    "attention": 9,
-    "boredom": 6,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:03"
-  },
-  {
-    "name": "Panni",
-    "attention": 9,
-    "boredom": 3,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:03"
-  },
-  {
-    "name": "Peti",
-    "attention": 8,
-    "boredom": 10,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:04"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 8,
-    "boredom": 8,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:04"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 5,
-    "boredom": 3,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:04"
-  },
-  {
-    "name": "Géza",
-    "attention": 5,
-    "boredom": 5,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:04"
-  },
-  {
-    "name": "Margó",
-    "attention": 9,
-    "boredom": 8,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:04"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 9,
-    "boredom": 3,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:04"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 5,
-    "boredom": 10,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:04"
-  },
-  {
-    "name": "Bálint",
-    "attention": 6,
-    "boredom": 1,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:04"
-  },
-  {
-    "name": "Adrián",
-    "attention": 7,
-    "boredom": 1,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:04"
-  },
-  {
-    "name": "Réka",
-    "attention": 6,
-    "boredom": 4,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:04"
-  },
-  {
-    "name": "Daniella",
-    "attention": 6,
-    "boredom": 8,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:04"
-  },
-  {
-    "name": "Panni",
-    "attention": 10,
-    "boredom": 9,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:04"
-  },
-  {
-    "name": "Peti",
-    "attention": 10,
-    "boredom": 1,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:05"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 10,
-    "boredom": 1,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:05"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 7,
-    "boredom": 3,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:05"
-  },
-  {
-    "name": "Géza",
-    "attention": 10,
-    "boredom": 3,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:05"
-  },
-  {
-    "name": "Margó",
-    "attention": 7,
-    "boredom": 0,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:05"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 10,
-    "boredom": 2,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:05"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 8,
-    "boredom": 1,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:05"
-  },
-  {
-    "name": "Bálint",
-    "attention": 10,
-    "boredom": 1,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:05"
-  },
-  {
-    "name": "Adrián",
-    "attention": 8,
-    "boredom": 2,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:05"
-  },
-  {
-    "name": "Réka",
-    "attention": 8,
-    "boredom": 0,
-    "emotion": 10,
-    "action": "talking",
-    "timestamp": "2026-03-02 08:05"
-  },
-  {
-    "name": "Daniella",
-    "attention": 7,
-    "boredom": 0,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:05"
-  },
-  {
-    "name": "Panni",
-    "attention": 7,
-    "boredom": 0,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:05"
-  },
-  {
-    "name": "Peti",
-    "attention": 6,
-    "boredom": 6,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:06"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 8,
-    "boredom": 3,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:06"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 5,
-    "boredom": 2,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:06"
-  },
-  {
-    "name": "Géza",
-    "attention": 5,
-    "boredom": 6,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:06"
-  },
-  {
-    "name": "Margó",
-    "attention": 8,
-    "boredom": 4,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:06"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 10,
-    "boredom": 8,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:06"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 6,
-    "boredom": 3,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:06"
-  },
-  {
-    "name": "Bálint",
-    "attention": 6,
-    "boredom": 0,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:06"
-  },
-  {
-    "name": "Adrián",
-    "attention": 10,
-    "boredom": 8,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:06"
-  },
-  {
-    "name": "Réka",
-    "attention": 10,
-    "boredom": 5,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:06"
-  },
-  {
-    "name": "Daniella",
-    "attention": 5,
-    "boredom": 9,
-    "emotion": 2,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:06"
-  },
-  {
-    "name": "Panni",
-    "attention": 9,
-    "boredom": 8,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:06"
-  },
-  {
-    "name": "Peti",
-    "attention": 5,
-    "boredom": 8,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:07"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 6,
-    "boredom": 1,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:07"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 5,
-    "boredom": 10,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:07"
-  },
-  {
-    "name": "Géza",
-    "attention": 8,
-    "boredom": 1,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:07"
-  },
-  {
-    "name": "Margó",
-    "attention": 6,
-    "boredom": 9,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:07"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 5,
-    "boredom": 9,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:07"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 8,
-    "boredom": 10,
-    "emotion": 2,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:07"
-  },
-  {
-    "name": "Bálint",
-    "attention": 9,
-    "boredom": 8,
-    "emotion": 2,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:07"
-  },
-  {
-    "name": "Adrián",
-    "attention": 7,
-    "boredom": 3,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:07"
-  },
-  {
-    "name": "Réka",
-    "attention": 6,
-    "boredom": 4,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:07"
-  },
-  {
-    "name": "Daniella",
-    "attention": 6,
-    "boredom": 10,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:07"
-  },
-  {
-    "name": "Panni",
-    "attention": 8,
-    "boredom": 5,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:07"
-  },
-  {
-    "name": "Peti",
-    "attention": 5,
-    "boredom": 7,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:08"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 9,
-    "boredom": 1,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:08"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 9,
-    "boredom": 3,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:08"
-  },
-  {
-    "name": "Géza",
-    "attention": 7,
-    "boredom": 2,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:08"
-  },
-  {
-    "name": "Margó",
-    "attention": 5,
-    "boredom": 3,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:08"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 7,
-    "boredom": 2,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:08"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 9,
-    "boredom": 4,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:08"
-  },
-  {
-    "name": "Bálint",
-    "attention": 10,
-    "boredom": 8,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:08"
-  },
-  {
-    "name": "Adrián",
-    "attention": 10,
-    "boredom": 8,
-    "emotion": 2,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:08"
-  },
-  {
-    "name": "Réka",
-    "attention": 10,
-    "boredom": 1,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:08"
-  },
-  {
-    "name": "Daniella",
-    "attention": 7,
-    "boredom": 1,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:08"
-  },
-  {
-    "name": "Panni",
-    "attention": 10,
-    "boredom": 8,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:08"
-  },
-  {
-    "name": "Peti",
     "attention": 4,
-    "boredom": 4,
-    "emotion": 8,
+    "boredom": 5,
+    "emotion": 3,
     "action": "listen",
-    "timestamp": "2026-03-02 08:09"
+    "timestamp": "2026-03-02 08:03"
   },
   {
-    "name": "Zsuzsa",
+    "name": "Kristóf",
+    "attention": 4,
+    "boredom": 6,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:03"
+  },
+  {
+    "name": "Bálint",
+    "attention": 7,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:03"
+  },
+  {
+    "name": "Adrián",
+    "attention": 2,
+    "boredom": 1,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:03"
+  },
+  {
+    "name": "Réka",
     "attention": 3,
-    "boredom": 5,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:09"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 4,
-    "boredom": 7,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:09"
-  },
-  {
-    "name": "Géza",
-    "attention": 0,
-    "boredom": 1,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:09"
-  },
-  {
-    "name": "Margó",
-    "attention": 4,
-    "boredom": 0,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:09"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 5,
     "boredom": 2,
     "emotion": 8,
     "action": "listen",
-    "timestamp": "2026-03-02 08:09"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 2,
-    "boredom": 7,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:09"
-  },
-  {
-    "name": "Bálint",
-    "attention": 6,
-    "boredom": 0,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:09"
-  },
-  {
-    "name": "Adrián",
-    "attention": 1,
-    "boredom": 2,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:09"
-  },
-  {
-    "name": "Réka",
-    "attention": 0,
-    "boredom": 5,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:09"
+    "timestamp": "2026-03-02 08:03"
   },
   {
     "name": "Daniella",
     "attention": 2,
-    "boredom": 6,
-    "emotion": 3,
+    "boredom": 0,
+    "emotion": 10,
     "action": "listen",
-    "timestamp": "2026-03-02 08:09"
+    "timestamp": "2026-03-02 08:03"
   },
   {
     "name": "Panni",
-    "attention": 0,
-    "boredom": 4,
-    "emotion": 6,
+    "attention": 5,
+    "boredom": 7,
+    "emotion": 1,
     "action": "listen",
-    "timestamp": "2026-03-02 08:09"
+    "timestamp": "2026-03-02 08:03"
   },
   {
     "name": "Peti",
     "attention": 5,
     "boredom": 5,
-    "emotion": 4,
+    "emotion": 5,
     "action": "listen",
-    "timestamp": "2026-03-02 08:10"
+    "timestamp": "2026-03-02 08:04"
   },
   {
     "name": "Zsuzsa",
-    "attention": 10,
-    "boredom": 3,
-    "emotion": 5,
+    "attention": 6,
+    "boredom": 0,
+    "emotion": 9,
     "action": "listen",
-    "timestamp": "2026-03-02 08:10"
+    "timestamp": "2026-03-02 08:04"
   },
   {
     "name": "Karcsi",
-    "attention": 7,
-    "boredom": 8,
-    "emotion": 3,
+    "attention": 9,
+    "boredom": 1,
+    "emotion": 7,
     "action": "listen",
-    "timestamp": "2026-03-02 08:10"
+    "timestamp": "2026-03-02 08:04"
   },
   {
     "name": "Géza",
+    "attention": 10,
+    "boredom": 7,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:04"
+  },
+  {
+    "name": "Margó",
     "attention": 9,
     "boredom": 2,
     "emotion": 7,
     "action": "listen",
-    "timestamp": "2026-03-02 08:10"
-  },
-  {
-    "name": "Margó",
-    "attention": 6,
-    "boredom": 2,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:10"
+    "timestamp": "2026-03-02 08:04"
   },
   {
     "name": "Sanyi",
-    "attention": 5,
-    "boredom": 2,
-    "emotion": 8,
+    "attention": 10,
+    "boredom": 7,
+    "emotion": 5,
     "action": "listen",
-    "timestamp": "2026-03-02 08:10"
+    "timestamp": "2026-03-02 08:04"
   },
   {
     "name": "Kristóf",
+    "attention": 6,
+    "boredom": 4,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:04"
+  },
+  {
+    "name": "Bálint",
+    "attention": 9,
+    "boredom": 6,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:04"
+  },
+  {
+    "name": "Adrián",
+    "attention": 9,
+    "boredom": 3,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:04"
+  },
+  {
+    "name": "Réka",
     "attention": 8,
     "boredom": 10,
     "emotion": 0,
     "action": "listen",
-    "timestamp": "2026-03-02 08:10"
-  },
-  {
-    "name": "Bálint",
-    "attention": 7,
-    "boredom": 2,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:10"
-  },
-  {
-    "name": "Adrián",
-    "attention": 8,
-    "boredom": 0,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:10"
-  },
-  {
-    "name": "Réka",
-    "attention": 6,
-    "boredom": 3,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:10"
-  },
-  {
-    "name": "Daniella",
-    "attention": 2,
-    "boredom": 4,
-    "emotion": 5,
-    "action": "doesn't listen",
-    "timestamp": "2026-03-02 08:10"
-  },
-  {
-    "name": "Panni",
-    "attention": 6,
-    "boredom": 0,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:10"
-  },
-  {
-    "name": "Peti",
-    "attention": 8,
-    "boredom": 5,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:11"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 5,
-    "boredom": 4,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:11"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 10,
-    "boredom": 8,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:11"
-  },
-  {
-    "name": "Géza",
-    "attention": 10,
-    "boredom": 8,
-    "emotion": 2,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:11"
-  },
-  {
-    "name": "Margó",
-    "attention": 5,
-    "boredom": 1,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:11"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 6,
-    "boredom": 9,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:11"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 5,
-    "boredom": 1,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:11"
-  },
-  {
-    "name": "Bálint",
-    "attention": 8,
-    "boredom": 5,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:11"
-  },
-  {
-    "name": "Adrián",
-    "attention": 8,
-    "boredom": 9,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:11"
-  },
-  {
-    "name": "Réka",
-    "attention": 5,
-    "boredom": 6,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:11"
-  },
-  {
-    "name": "Daniella",
-    "attention": 6,
-    "boredom": 4,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:11"
-  },
-  {
-    "name": "Panni",
-    "attention": 10,
-    "boredom": 6,
-    "emotion": 2,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:11"
-  },
-  {
-    "name": "Peti",
-    "attention": 8,
-    "boredom": 2,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:12"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 7,
-    "boredom": 2,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:12"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 9,
-    "boredom": 0,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:12"
-  },
-  {
-    "name": "Géza",
-    "attention": 9,
-    "boredom": 3,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:12"
-  },
-  {
-    "name": "Margó",
-    "attention": 10,
-    "boredom": 2,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:12"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 8,
-    "boredom": 1,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:12"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 10,
-    "boredom": 1,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:12"
-  },
-  {
-    "name": "Bálint",
-    "attention": 9,
-    "boredom": 3,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:12"
-  },
-  {
-    "name": "Adrián",
-    "attention": 7,
-    "boredom": 2,
-    "emotion": 8,
-    "action": "talking",
-    "timestamp": "2026-03-02 08:12"
-  },
-  {
-    "name": "Réka",
-    "attention": 8,
-    "boredom": 3,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:12"
-  },
-  {
-    "name": "Daniella",
-    "attention": 9,
-    "boredom": 3,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:12"
-  },
-  {
-    "name": "Panni",
-    "attention": 10,
-    "boredom": 1,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:12"
-  },
-  {
-    "name": "Peti",
-    "attention": 10,
-    "boredom": 1,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:13"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 9,
-    "boredom": 4,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:13"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 9,
-    "boredom": 0,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:13"
-  },
-  {
-    "name": "Géza",
-    "attention": 9,
-    "boredom": 1,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:13"
-  },
-  {
-    "name": "Margó",
-    "attention": 8,
-    "boredom": 0,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:13"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 8,
-    "boredom": 3,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:13"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 7,
-    "boredom": 3,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:13"
-  },
-  {
-    "name": "Bálint",
-    "attention": 8,
-    "boredom": 3,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:13"
-  },
-  {
-    "name": "Adrián",
-    "attention": 10,
-    "boredom": 1,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:13"
-  },
-  {
-    "name": "Réka",
-    "attention": 5,
-    "boredom": 0,
-    "emotion": 8,
-    "action": "doesn't listen",
-    "timestamp": "2026-03-02 08:13"
-  },
-  {
-    "name": "Daniella",
-    "attention": 10,
-    "boredom": 1,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:13"
-  },
-  {
-    "name": "Panni",
-    "attention": 10,
-    "boredom": 0,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:13"
-  },
-  {
-    "name": "Peti",
-    "attention": 8,
-    "boredom": 0,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:14"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 8,
-    "boredom": 3,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:14"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 9,
-    "boredom": 3,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:14"
-  },
-  {
-    "name": "Géza",
-    "attention": 10,
-    "boredom": 4,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:14"
-  },
-  {
-    "name": "Margó",
-    "attention": 8,
-    "boredom": 3,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:14"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 9,
-    "boredom": 1,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:14"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 10,
-    "boredom": 1,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:14"
-  },
-  {
-    "name": "Bálint",
-    "attention": 10,
-    "boredom": 0,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:14"
-  },
-  {
-    "name": "Adrián",
-    "attention": 8,
-    "boredom": 2,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:14"
-  },
-  {
-    "name": "Réka",
-    "attention": 9,
-    "boredom": 4,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:14"
-  },
-  {
-    "name": "Daniella",
-    "attention": 8,
-    "boredom": 1,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:14"
-  },
-  {
-    "name": "Panni",
-    "attention": 10,
-    "boredom": 1,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:14"
-  },
-  {
-    "name": "Peti",
-    "attention": 7,
-    "boredom": 3,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:15"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 9,
-    "boredom": 4,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:15"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 10,
-    "boredom": 0,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:15"
-  },
-  {
-    "name": "Géza",
-    "attention": 10,
-    "boredom": 3,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:15"
-  },
-  {
-    "name": "Margó",
-    "attention": 7,
-    "boredom": 4,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:15"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 10,
-    "boredom": 0,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:15"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 9,
-    "boredom": 3,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:15"
-  },
-  {
-    "name": "Bálint",
-    "attention": 8,
-    "boredom": 3,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:15"
-  },
-  {
-    "name": "Adrián",
-    "attention": 9,
-    "boredom": 3,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:15"
-  },
-  {
-    "name": "Réka",
-    "attention": 7,
-    "boredom": 3,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:15"
-  },
-  {
-    "name": "Daniella",
-    "attention": 10,
-    "boredom": 1,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:15"
-  },
-  {
-    "name": "Panni",
-    "attention": 8,
-    "boredom": 4,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:15"
-  },
-  {
-    "name": "Peti",
-    "attention": 7,
-    "boredom": 3,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:16"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 7,
-    "boredom": 0,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:16"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 8,
-    "boredom": 3,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:16"
-  },
-  {
-    "name": "Géza",
-    "attention": 7,
-    "boredom": 2,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:16"
-  },
-  {
-    "name": "Margó",
-    "attention": 9,
-    "boredom": 1,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:16"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 9,
-    "boredom": 2,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:16"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 9,
-    "boredom": 3,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:16"
-  },
-  {
-    "name": "Bálint",
-    "attention": 7,
-    "boredom": 3,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:16"
-  },
-  {
-    "name": "Adrián",
-    "attention": 7,
-    "boredom": 2,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:16"
-  },
-  {
-    "name": "Réka",
-    "attention": 7,
-    "boredom": 0,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:16"
-  },
-  {
-    "name": "Daniella",
-    "attention": 8,
-    "boredom": 1,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:16"
-  },
-  {
-    "name": "Panni",
-    "attention": 8,
-    "boredom": 1,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:16"
-  },
-  {
-    "name": "Peti",
-    "attention": 8,
-    "boredom": 10,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:17"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 9,
-    "boredom": 3,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:17"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 10,
-    "boredom": 4,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:17"
-  },
-  {
-    "name": "Géza",
-    "attention": 6,
-    "boredom": 9,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:17"
-  },
-  {
-    "name": "Margó",
-    "attention": 10,
-    "boredom": 1,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:17"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 7,
-    "boredom": 1,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:17"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 5,
-    "boredom": 4,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:17"
-  },
-  {
-    "name": "Bálint",
-    "attention": 10,
-    "boredom": 6,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:17"
-  },
-  {
-    "name": "Adrián",
-    "attention": 5,
-    "boredom": 3,
-    "emotion": 5,
-    "action": "doesn't listen",
-    "timestamp": "2026-03-02 08:17"
-  },
-  {
-    "name": "Réka",
-    "attention": 9,
-    "boredom": 10,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:17"
-  },
-  {
-    "name": "Daniella",
-    "attention": 0,
-    "boredom": 4,
-    "emotion": 8,
-    "action": "doesn't listen",
-    "timestamp": "2026-03-02 08:17"
-  },
-  {
-    "name": "Panni",
-    "attention": 5,
-    "boredom": 9,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:17"
-  },
-  {
-    "name": "Peti",
-    "attention": 7,
-    "boredom": 8,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:18"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 10,
-    "boredom": 5,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:18"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 9,
-    "boredom": 10,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:18"
-  },
-  {
-    "name": "Géza",
-    "attention": 5,
-    "boredom": 6,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:18"
-  },
-  {
-    "name": "Margó",
-    "attention": 5,
-    "boredom": 6,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:18"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 10,
-    "boredom": 7,
-    "emotion": 2,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:18"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 8,
-    "boredom": 2,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:18"
-  },
-  {
-    "name": "Bálint",
-    "attention": 10,
-    "boredom": 4,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:18"
-  },
-  {
-    "name": "Adrián",
-    "attention": 9,
-    "boredom": 7,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:18"
-  },
-  {
-    "name": "Réka",
-    "attention": 8,
-    "boredom": 9,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:18"
-  },
-  {
-    "name": "Daniella",
-    "attention": 7,
-    "boredom": 3,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:18"
-  },
-  {
-    "name": "Panni",
-    "attention": 7,
-    "boredom": 7,
-    "emotion": 2,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:18"
-  },
-  {
-    "name": "Peti",
-    "attention": 8,
-    "boredom": 9,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:19"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 10,
-    "boredom": 6,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:19"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 5,
-    "boredom": 7,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:19"
-  },
-  {
-    "name": "Géza",
-    "attention": 6,
-    "boredom": 7,
-    "emotion": 2,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:19"
-  },
-  {
-    "name": "Margó",
-    "attention": 7,
-    "boredom": 4,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:19"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 7,
-    "boredom": 9,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:19"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 9,
-    "boredom": 0,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:19"
-  },
-  {
-    "name": "Bálint",
-    "attention": 6,
-    "boredom": 1,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:19"
-  },
-  {
-    "name": "Adrián",
-    "attention": 10,
-    "boredom": 6,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:19"
-  },
-  {
-    "name": "Réka",
-    "attention": 9,
-    "boredom": 3,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:19"
-  },
-  {
-    "name": "Daniella",
-    "attention": 10,
-    "boredom": 7,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:19"
-  },
-  {
-    "name": "Panni",
-    "attention": 5,
-    "boredom": 1,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:19"
-  },
-  {
-    "name": "Peti",
-    "attention": 6,
-    "boredom": 6,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:20"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 7,
-    "boredom": 10,
-    "emotion": 2,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:20"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 7,
-    "boredom": 7,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:20"
-  },
-  {
-    "name": "Géza",
-    "attention": 9,
-    "boredom": 5,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:20"
-  },
-  {
-    "name": "Margó",
-    "attention": 10,
-    "boredom": 8,
-    "emotion": 2,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:20"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 7,
-    "boredom": 7,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:20"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 7,
-    "boredom": 4,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:20"
-  },
-  {
-    "name": "Bálint",
-    "attention": 5,
-    "boredom": 3,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:20"
-  },
-  {
-    "name": "Adrián",
-    "attention": 5,
-    "boredom": 8,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:20"
-  },
-  {
-    "name": "Réka",
-    "attention": 6,
-    "boredom": 3,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:20"
-  },
-  {
-    "name": "Daniella",
-    "attention": 7,
-    "boredom": 9,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:20"
-  },
-  {
-    "name": "Panni",
-    "attention": 9,
-    "boredom": 4,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:20"
-  },
-  {
-    "name": "Peti",
-    "attention": 6,
-    "boredom": 4,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:21"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 7,
-    "boredom": 2,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:21"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 5,
-    "boredom": 8,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:21"
-  },
-  {
-    "name": "Géza",
-    "attention": 7,
-    "boredom": 0,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:21"
-  },
-  {
-    "name": "Margó",
-    "attention": 9,
-    "boredom": 4,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:21"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 10,
-    "boredom": 7,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:21"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 5,
-    "boredom": 9,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:21"
-  },
-  {
-    "name": "Bálint",
-    "attention": 8,
-    "boredom": 7,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:21"
-  },
-  {
-    "name": "Adrián",
-    "attention": 7,
-    "boredom": 2,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:21"
-  },
-  {
-    "name": "Réka",
-    "attention": 7,
-    "boredom": 7,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:21"
-  },
-  {
-    "name": "Daniella",
-    "attention": 0,
-    "boredom": 3,
-    "emotion": 8,
-    "action": "talking",
-    "timestamp": "2026-03-02 08:21"
-  },
-  {
-    "name": "Panni",
-    "attention": 5,
-    "boredom": 9,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:21"
-  },
-  {
-    "name": "Peti",
-    "attention": 6,
-    "boredom": 2,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:22"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 7,
-    "boredom": 1,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:22"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 5,
-    "boredom": 8,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:22"
-  },
-  {
-    "name": "Géza",
-    "attention": 9,
-    "boredom": 9,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:22"
-  },
-  {
-    "name": "Margó",
-    "attention": 6,
-    "boredom": 8,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:22"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 8,
-    "boredom": 7,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:22"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 9,
-    "boredom": 6,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:22"
-  },
-  {
-    "name": "Bálint",
-    "attention": 9,
-    "boredom": 9,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:22"
-  },
-  {
-    "name": "Adrián",
-    "attention": 9,
-    "boredom": 1,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:22"
-  },
-  {
-    "name": "Réka",
-    "attention": 10,
-    "boredom": 3,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:22"
-  },
-  {
-    "name": "Daniella",
-    "attention": 10,
-    "boredom": 1,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:22"
-  },
-  {
-    "name": "Panni",
-    "attention": 1,
-    "boredom": 2,
-    "emotion": 10,
-    "action": "doesn't listen",
-    "timestamp": "2026-03-02 08:22"
-  },
-  {
-    "name": "Peti",
-    "attention": 5,
-    "boredom": 2,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:23"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 8,
-    "boredom": 7,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:23"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 8,
-    "boredom": 4,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:23"
-  },
-  {
-    "name": "Géza",
-    "attention": 6,
-    "boredom": 4,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:23"
-  },
-  {
-    "name": "Margó",
-    "attention": 10,
-    "boredom": 7,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:23"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 10,
-    "boredom": 3,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:23"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 10,
-    "boredom": 9,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:23"
-  },
-  {
-    "name": "Bálint",
-    "attention": 8,
-    "boredom": 1,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:23"
-  },
-  {
-    "name": "Adrián",
-    "attention": 6,
-    "boredom": 10,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:23"
-  },
-  {
-    "name": "Réka",
-    "attention": 7,
-    "boredom": 2,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:23"
-  },
-  {
-    "name": "Daniella",
-    "attention": 5,
-    "boredom": 2,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:23"
-  },
-  {
-    "name": "Panni",
-    "attention": 9,
-    "boredom": 9,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:23"
-  },
-  {
-    "name": "Peti",
-    "attention": 8,
-    "boredom": 1,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:24"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 10,
-    "boredom": 4,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:24"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 7,
-    "boredom": 8,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:24"
-  },
-  {
-    "name": "Géza",
-    "attention": 8,
-    "boredom": 7,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:24"
-  },
-  {
-    "name": "Margó",
-    "attention": 9,
-    "boredom": 0,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:24"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 10,
-    "boredom": 5,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:24"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 7,
-    "boredom": 0,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:24"
-  },
-  {
-    "name": "Bálint",
-    "attention": 6,
-    "boredom": 10,
-    "emotion": 2,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:24"
-  },
-  {
-    "name": "Adrián",
-    "attention": 9,
-    "boredom": 0,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:24"
-  },
-  {
-    "name": "Réka",
-    "attention": 9,
-    "boredom": 0,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:24"
+    "timestamp": "2026-03-02 08:04"
   },
   {
     "name": "Daniella",
@@ -2389,423 +469,39 @@
     "boredom": 8,
     "emotion": 3,
     "action": "listen",
-    "timestamp": "2026-03-02 08:24"
+    "timestamp": "2026-03-02 08:04"
   },
   {
     "name": "Panni",
-    "attention": 7,
-    "boredom": 2,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:24"
-  },
-  {
-    "name": "Peti",
-    "attention": 8,
-    "boredom": 10,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:25"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 5,
-    "boredom": 7,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:25"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 8,
-    "boredom": 5,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:25"
-  },
-  {
-    "name": "Géza",
-    "attention": 10,
-    "boredom": 1,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:25"
-  },
-  {
-    "name": "Margó",
-    "attention": 7,
-    "boredom": 6,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:25"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 7,
-    "boredom": 10,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:25"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 9,
-    "boredom": 0,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:25"
-  },
-  {
-    "name": "Bálint",
-    "attention": 5,
-    "boredom": 5,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:25"
-  },
-  {
-    "name": "Adrián",
-    "attention": 7,
-    "boredom": 1,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:25"
-  },
-  {
-    "name": "Réka",
-    "attention": 9,
-    "boredom": 0,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:25"
-  },
-  {
-    "name": "Daniella",
-    "attention": 8,
-    "boredom": 6,
-    "emotion": 2,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:25"
-  },
-  {
-    "name": "Panni",
-    "attention": 6,
-    "boredom": 8,
-    "emotion": 2,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:25"
-  },
-  {
-    "name": "Peti",
-    "attention": 9,
-    "boredom": 7,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:26"
-  },
-  {
-    "name": "Zsuzsa",
     "attention": 5,
     "boredom": 3,
-    "emotion": 7,
+    "emotion": 6,
     "action": "listen",
-    "timestamp": "2026-03-02 08:26"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 9,
-    "boredom": 2,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:26"
-  },
-  {
-    "name": "Géza",
-    "attention": 8,
-    "boredom": 7,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:26"
-  },
-  {
-    "name": "Margó",
-    "attention": 5,
-    "boredom": 10,
-    "emotion": 2,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:26"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 6,
-    "boredom": 2,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:26"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 9,
-    "boredom": 0,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:26"
-  },
-  {
-    "name": "Bálint",
-    "attention": 8,
-    "boredom": 1,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:26"
-  },
-  {
-    "name": "Adrián",
-    "attention": 5,
-    "boredom": 7,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:26"
-  },
-  {
-    "name": "Réka",
-    "attention": 10,
-    "boredom": 2,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:26"
-  },
-  {
-    "name": "Daniella",
-    "attention": 10,
-    "boredom": 4,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:26"
-  },
-  {
-    "name": "Panni",
-    "attention": 10,
-    "boredom": 4,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:26"
+    "timestamp": "2026-03-02 08:04"
   },
   {
     "name": "Peti",
-    "attention": 8,
-    "boredom": 7,
-    "emotion": 2,
+    "attention": 5,
+    "boredom": 5,
+    "emotion": 3,
     "action": "listen",
-    "timestamp": "2026-03-02 08:27"
+    "timestamp": "2026-03-02 08:05"
   },
   {
     "name": "Zsuzsa",
-    "attention": 8,
+    "attention": 9,
     "boredom": 8,
     "emotion": 1,
     "action": "listen",
-    "timestamp": "2026-03-02 08:27"
+    "timestamp": "2026-03-02 08:05"
   },
   {
     "name": "Karcsi",
-    "attention": 8,
-    "boredom": 3,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:27"
-  },
-  {
-    "name": "Géza",
     "attention": 9,
-    "boredom": 2,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:27"
-  },
-  {
-    "name": "Margó",
-    "attention": 7,
-    "boredom": 6,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:27"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 9,
-    "boredom": 4,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:27"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 7,
-    "boredom": 4,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:27"
-  },
-  {
-    "name": "Bálint",
-    "attention": 9,
-    "boredom": 10,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:27"
-  },
-  {
-    "name": "Adrián",
-    "attention": 6,
-    "boredom": 7,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:27"
-  },
-  {
-    "name": "Réka",
-    "attention": 8,
-    "boredom": 5,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:27"
-  },
-  {
-    "name": "Daniella",
-    "attention": 4,
-    "boredom": 8,
-    "emotion": 3,
-    "action": "doesn't listen",
-    "timestamp": "2026-03-02 08:27"
-  },
-  {
-    "name": "Panni",
-    "attention": 8,
-    "boredom": 5,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:27"
-  },
-  {
-    "name": "Peti",
-    "attention": 8,
-    "boredom": 4,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:28"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 8,
     "boredom": 3,
     "emotion": 5,
     "action": "listen",
-    "timestamp": "2026-03-02 08:28"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 9,
-    "boredom": 3,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:28"
-  },
-  {
-    "name": "Géza",
-    "attention": 10,
-    "boredom": 1,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:28"
-  },
-  {
-    "name": "Margó",
-    "attention": 7,
-    "boredom": 1,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:28"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 9,
-    "boredom": 0,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:28"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 7,
-    "boredom": 4,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:28"
-  },
-  {
-    "name": "Bálint",
-    "attention": 7,
-    "boredom": 1,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:28"
-  },
-  {
-    "name": "Adrián",
-    "attention": 8,
-    "boredom": 0,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:28"
-  },
-  {
-    "name": "Réka",
-    "attention": 9,
-    "boredom": 2,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:28"
-  },
-  {
-    "name": "Daniella",
-    "attention": 10,
-    "boredom": 0,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:28"
-  },
-  {
-    "name": "Panni",
-    "attention": 10,
-    "boredom": 2,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:28"
-  },
-  {
-    "name": "Peti",
-    "attention": 9,
-    "boredom": 0,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:29"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 5,
-    "boredom": 3,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:29"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 6,
-    "boredom": 1,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:29"
+    "timestamp": "2026-03-02 08:05"
   },
   {
     "name": "Géza",
@@ -2813,1375 +509,223 @@
     "boredom": 10,
     "emotion": 0,
     "action": "listen",
-    "timestamp": "2026-03-02 08:29"
-  },
-  {
-    "name": "Margó",
-    "attention": 8,
-    "boredom": 2,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:29"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 5,
-    "boredom": 0,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:29"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 5,
-    "boredom": 4,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:29"
-  },
-  {
-    "name": "Bálint",
-    "attention": 7,
-    "boredom": 6,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:29"
-  },
-  {
-    "name": "Adrián",
-    "attention": 6,
-    "boredom": 8,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:29"
-  },
-  {
-    "name": "Réka",
-    "attention": 9,
-    "boredom": 10,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:29"
-  },
-  {
-    "name": "Daniella",
-    "attention": 6,
-    "boredom": 2,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:29"
-  },
-  {
-    "name": "Panni",
-    "attention": 4,
-    "boredom": 3,
-    "emotion": 9,
-    "action": "talking",
-    "timestamp": "2026-03-02 08:29"
-  },
-  {
-    "name": "Peti",
-    "attention": 10,
-    "boredom": 3,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:30"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 9,
-    "boredom": 2,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:30"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 8,
-    "boredom": 10,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:30"
-  },
-  {
-    "name": "Géza",
-    "attention": 8,
-    "boredom": 4,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:30"
-  },
-  {
-    "name": "Margó",
-    "attention": 8,
-    "boredom": 4,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:30"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 6,
-    "boredom": 1,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:30"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 7,
-    "boredom": 9,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:30"
-  },
-  {
-    "name": "Bálint",
-    "attention": 10,
-    "boredom": 6,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:30"
-  },
-  {
-    "name": "Adrián",
-    "attention": 8,
-    "boredom": 4,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:30"
-  },
-  {
-    "name": "Réka",
-    "attention": 8,
-    "boredom": 7,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:30"
-  },
-  {
-    "name": "Daniella",
-    "attention": 6,
-    "boredom": 6,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:30"
-  },
-  {
-    "name": "Panni",
-    "attention": 7,
-    "boredom": 9,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:30"
-  },
-  {
-    "name": "Peti",
-    "attention": 10,
-    "boredom": 4,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:31"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 10,
-    "boredom": 6,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:31"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 5,
-    "boredom": 9,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:31"
-  },
-  {
-    "name": "Géza",
-    "attention": 9,
-    "boredom": 7,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:31"
+    "timestamp": "2026-03-02 08:05"
   },
   {
     "name": "Margó",
     "attention": 6,
-    "boredom": 9,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:31"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 6,
-    "boredom": 10,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:31"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 9,
-    "boredom": 4,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:31"
-  },
-  {
-    "name": "Bálint",
-    "attention": 10,
     "boredom": 1,
     "emotion": 7,
     "action": "listen",
-    "timestamp": "2026-03-02 08:31"
-  },
-  {
-    "name": "Adrián",
-    "attention": 7,
-    "boredom": 7,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:31"
-  },
-  {
-    "name": "Réka",
-    "attention": 9,
-    "boredom": 5,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:31"
-  },
-  {
-    "name": "Daniella",
-    "attention": 5,
-    "boredom": 4,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:31"
-  },
-  {
-    "name": "Panni",
-    "attention": 10,
-    "boredom": 6,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:31"
-  },
-  {
-    "name": "Peti",
-    "attention": 6,
-    "boredom": 2,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:32"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 7,
-    "boredom": 8,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:32"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 7,
-    "boredom": 2,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:32"
-  },
-  {
-    "name": "Géza",
-    "attention": 8,
-    "boredom": 4,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:32"
-  },
-  {
-    "name": "Margó",
-    "attention": 5,
-    "boredom": 7,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:32"
+    "timestamp": "2026-03-02 08:05"
   },
   {
     "name": "Sanyi",
-    "attention": 6,
-    "boredom": 3,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:32"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 9,
-    "boredom": 5,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:32"
-  },
-  {
-    "name": "Bálint",
-    "attention": 8,
-    "boredom": 0,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:32"
-  },
-  {
-    "name": "Adrián",
-    "attention": 9,
+    "attention": 7,
     "boredom": 1,
     "emotion": 10,
     "action": "listen",
-    "timestamp": "2026-03-02 08:32"
+    "timestamp": "2026-03-02 08:05"
   },
   {
-    "name": "Réka",
-    "attention": 7,
-    "boredom": 10,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:32"
-  },
-  {
-    "name": "Daniella",
-    "attention": 9,
-    "boredom": 6,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:32"
-  },
-  {
-    "name": "Panni",
-    "attention": 5,
-    "boredom": 10,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:32"
-  },
-  {
-    "name": "Peti",
-    "attention": 7,
-    "boredom": 0,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:33"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 5,
-    "boredom": 3,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:33"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 7,
+    "name": "Kristóf",
+    "attention": 6,
     "boredom": 4,
     "emotion": 7,
     "action": "listen",
-    "timestamp": "2026-03-02 08:33"
-  },
-  {
-    "name": "Géza",
-    "attention": 1,
-    "boredom": 2,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:33"
-  },
-  {
-    "name": "Margó",
-    "attention": 0,
-    "boredom": 4,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:33"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 1,
-    "boredom": 1,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:33"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 2,
-    "boredom": 6,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:33"
-  },
-  {
-    "name": "Bálint",
-    "attention": 5,
-    "boredom": 6,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:33"
-  },
-  {
-    "name": "Adrián",
-    "attention": 2,
-    "boredom": 6,
-    "emotion": 2,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:33"
-  },
-  {
-    "name": "Réka",
-    "attention": 7,
-    "boredom": 6,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:33"
-  },
-  {
-    "name": "Daniella",
-    "attention": 0,
-    "boredom": 5,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:33"
-  },
-  {
-    "name": "Panni",
-    "attention": 7,
-    "boredom": 7,
-    "emotion": 2,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:33"
-  },
-  {
-    "name": "Peti",
-    "attention": 7,
-    "boredom": 1,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:34"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 9,
-    "boredom": 10,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:34"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 5,
-    "boredom": 6,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:34"
-  },
-  {
-    "name": "Géza",
-    "attention": 6,
-    "boredom": 1,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:34"
-  },
-  {
-    "name": "Margó",
-    "attention": 5,
-    "boredom": 10,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:34"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 10,
-    "boredom": 10,
-    "emotion": 2,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:34"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 5,
-    "boredom": 0,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:34"
+    "timestamp": "2026-03-02 08:05"
   },
   {
     "name": "Bálint",
     "attention": 6,
-    "boredom": 2,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:34"
-  },
-  {
-    "name": "Adrián",
-    "attention": 6,
-    "boredom": 1,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:34"
-  },
-  {
-    "name": "Réka",
-    "attention": 6,
-    "boredom": 9,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:34"
-  },
-  {
-    "name": "Daniella",
-    "attention": 6,
-    "boredom": 5,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:34"
-  },
-  {
-    "name": "Panni",
-    "attention": 4,
-    "boredom": 0,
-    "emotion": 10,
-    "action": "doesn't listen",
-    "timestamp": "2026-03-02 08:34"
-  },
-  {
-    "name": "Peti",
-    "attention": 6,
-    "boredom": 2,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:35"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 7,
-    "boredom": 2,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:35"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 10,
-    "boredom": 0,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:35"
-  },
-  {
-    "name": "Géza",
-    "attention": 5,
-    "boredom": 5,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:35"
-  },
-  {
-    "name": "Margó",
-    "attention": 9,
-    "boredom": 5,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:35"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 6,
-    "boredom": 4,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:35"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 6,
-    "boredom": 6,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:35"
-  },
-  {
-    "name": "Bálint",
-    "attention": 5,
-    "boredom": 1,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:35"
-  },
-  {
-    "name": "Adrián",
-    "attention": 8,
-    "boredom": 5,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:35"
-  },
-  {
-    "name": "Réka",
-    "attention": 9,
-    "boredom": 1,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:35"
-  },
-  {
-    "name": "Daniella",
-    "attention": 9,
-    "boredom": 3,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:35"
-  },
-  {
-    "name": "Panni",
-    "attention": 5,
-    "boredom": 10,
-    "emotion": 2,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:35"
-  },
-  {
-    "name": "Peti",
-    "attention": 7,
-    "boredom": 7,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:36"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 5,
-    "boredom": 7,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:36"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 8,
-    "boredom": 10,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:36"
-  },
-  {
-    "name": "Géza",
-    "attention": 8,
-    "boredom": 7,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:36"
-  },
-  {
-    "name": "Margó",
-    "attention": 5,
-    "boredom": 5,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:36"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 6,
-    "boredom": 1,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:36"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 7,
-    "boredom": 9,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:36"
-  },
-  {
-    "name": "Bálint",
-    "attention": 9,
-    "boredom": 5,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:36"
-  },
-  {
-    "name": "Adrián",
-    "attention": 9,
-    "boredom": 8,
-    "emotion": 2,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:36"
-  },
-  {
-    "name": "Réka",
-    "attention": 8,
-    "boredom": 8,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:36"
-  },
-  {
-    "name": "Daniella",
-    "attention": 8,
-    "boredom": 1,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:36"
-  },
-  {
-    "name": "Panni",
-    "attention": 10,
-    "boredom": 10,
-    "emotion": 2,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:36"
-  },
-  {
-    "name": "Peti",
-    "attention": 10,
-    "boredom": 3,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:37"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 8,
-    "boredom": 3,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:37"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 7,
-    "boredom": 7,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:37"
-  },
-  {
-    "name": "Géza",
-    "attention": 8,
-    "boredom": 1,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:37"
-  },
-  {
-    "name": "Margó",
-    "attention": 8,
-    "boredom": 5,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:37"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 7,
-    "boredom": 2,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:37"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 5,
-    "boredom": 1,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:37"
-  },
-  {
-    "name": "Bálint",
-    "attention": 5,
-    "boredom": 6,
-    "emotion": 2,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:37"
-  },
-  {
-    "name": "Adrián",
-    "attention": 10,
-    "boredom": 5,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:37"
-  },
-  {
-    "name": "Réka",
-    "attention": 9,
-    "boredom": 0,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:37"
-  },
-  {
-    "name": "Daniella",
-    "attention": 4,
-    "boredom": 8,
-    "emotion": 2,
-    "action": "doesn't listen",
-    "timestamp": "2026-03-02 08:37"
-  },
-  {
-    "name": "Panni",
-    "attention": 10,
-    "boredom": 1,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:37"
-  },
-  {
-    "name": "Peti",
-    "attention": 7,
-    "boredom": 10,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:38"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 10,
-    "boredom": 0,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:38"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 9,
-    "boredom": 4,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:38"
-  },
-  {
-    "name": "Géza",
-    "attention": 5,
-    "boredom": 9,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:38"
-  },
-  {
-    "name": "Margó",
-    "attention": 6,
-    "boredom": 2,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:38"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 6,
-    "boredom": 1,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:38"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 9,
-    "boredom": 5,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:38"
-  },
-  {
-    "name": "Bálint",
-    "attention": 7,
-    "boredom": 9,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:38"
-  },
-  {
-    "name": "Adrián",
-    "attention": 8,
-    "boredom": 8,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:38"
-  },
-  {
-    "name": "Réka",
-    "attention": 9,
-    "boredom": 10,
-    "emotion": 2,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:38"
-  },
-  {
-    "name": "Daniella",
-    "attention": 5,
-    "boredom": 9,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:38"
-  },
-  {
-    "name": "Panni",
-    "attention": 0,
-    "boredom": 1,
-    "emotion": 9,
-    "action": "talking",
-    "timestamp": "2026-03-02 08:38"
-  },
-  {
-    "name": "Peti",
-    "attention": 10,
-    "boredom": 4,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:39"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 7,
-    "boredom": 0,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:39"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 6,
-    "boredom": 9,
-    "emotion": 2,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:39"
-  },
-  {
-    "name": "Géza",
-    "attention": 5,
-    "boredom": 2,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:39"
-  },
-  {
-    "name": "Margó",
-    "attention": 5,
     "boredom": 8,
     "emotion": 1,
     "action": "listen",
-    "timestamp": "2026-03-02 08:39"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 8,
-    "boredom": 6,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:39"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 7,
-    "boredom": 2,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:39"
-  },
-  {
-    "name": "Bálint",
-    "attention": 7,
-    "boredom": 5,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:39"
+    "timestamp": "2026-03-02 08:05"
   },
   {
     "name": "Adrián",
-    "attention": 9,
-    "boredom": 1,
-    "emotion": 7,
+    "attention": 10,
+    "boredom": 9,
+    "emotion": 3,
     "action": "listen",
-    "timestamp": "2026-03-02 08:39"
+    "timestamp": "2026-03-02 08:05"
   },
   {
     "name": "Réka",
-    "attention": 6,
-    "boredom": 2,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:39"
-  },
-  {
-    "name": "Daniella",
-    "attention": 5,
-    "boredom": 10,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:39"
-  },
-  {
-    "name": "Panni",
-    "attention": 7,
-    "boredom": 7,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:39"
-  },
-  {
-    "name": "Peti",
     "attention": 8,
-    "boredom": 9,
-    "emotion": 2,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:40"
-  },
-  {
-    "name": "Zsuzsa",
-    "attention": 8,
-    "boredom": 4,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:40"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 9,
-    "boredom": 1,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:40"
-  },
-  {
-    "name": "Géza",
-    "attention": 8,
-    "boredom": 1,
-    "emotion": 9,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:40"
-  },
-  {
-    "name": "Margó",
-    "attention": 10,
-    "boredom": 10,
-    "emotion": 2,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:40"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 8,
-    "boredom": 8,
-    "emotion": 2,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:40"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 5,
     "boredom": 3,
     "emotion": 8,
     "action": "listen",
-    "timestamp": "2026-03-02 08:40"
-  },
-  {
-    "name": "Bálint",
-    "attention": 9,
-    "boredom": 0,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:40"
-  },
-  {
-    "name": "Adrián",
-    "attention": 6,
-    "boredom": 4,
-    "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:40"
-  },
-  {
-    "name": "Réka",
-    "attention": 6,
-    "boredom": 4,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:40"
+    "timestamp": "2026-03-02 08:05"
   },
   {
     "name": "Daniella",
-    "attention": 7,
-    "boredom": 1,
-    "emotion": 7,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:40"
-  },
-  {
-    "name": "Panni",
-    "attention": 8,
-    "boredom": 6,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:40"
-  },
-  {
-    "name": "Peti",
-    "attention": 2,
-    "boredom": 6,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:41"
-  },
-  {
-    "name": "Zsuzsa",
     "attention": 3,
-    "boredom": 5,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:41"
-  },
-  {
-    "name": "Karcsi",
-    "attention": 6,
-    "boredom": 0,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:41"
-  },
-  {
-    "name": "Géza",
-    "attention": 0,
-    "boredom": 7,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:41"
-  },
-  {
-    "name": "Margó",
-    "attention": 5,
-    "boredom": 6,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:41"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 6,
-    "boredom": 6,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:41"
-  },
-  {
-    "name": "Kristóf",
-    "attention": 1,
-    "boredom": 6,
-    "emotion": 2,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:41"
-  },
-  {
-    "name": "Bálint",
-    "attention": 5,
-    "boredom": 2,
-    "emotion": 10,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:41"
-  },
-  {
-    "name": "Adrián",
-    "attention": 7,
-    "boredom": 5,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:41"
-  },
-  {
-    "name": "Réka",
-    "attention": 6,
     "boredom": 1,
-    "emotion": 8,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:41"
-  },
-  {
-    "name": "Daniella",
-    "attention": 6,
-    "boredom": 6,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:41"
+    "emotion": 7,
+    "action": "talking",
+    "timestamp": "2026-03-02 08:05"
   },
   {
     "name": "Panni",
-    "attention": 1,
-    "boredom": 6,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:41"
+    "attention": 0,
+    "boredom": 3,
+    "emotion": 7,
+    "action": "talking",
+    "timestamp": "2026-03-02 08:05"
   },
   {
     "name": "Peti",
     "attention": 10,
-    "boredom": 5,
-    "emotion": 4,
+    "boredom": 3,
+    "emotion": 8,
     "action": "listen",
-    "timestamp": "2026-03-02 08:42"
+    "timestamp": "2026-03-02 08:06"
   },
   {
     "name": "Zsuzsa",
     "attention": 7,
-    "boredom": 2,
-    "emotion": 6,
+    "boredom": 0,
+    "emotion": 8,
     "action": "listen",
-    "timestamp": "2026-03-02 08:42"
+    "timestamp": "2026-03-02 08:06"
   },
   {
     "name": "Karcsi",
-    "attention": 9,
-    "boredom": 10,
-    "emotion": 0,
+    "attention": 10,
+    "boredom": 2,
+    "emotion": 6,
     "action": "listen",
-    "timestamp": "2026-03-02 08:42"
+    "timestamp": "2026-03-02 08:06"
   },
   {
     "name": "Géza",
-    "attention": 9,
-    "boredom": 8,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:42"
-  },
-  {
-    "name": "Margó",
-    "attention": 7,
-    "boredom": 5,
-    "emotion": 4,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:42"
-  },
-  {
-    "name": "Sanyi",
-    "attention": 6,
+    "attention": 8,
     "boredom": 1,
     "emotion": 8,
     "action": "listen",
-    "timestamp": "2026-03-02 08:42"
+    "timestamp": "2026-03-02 08:06"
+  },
+  {
+    "name": "Margó",
+    "attention": 10,
+    "boredom": 1,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:06"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 8,
+    "boredom": 2,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:06"
   },
   {
     "name": "Kristóf",
+    "attention": 8,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:06"
+  },
+  {
+    "name": "Bálint",
+    "attention": 7,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:06"
+  },
+  {
+    "name": "Adrián",
+    "attention": 7,
+    "boredom": 0,
+    "emotion": 9,
+    "action": "talking",
+    "timestamp": "2026-03-02 08:06"
+  },
+  {
+    "name": "Réka",
+    "attention": 8,
+    "boredom": 3,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:06"
+  },
+  {
+    "name": "Daniella",
+    "attention": 10,
+    "boredom": 1,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:06"
+  },
+  {
+    "name": "Panni",
+    "attention": 7,
+    "boredom": 1,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:06"
+  },
+  {
+    "name": "Peti",
     "attention": 7,
     "boredom": 3,
-    "emotion": 6,
+    "emotion": 7,
     "action": "listen",
-    "timestamp": "2026-03-02 08:42"
-  },
-  {
-    "name": "Bálint",
-    "attention": 9,
-    "boredom": 2,
-    "emotion": 6,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:42"
-  },
-  {
-    "name": "Adrián",
-    "attention": 6,
-    "boredom": 10,
-    "emotion": 1,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:42"
-  },
-  {
-    "name": "Réka",
-    "attention": 8,
-    "boredom": 9,
-    "emotion": 3,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:42"
-  },
-  {
-    "name": "Daniella",
-    "attention": 8,
-    "boredom": 10,
-    "emotion": 2,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:42"
-  },
-  {
-    "name": "Panni",
-    "attention": 10,
-    "boredom": 10,
-    "emotion": 2,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:42"
-  },
-  {
-    "name": "Peti",
-    "attention": 7,
-    "boredom": 10,
-    "emotion": 0,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:43"
+    "timestamp": "2026-03-02 08:07"
   },
   {
     "name": "Zsuzsa",
-    "attention": 6,
-    "boredom": 7,
-    "emotion": 1,
+    "attention": 10,
+    "boredom": 2,
+    "emotion": 9,
     "action": "listen",
-    "timestamp": "2026-03-02 08:43"
+    "timestamp": "2026-03-02 08:07"
   },
   {
     "name": "Karcsi",
-    "attention": 8,
-    "boredom": 7,
-    "emotion": 3,
+    "attention": 10,
+    "boredom": 1,
+    "emotion": 8,
     "action": "listen",
-    "timestamp": "2026-03-02 08:43"
+    "timestamp": "2026-03-02 08:07"
   },
   {
     "name": "Géza",
-    "attention": 7,
-    "boredom": 9,
-    "emotion": 0,
+    "attention": 9,
+    "boredom": 1,
+    "emotion": 7,
     "action": "listen",
-    "timestamp": "2026-03-02 08:43"
+    "timestamp": "2026-03-02 08:07"
   },
   {
     "name": "Margó",
     "attention": 7,
-    "boredom": 8,
-    "emotion": 0,
+    "boredom": 2,
+    "emotion": 6,
     "action": "listen",
-    "timestamp": "2026-03-02 08:43"
+    "timestamp": "2026-03-02 08:07"
   },
   {
     "name": "Sanyi",
     "attention": 7,
-    "boredom": 7,
-    "emotion": 4,
+    "boredom": 4,
+    "emotion": 7,
     "action": "listen",
-    "timestamp": "2026-03-02 08:43"
+    "timestamp": "2026-03-02 08:07"
   },
   {
     "name": "Kristóf",
-    "attention": 5,
+    "attention": 8,
     "boredom": 0,
     "emotion": 10,
     "action": "listen",
-    "timestamp": "2026-03-02 08:43"
+    "timestamp": "2026-03-02 08:07"
   },
   {
     "name": "Bálint",
@@ -4189,55 +733,1879 @@
     "boredom": 1,
     "emotion": 7,
     "action": "listen",
-    "timestamp": "2026-03-02 08:43"
+    "timestamp": "2026-03-02 08:07"
   },
   {
     "name": "Adrián",
-    "attention": 9,
-    "boredom": 9,
-    "emotion": 3,
+    "attention": 7,
+    "boredom": 1,
+    "emotion": 10,
     "action": "listen",
-    "timestamp": "2026-03-02 08:43"
+    "timestamp": "2026-03-02 08:07"
   },
   {
     "name": "Réka",
-    "attention": 8,
-    "boredom": 7,
+    "attention": 0,
+    "boredom": 4,
     "emotion": 5,
-    "action": "listen",
-    "timestamp": "2026-03-02 08:43"
+    "action": "doesn't listen",
+    "timestamp": "2026-03-02 08:07"
   },
   {
     "name": "Daniella",
-    "attention": 4,
-    "boredom": 0,
-    "emotion": 10,
-    "action": "doesn't listen",
-    "timestamp": "2026-03-02 08:43"
+    "attention": 7,
+    "boredom": 4,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:07"
   },
   {
     "name": "Panni",
-    "attention": 9,
-    "boredom": 10,
-    "emotion": 0,
+    "attention": 10,
+    "boredom": 4,
+    "emotion": 8,
     "action": "listen",
-    "timestamp": "2026-03-02 08:43"
+    "timestamp": "2026-03-02 08:07"
   },
   {
     "name": "Peti",
-    "attention": 7,
-    "boredom": 9,
-    "emotion": 2,
+    "attention": 9,
+    "boredom": 2,
+    "emotion": 7,
     "action": "listen",
-    "timestamp": "2026-03-02 08:44"
+    "timestamp": "2026-03-02 08:08"
   },
   {
     "name": "Zsuzsa",
     "attention": 9,
+    "boredom": 1,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:08"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 10,
+    "boredom": 1,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:08"
+  },
+  {
+    "name": "Géza",
+    "attention": 10,
     "boredom": 2,
     "emotion": 6,
     "action": "listen",
-    "timestamp": "2026-03-02 08:44"
+    "timestamp": "2026-03-02 08:08"
+  },
+  {
+    "name": "Margó",
+    "attention": 7,
+    "boredom": 3,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:08"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 7,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:08"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 8,
+    "boredom": 4,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:08"
+  },
+  {
+    "name": "Bálint",
+    "attention": 8,
+    "boredom": 2,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:08"
+  },
+  {
+    "name": "Adrián",
+    "attention": 8,
+    "boredom": 2,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:08"
+  },
+  {
+    "name": "Réka",
+    "attention": 8,
+    "boredom": 3,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:08"
+  },
+  {
+    "name": "Daniella",
+    "attention": 9,
+    "boredom": 4,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:08"
+  },
+  {
+    "name": "Panni",
+    "attention": 7,
+    "boredom": 4,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:08"
+  },
+  {
+    "name": "Peti",
+    "attention": 10,
+    "boredom": 1,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:09"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 7,
+    "boredom": 1,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:09"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 10,
+    "boredom": 8,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:09"
+  },
+  {
+    "name": "Géza",
+    "attention": 7,
+    "boredom": 4,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:09"
+  },
+  {
+    "name": "Margó",
+    "attention": 6,
+    "boredom": 5,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:09"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 10,
+    "boredom": 10,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:09"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 9,
+    "boredom": 7,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:09"
+  },
+  {
+    "name": "Bálint",
+    "attention": 5,
+    "boredom": 1,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:09"
+  },
+  {
+    "name": "Adrián",
+    "attention": 7,
+    "boredom": 0,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:09"
+  },
+  {
+    "name": "Réka",
+    "attention": 7,
+    "boredom": 2,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:09"
+  },
+  {
+    "name": "Daniella",
+    "attention": 6,
+    "boredom": 7,
+    "emotion": 5,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:09"
+  },
+  {
+    "name": "Panni",
+    "attention": 10,
+    "boredom": 6,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:09"
+  },
+  {
+    "name": "Peti",
+    "attention": 5,
+    "boredom": 1,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:10"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 10,
+    "boredom": 2,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:10"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 5,
+    "boredom": 5,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:10"
+  },
+  {
+    "name": "Géza",
+    "attention": 9,
+    "boredom": 2,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:10"
+  },
+  {
+    "name": "Margó",
+    "attention": 6,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:10"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 7,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:10"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 6,
+    "boredom": 10,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:10"
+  },
+  {
+    "name": "Bálint",
+    "attention": 10,
+    "boredom": 1,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:10"
+  },
+  {
+    "name": "Adrián",
+    "attention": 9,
+    "boredom": 6,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:10"
+  },
+  {
+    "name": "Réka",
+    "attention": 10,
+    "boredom": 2,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:10"
+  },
+  {
+    "name": "Daniella",
+    "attention": 6,
+    "boredom": 2,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:10"
+  },
+  {
+    "name": "Panni",
+    "attention": 5,
+    "boredom": 2,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:10"
+  },
+  {
+    "name": "Peti",
+    "attention": 8,
+    "boredom": 10,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:11"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 7,
+    "boredom": 2,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:11"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 8,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:11"
+  },
+  {
+    "name": "Géza",
+    "attention": 6,
+    "boredom": 3,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:11"
+  },
+  {
+    "name": "Margó",
+    "attention": 7,
+    "boredom": 4,
+    "emotion": 5,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:11"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 6,
+    "boredom": 0,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:11"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 8,
+    "boredom": 5,
+    "emotion": 5,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:11"
+  },
+  {
+    "name": "Bálint",
+    "attention": 5,
+    "boredom": 4,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:11"
+  },
+  {
+    "name": "Adrián",
+    "attention": 10,
+    "boredom": 8,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:11"
+  },
+  {
+    "name": "Réka",
+    "attention": 10,
+    "boredom": 8,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:11"
+  },
+  {
+    "name": "Daniella",
+    "attention": 5,
+    "boredom": 1,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:11"
+  },
+  {
+    "name": "Panni",
+    "attention": 6,
+    "boredom": 9,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:11"
+  },
+  {
+    "name": "Peti",
+    "attention": 7,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:12"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 10,
+    "boredom": 2,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:12"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 10,
+    "boredom": 4,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:12"
+  },
+  {
+    "name": "Géza",
+    "attention": 7,
+    "boredom": 3,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:12"
+  },
+  {
+    "name": "Margó",
+    "attention": 8,
+    "boredom": 2,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:12"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 10,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:12"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 8,
+    "boredom": 2,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:12"
+  },
+  {
+    "name": "Bálint",
+    "attention": 7,
+    "boredom": 2,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:12"
+  },
+  {
+    "name": "Adrián",
+    "attention": 9,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:12"
+  },
+  {
+    "name": "Réka",
+    "attention": 9,
+    "boredom": 3,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:12"
+  },
+  {
+    "name": "Daniella",
+    "attention": 10,
+    "boredom": 2,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:12"
+  },
+  {
+    "name": "Panni",
+    "attention": 8,
+    "boredom": 1,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:12"
+  },
+  {
+    "name": "Peti",
+    "attention": 10,
+    "boredom": 6,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:13"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 9,
+    "boredom": 9,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:13"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 8,
+    "boredom": 8,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:13"
+  },
+  {
+    "name": "Géza",
+    "attention": 7,
+    "boredom": 4,
+    "emotion": 5,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:13"
+  },
+  {
+    "name": "Margó",
+    "attention": 8,
+    "boredom": 9,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:13"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 10,
+    "boredom": 5,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:13"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 8,
+    "boredom": 7,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:13"
+  },
+  {
+    "name": "Bálint",
+    "attention": 9,
+    "boredom": 7,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:13"
+  },
+  {
+    "name": "Adrián",
+    "attention": 10,
+    "boredom": 1,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:13"
+  },
+  {
+    "name": "Réka",
+    "attention": 9,
+    "boredom": 10,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:13"
+  },
+  {
+    "name": "Daniella",
+    "attention": 7,
+    "boredom": 1,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:13"
+  },
+  {
+    "name": "Panni",
+    "attention": 10,
+    "boredom": 4,
+    "emotion": 5,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:13"
+  },
+  {
+    "name": "Peti",
+    "attention": 6,
+    "boredom": 2,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:14"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 5,
+    "boredom": 3,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:14"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 9,
+    "boredom": 1,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:14"
+  },
+  {
+    "name": "Géza",
+    "attention": 8,
+    "boredom": 10,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:14"
+  },
+  {
+    "name": "Margó",
+    "attention": 6,
+    "boredom": 6,
+    "emotion": 5,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:14"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 8,
+    "boredom": 3,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:14"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 10,
+    "boredom": 0,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:14"
+  },
+  {
+    "name": "Bálint",
+    "attention": 8,
+    "boredom": 3,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:14"
+  },
+  {
+    "name": "Adrián",
+    "attention": 10,
+    "boredom": 8,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:14"
+  },
+  {
+    "name": "Réka",
+    "attention": 5,
+    "boredom": 8,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:14"
+  },
+  {
+    "name": "Daniella",
+    "attention": 5,
+    "boredom": 7,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:14"
+  },
+  {
+    "name": "Panni",
+    "attention": 8,
+    "boredom": 10,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:14"
+  },
+  {
+    "name": "Peti",
+    "attention": 9,
+    "boredom": 9,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:15"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 8,
+    "boredom": 9,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:15"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 8,
+    "boredom": 8,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:15"
+  },
+  {
+    "name": "Géza",
+    "attention": 6,
+    "boredom": 7,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:15"
+  },
+  {
+    "name": "Margó",
+    "attention": 7,
+    "boredom": 3,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:15"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 9,
+    "boredom": 7,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:15"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 7,
+    "boredom": 7,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:15"
+  },
+  {
+    "name": "Bálint",
+    "attention": 10,
+    "boredom": 4,
+    "emotion": 5,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:15"
+  },
+  {
+    "name": "Adrián",
+    "attention": 7,
+    "boredom": 5,
+    "emotion": 5,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:15"
+  },
+  {
+    "name": "Réka",
+    "attention": 9,
+    "boredom": 1,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:15"
+  },
+  {
+    "name": "Daniella",
+    "attention": 6,
+    "boredom": 3,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:15"
+  },
+  {
+    "name": "Panni",
+    "attention": 10,
+    "boredom": 2,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:15"
+  },
+  {
+    "name": "Peti",
+    "attention": 5,
+    "boredom": 6,
+    "emotion": 5,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:16"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 7,
+    "boredom": 8,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:16"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 8,
+    "boredom": 0,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:16"
+  },
+  {
+    "name": "Géza",
+    "attention": 8,
+    "boredom": 6,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:16"
+  },
+  {
+    "name": "Margó",
+    "attention": 10,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:16"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 8,
+    "boredom": 7,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:16"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 7,
+    "boredom": 4,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:16"
+  },
+  {
+    "name": "Bálint",
+    "attention": 8,
+    "boredom": 8,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:16"
+  },
+  {
+    "name": "Adrián",
+    "attention": 9,
+    "boredom": 3,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:16"
+  },
+  {
+    "name": "Réka",
+    "attention": 6,
+    "boredom": 4,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:16"
+  },
+  {
+    "name": "Daniella",
+    "attention": 8,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:16"
+  },
+  {
+    "name": "Panni",
+    "attention": 7,
+    "boredom": 10,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:16"
+  },
+  {
+    "name": "Peti",
+    "attention": 10,
+    "boredom": 2,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:17"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 6,
+    "boredom": 9,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:17"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 5,
+    "boredom": 6,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:17"
+  },
+  {
+    "name": "Géza",
+    "attention": 9,
+    "boredom": 10,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:17"
+  },
+  {
+    "name": "Margó",
+    "attention": 5,
+    "boredom": 10,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:17"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 6,
+    "boredom": 7,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:17"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 5,
+    "boredom": 4,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:17"
+  },
+  {
+    "name": "Bálint",
+    "attention": 7,
+    "boredom": 3,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:17"
+  },
+  {
+    "name": "Adrián",
+    "attention": 2,
+    "boredom": 2,
+    "emotion": 9,
+    "action": "talking",
+    "timestamp": "2026-03-02 08:17"
+  },
+  {
+    "name": "Réka",
+    "attention": 7,
+    "boredom": 6,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:17"
+  },
+  {
+    "name": "Daniella",
+    "attention": 5,
+    "boredom": 7,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:17"
+  },
+  {
+    "name": "Panni",
+    "attention": 10,
+    "boredom": 8,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:17"
+  },
+  {
+    "name": "Peti",
+    "attention": 5,
+    "boredom": 3,
+    "emotion": 5,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:18"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 0,
+    "boredom": 0,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:18"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 3,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:18"
+  },
+  {
+    "name": "Géza",
+    "attention": 2,
+    "boredom": 3,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:18"
+  },
+  {
+    "name": "Margó",
+    "attention": 7,
+    "boredom": 1,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:18"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 3,
+    "boredom": 7,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:18"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 5,
+    "boredom": 2,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:18"
+  },
+  {
+    "name": "Bálint",
+    "attention": 1,
+    "boredom": 2,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:18"
+  },
+  {
+    "name": "Adrián",
+    "attention": 1,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:18"
+  },
+  {
+    "name": "Réka",
+    "attention": 6,
+    "boredom": 6,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:18"
+  },
+  {
+    "name": "Daniella",
+    "attention": 1,
+    "boredom": 3,
+    "emotion": 5,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:18"
+  },
+  {
+    "name": "Panni",
+    "attention": 4,
+    "boredom": 1,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:18"
+  },
+  {
+    "name": "Peti",
+    "attention": 5,
+    "boredom": 5,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:19"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 8,
+    "boredom": 10,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:19"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 5,
+    "boredom": 8,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:19"
+  },
+  {
+    "name": "Géza",
+    "attention": 5,
+    "boredom": 6,
+    "emotion": 5,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:19"
+  },
+  {
+    "name": "Margó",
+    "attention": 5,
+    "boredom": 6,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:19"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 10,
+    "boredom": 7,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:19"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 8,
+    "boredom": 2,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:19"
+  },
+  {
+    "name": "Bálint",
+    "attention": 10,
+    "boredom": 4,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:19"
+  },
+  {
+    "name": "Adrián",
+    "attention": 9,
+    "boredom": 7,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:19"
+  },
+  {
+    "name": "Réka",
+    "attention": 8,
+    "boredom": 9,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:19"
+  },
+  {
+    "name": "Daniella",
+    "attention": 7,
+    "boredom": 3,
+    "emotion": 5,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:19"
+  },
+  {
+    "name": "Panni",
+    "attention": 7,
+    "boredom": 7,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:19"
+  },
+  {
+    "name": "Peti",
+    "attention": 8,
+    "boredom": 9,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:20"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 10,
+    "boredom": 6,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:20"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 5,
+    "boredom": 7,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:20"
+  },
+  {
+    "name": "Géza",
+    "attention": 6,
+    "boredom": 7,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:20"
+  },
+  {
+    "name": "Margó",
+    "attention": 7,
+    "boredom": 4,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:20"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 7,
+    "boredom": 9,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:20"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 9,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:20"
+  },
+  {
+    "name": "Bálint",
+    "attention": 6,
+    "boredom": 1,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:20"
+  },
+  {
+    "name": "Adrián",
+    "attention": 10,
+    "boredom": 6,
+    "emotion": 5,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:20"
+  },
+  {
+    "name": "Réka",
+    "attention": 9,
+    "boredom": 3,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:20"
+  },
+  {
+    "name": "Daniella",
+    "attention": 10,
+    "boredom": 7,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:20"
+  },
+  {
+    "name": "Panni",
+    "attention": 5,
+    "boredom": 1,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:20"
+  },
+  {
+    "name": "Peti",
+    "attention": 8,
+    "boredom": 3,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:21"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 9,
+    "boredom": 4,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:21"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 10,
+    "boredom": 4,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:21"
+  },
+  {
+    "name": "Géza",
+    "attention": 9,
+    "boredom": 3,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:21"
+  },
+  {
+    "name": "Margó",
+    "attention": 9,
+    "boredom": 2,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:21"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 9,
+    "boredom": 2,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:21"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 8,
+    "boredom": 0,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:21"
+  },
+  {
+    "name": "Bálint",
+    "attention": 9,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:21"
+  },
+  {
+    "name": "Adrián",
+    "attention": 8,
+    "boredom": 1,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:21"
+  },
+  {
+    "name": "Réka",
+    "attention": 10,
+    "boredom": 2,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:21"
+  },
+  {
+    "name": "Daniella",
+    "attention": 9,
+    "boredom": 0,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:21"
+  },
+  {
+    "name": "Panni",
+    "attention": 9,
+    "boredom": 1,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:21"
+  },
+  {
+    "name": "Peti",
+    "attention": 6,
+    "boredom": 4,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:22"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 10,
+    "boredom": 8,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:22"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 7,
+    "boredom": 0,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:22"
+  },
+  {
+    "name": "Géza",
+    "attention": 9,
+    "boredom": 4,
+    "emotion": 5,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:22"
+  },
+  {
+    "name": "Margó",
+    "attention": 10,
+    "boredom": 7,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:22"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 5,
+    "boredom": 9,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:22"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 8,
+    "boredom": 7,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:22"
+  },
+  {
+    "name": "Bálint",
+    "attention": 7,
+    "boredom": 2,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:22"
+  },
+  {
+    "name": "Adrián",
+    "attention": 7,
+    "boredom": 7,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:22"
+  },
+  {
+    "name": "Réka",
+    "attention": 5,
+    "boredom": 6,
+    "emotion": 5,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:22"
+  },
+  {
+    "name": "Daniella",
+    "attention": 5,
+    "boredom": 9,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:22"
+  },
+  {
+    "name": "Panni",
+    "attention": 6,
+    "boredom": 2,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:22"
+  },
+  {
+    "name": "Peti",
+    "attention": 7,
+    "boredom": 1,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:23"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 5,
+    "boredom": 8,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:23"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 9,
+    "boredom": 9,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:23"
+  },
+  {
+    "name": "Géza",
+    "attention": 6,
+    "boredom": 8,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:23"
+  },
+  {
+    "name": "Margó",
+    "attention": 8,
+    "boredom": 7,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:23"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 9,
+    "boredom": 6,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:23"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 9,
+    "boredom": 9,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:23"
+  },
+  {
+    "name": "Bálint",
+    "attention": 9,
+    "boredom": 1,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:23"
+  },
+  {
+    "name": "Adrián",
+    "attention": 10,
+    "boredom": 3,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:23"
+  },
+  {
+    "name": "Réka",
+    "attention": 10,
+    "boredom": 1,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:23"
+  },
+  {
+    "name": "Daniella",
+    "attention": 6,
+    "boredom": 2,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:23"
+  },
+  {
+    "name": "Panni",
+    "attention": 5,
+    "boredom": 2,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:23"
+  },
+  {
+    "name": "Peti",
+    "attention": 8,
+    "boredom": 7,
+    "emotion": 5,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:24"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 8,
+    "boredom": 4,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:24"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 6,
+    "boredom": 4,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:24"
+  },
+  {
+    "name": "Géza",
+    "attention": 10,
+    "boredom": 7,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:24"
+  },
+  {
+    "name": "Margó",
+    "attention": 10,
+    "boredom": 3,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:24"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 10,
+    "boredom": 9,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:24"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 8,
+    "boredom": 1,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:24"
+  },
+  {
+    "name": "Bálint",
+    "attention": 6,
+    "boredom": 10,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:24"
+  },
+  {
+    "name": "Adrián",
+    "attention": 7,
+    "boredom": 2,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:24"
+  },
+  {
+    "name": "Réka",
+    "attention": 5,
+    "boredom": 2,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:24"
+  },
+  {
+    "name": "Daniella",
+    "attention": 9,
+    "boredom": 9,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:24"
+  },
+  {
+    "name": "Panni",
+    "attention": 8,
+    "boredom": 1,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:24"
+  },
+  {
+    "name": "Peti",
+    "attention": 10,
+    "boredom": 4,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:25"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 7,
+    "boredom": 8,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:25"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 8,
+    "boredom": 7,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:25"
+  },
+  {
+    "name": "Géza",
+    "attention": 9,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:25"
+  },
+  {
+    "name": "Margó",
+    "attention": 10,
+    "boredom": 5,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:25"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 7,
+    "boredom": 0,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:25"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 6,
+    "boredom": 10,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:25"
+  },
+  {
+    "name": "Bálint",
+    "attention": 9,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:25"
+  },
+  {
+    "name": "Adrián",
+    "attention": 9,
+    "boredom": 0,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:25"
+  },
+  {
+    "name": "Réka",
+    "attention": 8,
+    "boredom": 8,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:25"
+  },
+  {
+    "name": "Daniella",
+    "attention": 7,
+    "boredom": 2,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:25"
+  },
+  {
+    "name": "Panni",
+    "attention": 8,
+    "boredom": 10,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:25"
+  },
+  {
+    "name": "Peti",
+    "attention": 7,
+    "boredom": 3,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:26"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 10,
+    "boredom": 2,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:26"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 7,
+    "boredom": 1,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:26"
+  },
+  {
+    "name": "Géza",
+    "attention": 10,
+    "boredom": 3,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:26"
+  },
+  {
+    "name": "Margó",
+    "attention": 10,
+    "boredom": 4,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:26"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 10,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:26"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 9,
+    "boredom": 2,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:26"
+  },
+  {
+    "name": "Bálint",
+    "attention": 10,
+    "boredom": 4,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:26"
+  },
+  {
+    "name": "Adrián",
+    "attention": 10,
+    "boredom": 3,
+    "emotion": 5,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:26"
+  },
+  {
+    "name": "Réka",
+    "attention": 8,
+    "boredom": 4,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:26"
+  },
+  {
+    "name": "Daniella",
+    "attention": 10,
+    "boredom": 3,
+    "emotion": 5,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:26"
+  },
+  {
+    "name": "Panni",
+    "attention": 8,
+    "boredom": 2,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:26"
+  },
+  {
+    "name": "Peti",
+    "attention": 8,
+    "boredom": 2,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:27"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 10,
+    "boredom": 0,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:27"
   },
   {
     "name": "Karcsi",
@@ -4245,23 +2613,695 @@
     "boredom": 1,
     "emotion": 9,
     "action": "listen",
-    "timestamp": "2026-03-02 08:44"
+    "timestamp": "2026-03-02 08:27"
   },
   {
     "name": "Géza",
+    "attention": 7,
+    "boredom": 4,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:27"
+  },
+  {
+    "name": "Margó",
+    "attention": 7,
+    "boredom": 1,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:27"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 10,
+    "boredom": 0,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:27"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 10,
+    "boredom": 2,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:27"
+  },
+  {
+    "name": "Bálint",
+    "attention": 9,
+    "boredom": 3,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:27"
+  },
+  {
+    "name": "Adrián",
     "attention": 10,
     "boredom": 1,
     "emotion": 10,
     "action": "listen",
-    "timestamp": "2026-03-02 08:44"
+    "timestamp": "2026-03-02 08:27"
+  },
+  {
+    "name": "Réka",
+    "attention": 8,
+    "boredom": 3,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:27"
+  },
+  {
+    "name": "Daniella",
+    "attention": 8,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:27"
+  },
+  {
+    "name": "Panni",
+    "attention": 10,
+    "boredom": 2,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:27"
+  },
+  {
+    "name": "Peti",
+    "attention": 9,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:28"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 9,
+    "boredom": 4,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:28"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 10,
+    "boredom": 1,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:28"
+  },
+  {
+    "name": "Géza",
+    "attention": 10,
+    "boredom": 2,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:28"
   },
   {
     "name": "Margó",
     "attention": 10,
+    "boredom": 3,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:28"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 8,
+    "boredom": 1,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:28"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 10,
+    "boredom": 1,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:28"
+  },
+  {
+    "name": "Bálint",
+    "attention": 7,
+    "boredom": 2,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:28"
+  },
+  {
+    "name": "Adrián",
+    "attention": 10,
+    "boredom": 3,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:28"
+  },
+  {
+    "name": "Réka",
+    "attention": 10,
+    "boredom": 0,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:28"
+  },
+  {
+    "name": "Daniella",
+    "attention": 9,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:28"
+  },
+  {
+    "name": "Panni",
+    "attention": 7,
+    "boredom": 4,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:28"
+  },
+  {
+    "name": "Peti",
+    "attention": 5,
+    "boredom": 2,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:29"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 10,
     "boredom": 2,
     "emotion": 6,
     "action": "listen",
-    "timestamp": "2026-03-02 08:44"
+    "timestamp": "2026-03-02 08:29"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 8,
+    "boredom": 4,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:29"
+  },
+  {
+    "name": "Géza",
+    "attention": 9,
+    "boredom": 6,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:29"
+  },
+  {
+    "name": "Margó",
+    "attention": 7,
+    "boredom": 10,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:29"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 8,
+    "boredom": 5,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:29"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 9,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:29"
+  },
+  {
+    "name": "Bálint",
+    "attention": 5,
+    "boredom": 3,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:29"
+  },
+  {
+    "name": "Adrián",
+    "attention": 6,
+    "boredom": 1,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:29"
+  },
+  {
+    "name": "Réka",
+    "attention": 5,
+    "boredom": 10,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:29"
+  },
+  {
+    "name": "Daniella",
+    "attention": 8,
+    "boredom": 2,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:29"
+  },
+  {
+    "name": "Panni",
+    "attention": 5,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:29"
+  },
+  {
+    "name": "Peti",
+    "attention": 5,
+    "boredom": 4,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:30"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 7,
+    "boredom": 6,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:30"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 6,
+    "boredom": 8,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:30"
+  },
+  {
+    "name": "Géza",
+    "attention": 9,
+    "boredom": 10,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:30"
+  },
+  {
+    "name": "Margó",
+    "attention": 6,
+    "boredom": 2,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:30"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 9,
+    "boredom": 6,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:30"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 10,
+    "boredom": 3,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:30"
+  },
+  {
+    "name": "Bálint",
+    "attention": 9,
+    "boredom": 2,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:30"
+  },
+  {
+    "name": "Adrián",
+    "attention": 8,
+    "boredom": 10,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:30"
+  },
+  {
+    "name": "Réka",
+    "attention": 8,
+    "boredom": 4,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:30"
+  },
+  {
+    "name": "Daniella",
+    "attention": 8,
+    "boredom": 4,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:30"
+  },
+  {
+    "name": "Panni",
+    "attention": 6,
+    "boredom": 1,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:30"
+  },
+  {
+    "name": "Peti",
+    "attention": 7,
+    "boredom": 9,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:31"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 10,
+    "boredom": 6,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:31"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 8,
+    "boredom": 4,
+    "emotion": 5,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:31"
+  },
+  {
+    "name": "Géza",
+    "attention": 8,
+    "boredom": 7,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:31"
+  },
+  {
+    "name": "Margó",
+    "attention": 6,
+    "boredom": 6,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:31"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 7,
+    "boredom": 9,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:31"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 10,
+    "boredom": 4,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:31"
+  },
+  {
+    "name": "Bálint",
+    "attention": 10,
+    "boredom": 6,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:31"
+  },
+  {
+    "name": "Adrián",
+    "attention": 5,
+    "boredom": 9,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:31"
+  },
+  {
+    "name": "Réka",
+    "attention": 9,
+    "boredom": 7,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:31"
+  },
+  {
+    "name": "Daniella",
+    "attention": 6,
+    "boredom": 9,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:31"
+  },
+  {
+    "name": "Panni",
+    "attention": 6,
+    "boredom": 10,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:31"
+  },
+  {
+    "name": "Peti",
+    "attention": 9,
+    "boredom": 4,
+    "emotion": 5,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:32"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 10,
+    "boredom": 1,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:32"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 7,
+    "boredom": 7,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:32"
+  },
+  {
+    "name": "Géza",
+    "attention": 9,
+    "boredom": 5,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:32"
+  },
+  {
+    "name": "Margó",
+    "attention": 5,
+    "boredom": 4,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:32"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 10,
+    "boredom": 6,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:32"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 6,
+    "boredom": 2,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:32"
+  },
+  {
+    "name": "Bálint",
+    "attention": 7,
+    "boredom": 8,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:32"
+  },
+  {
+    "name": "Adrián",
+    "attention": 7,
+    "boredom": 2,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:32"
+  },
+  {
+    "name": "Réka",
+    "attention": 8,
+    "boredom": 4,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:32"
+  },
+  {
+    "name": "Daniella",
+    "attention": 5,
+    "boredom": 7,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:32"
+  },
+  {
+    "name": "Panni",
+    "attention": 6,
+    "boredom": 3,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:32"
+  },
+  {
+    "name": "Peti",
+    "attention": 5,
+    "boredom": 1,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:33"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 0,
+    "boredom": 4,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:33"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 1,
+    "boredom": 7,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:33"
+  },
+  {
+    "name": "Géza",
+    "attention": 4,
+    "boredom": 6,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:33"
+  },
+  {
+    "name": "Margó",
+    "attention": 1,
+    "boredom": 3,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:33"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 0,
+    "boredom": 5,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:33"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 3,
+    "boredom": 1,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:33"
+  },
+  {
+    "name": "Bálint",
+    "attention": 4,
+    "boredom": 6,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:33"
+  },
+  {
+    "name": "Adrián",
+    "attention": 2,
+    "boredom": 0,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:33"
+  },
+  {
+    "name": "Réka",
+    "attention": 4,
+    "boredom": 7,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:33"
+  },
+  {
+    "name": "Daniella",
+    "attention": 1,
+    "boredom": 3,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:33"
+  },
+  {
+    "name": "Panni",
+    "attention": 2,
+    "boredom": 6,
+    "emotion": 5,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:33"
+  },
+  {
+    "name": "Peti",
+    "attention": 7,
+    "boredom": 10,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:34"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 8,
+    "boredom": 9,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:34"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 8,
+    "boredom": 10,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:34"
+  },
+  {
+    "name": "Géza",
+    "attention": 8,
+    "boredom": 9,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:34"
+  },
+  {
+    "name": "Margó",
+    "attention": 7,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:34"
   },
   {
     "name": "Sanyi",
@@ -4269,53 +3309,1013 @@
     "boredom": 7,
     "emotion": 4,
     "action": "listen",
-    "timestamp": "2026-03-02 08:44"
+    "timestamp": "2026-03-02 08:34"
   },
   {
     "name": "Kristóf",
-    "attention": 9,
-    "boredom": 8,
-    "emotion": 4,
+    "attention": 6,
+    "boredom": 5,
+    "emotion": 3,
     "action": "listen",
-    "timestamp": "2026-03-02 08:44"
+    "timestamp": "2026-03-02 08:34"
   },
   {
     "name": "Bálint",
-    "attention": 6,
+    "attention": 10,
     "boredom": 5,
-    "emotion": 5,
+    "emotion": 7,
     "action": "listen",
-    "timestamp": "2026-03-02 08:44"
+    "timestamp": "2026-03-02 08:34"
   },
   {
     "name": "Adrián",
-    "attention": 7,
-    "boredom": 6,
-    "emotion": 5,
+    "attention": 10,
+    "boredom": 5,
+    "emotion": 3,
     "action": "listen",
-    "timestamp": "2026-03-02 08:44"
+    "timestamp": "2026-03-02 08:34"
   },
   {
     "name": "Réka",
+    "attention": 8,
+    "boredom": 4,
+    "emotion": 5,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:34"
+  },
+  {
+    "name": "Daniella",
+    "attention": 0,
+    "boredom": 7,
+    "emotion": 1,
+    "action": "doesn't listen",
+    "timestamp": "2026-03-02 08:34"
+  },
+  {
+    "name": "Panni",
+    "attention": 10,
+    "boredom": 3,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:34"
+  },
+  {
+    "name": "Peti",
+    "attention": 5,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:35"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 6,
+    "boredom": 2,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:35"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 6,
+    "boredom": 1,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:35"
+  },
+  {
+    "name": "Géza",
+    "attention": 6,
+    "boredom": 9,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:35"
+  },
+  {
+    "name": "Margó",
+    "attention": 6,
+    "boredom": 5,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:35"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 9,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:35"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 6,
+    "boredom": 2,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:35"
+  },
+  {
+    "name": "Bálint",
     "attention": 7,
+    "boredom": 2,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:35"
+  },
+  {
+    "name": "Adrián",
+    "attention": 10,
+    "boredom": 0,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:35"
+  },
+  {
+    "name": "Réka",
+    "attention": 5,
+    "boredom": 5,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:35"
+  },
+  {
+    "name": "Daniella",
+    "attention": 9,
+    "boredom": 5,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:35"
+  },
+  {
+    "name": "Panni",
+    "attention": 6,
+    "boredom": 4,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:35"
+  },
+  {
+    "name": "Peti",
+    "attention": 6,
+    "boredom": 6,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:36"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 5,
+    "boredom": 1,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:36"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 8,
+    "boredom": 5,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:36"
+  },
+  {
+    "name": "Géza",
+    "attention": 9,
+    "boredom": 1,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:36"
+  },
+  {
+    "name": "Margó",
+    "attention": 9,
+    "boredom": 3,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:36"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 5,
     "boredom": 10,
     "emotion": 2,
     "action": "listen",
-    "timestamp": "2026-03-02 08:44"
+    "timestamp": "2026-03-02 08:36"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 7,
+    "boredom": 7,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:36"
+  },
+  {
+    "name": "Bálint",
+    "attention": 5,
+    "boredom": 7,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:36"
+  },
+  {
+    "name": "Adrián",
+    "attention": 8,
+    "boredom": 10,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:36"
+  },
+  {
+    "name": "Réka",
+    "attention": 8,
+    "boredom": 7,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:36"
   },
   {
     "name": "Daniella",
     "attention": 5,
+    "boredom": 5,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:36"
+  },
+  {
+    "name": "Panni",
+    "attention": 6,
+    "boredom": 1,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:36"
+  },
+  {
+    "name": "Peti",
+    "attention": 9,
+    "boredom": 4,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:37"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 9,
+    "boredom": 3,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:37"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 9,
+    "boredom": 3,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:37"
+  },
+  {
+    "name": "Géza",
+    "attention": 10,
+    "boredom": 0,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:37"
+  },
+  {
+    "name": "Margó",
+    "attention": 8,
+    "boredom": 3,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:37"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 8,
+    "boredom": 3,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:37"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 10,
+    "boredom": 3,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:37"
+  },
+  {
+    "name": "Bálint",
+    "attention": 7,
+    "boredom": 2,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:37"
+  },
+  {
+    "name": "Adrián",
+    "attention": 9,
+    "boredom": 2,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:37"
+  },
+  {
+    "name": "Réka",
+    "attention": 8,
+    "boredom": 3,
+    "emotion": 5,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:37"
+  },
+  {
+    "name": "Daniella",
+    "attention": 7,
+    "boredom": 0,
+    "emotion": 8,
+    "action": "talking",
+    "timestamp": "2026-03-02 08:37"
+  },
+  {
+    "name": "Panni",
+    "attention": 10,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:37"
+  },
+  {
+    "name": "Peti",
+    "attention": 6,
+    "boredom": 8,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:38"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 9,
+    "boredom": 8,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:38"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 7,
+    "boredom": 10,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:38"
+  },
+  {
+    "name": "Géza",
+    "attention": 8,
+    "boredom": 5,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:38"
+  },
+  {
+    "name": "Margó",
+    "attention": 10,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:38"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 9,
+    "boredom": 4,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:38"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 5,
+    "boredom": 9,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:38"
+  },
+  {
+    "name": "Bálint",
+    "attention": 6,
+    "boredom": 2,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:38"
+  },
+  {
+    "name": "Adrián",
+    "attention": 6,
+    "boredom": 1,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:38"
+  },
+  {
+    "name": "Réka",
+    "attention": 9,
+    "boredom": 5,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:38"
+  },
+  {
+    "name": "Daniella",
+    "attention": 7,
+    "boredom": 9,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:38"
+  },
+  {
+    "name": "Panni",
+    "attention": 8,
+    "boredom": 8,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:38"
+  },
+  {
+    "name": "Peti",
+    "attention": 9,
+    "boredom": 10,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:39"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 5,
+    "boredom": 9,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:39"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 5,
+    "boredom": 2,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:39"
+  },
+  {
+    "name": "Géza",
+    "attention": 10,
+    "boredom": 4,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:39"
+  },
+  {
+    "name": "Margó",
+    "attention": 7,
+    "boredom": 0,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:39"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 6,
+    "boredom": 9,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:39"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 5,
+    "boredom": 2,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:39"
+  },
+  {
+    "name": "Bálint",
+    "attention": 5,
+    "boredom": 8,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:39"
+  },
+  {
+    "name": "Adrián",
+    "attention": 8,
+    "boredom": 6,
+    "emotion": 5,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:39"
+  },
+  {
+    "name": "Réka",
+    "attention": 7,
+    "boredom": 2,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:39"
+  },
+  {
+    "name": "Daniella",
+    "attention": 7,
+    "boredom": 5,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:39"
+  },
+  {
+    "name": "Panni",
+    "attention": 9,
+    "boredom": 1,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:39"
+  },
+  {
+    "name": "Peti",
+    "attention": 6,
+    "boredom": 2,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:40"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 5,
+    "boredom": 10,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:40"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 7,
+    "boredom": 7,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:40"
+  },
+  {
+    "name": "Géza",
+    "attention": 8,
+    "boredom": 9,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:40"
+  },
+  {
+    "name": "Margó",
+    "attention": 8,
+    "boredom": 4,
+    "emotion": 5,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:40"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 9,
+    "boredom": 1,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:40"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 8,
+    "boredom": 1,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:40"
+  },
+  {
+    "name": "Bálint",
+    "attention": 10,
+    "boredom": 10,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:40"
+  },
+  {
+    "name": "Adrián",
+    "attention": 8,
+    "boredom": 8,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:40"
+  },
+  {
+    "name": "Réka",
+    "attention": 5,
+    "boredom": 3,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:40"
+  },
+  {
+    "name": "Daniella",
+    "attention": 9,
+    "boredom": 0,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:40"
+  },
+  {
+    "name": "Panni",
+    "attention": 6,
+    "boredom": 4,
+    "emotion": 5,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:40"
+  },
+  {
+    "name": "Peti",
+    "attention": 6,
+    "boredom": 4,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:41"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 7,
+    "boredom": 1,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:41"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 8,
+    "boredom": 6,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:41"
+  },
+  {
+    "name": "Géza",
+    "attention": 6,
+    "boredom": 6,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:41"
+  },
+  {
+    "name": "Margó",
+    "attention": 10,
+    "boredom": 3,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:41"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 9,
+    "boredom": 10,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:41"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 5,
+    "boredom": 6,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:41"
+  },
+  {
+    "name": "Bálint",
+    "attention": 8,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:41"
+  },
+  {
+    "name": "Adrián",
+    "attention": 5,
+    "boredom": 5,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:41"
+  },
+  {
+    "name": "Réka",
+    "attention": 8,
+    "boredom": 9,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:41"
+  },
+  {
+    "name": "Daniella",
+    "attention": 10,
+    "boredom": 10,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:41"
+  },
+  {
+    "name": "Panni",
+    "attention": 7,
+    "boredom": 1,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:41"
+  },
+  {
+    "name": "Peti",
+    "attention": 5,
+    "boredom": 5,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:42"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 9,
+    "boredom": 7,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:42"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 5,
+    "boredom": 6,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:42"
+  },
+  {
+    "name": "Géza",
+    "attention": 6,
+    "boredom": 6,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:42"
+  },
+  {
+    "name": "Margó",
+    "attention": 8,
+    "boredom": 8,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:42"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 8,
+    "boredom": 4,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:42"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 6,
+    "boredom": 5,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:42"
+  },
+  {
+    "name": "Bálint",
+    "attention": 5,
+    "boredom": 8,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:42"
+  },
+  {
+    "name": "Adrián",
+    "attention": 9,
+    "boredom": 8,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:42"
+  },
+  {
+    "name": "Réka",
+    "attention": 7,
+    "boredom": 5,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:42"
+  },
+  {
+    "name": "Daniella",
+    "attention": 6,
+    "boredom": 1,
+    "emotion": 8,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:42"
+  },
+  {
+    "name": "Panni",
+    "attention": 7,
+    "boredom": 3,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:42"
+  },
+  {
+    "name": "Peti",
+    "attention": 9,
+    "boredom": 2,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:43"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 6,
+    "boredom": 10,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:43"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 8,
+    "boredom": 9,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:43"
+  },
+  {
+    "name": "Géza",
+    "attention": 8,
+    "boredom": 10,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:43"
+  },
+  {
+    "name": "Margó",
+    "attention": 10,
+    "boredom": 10,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:43"
+  },
+  {
+    "name": "Sanyi",
+    "attention": 7,
+    "boredom": 10,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:43"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 6,
+    "boredom": 7,
+    "emotion": 1,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:43"
+  },
+  {
+    "name": "Bálint",
+    "attention": 8,
+    "boredom": 7,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:43"
+  },
+  {
+    "name": "Adrián",
+    "attention": 7,
+    "boredom": 9,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:43"
+  },
+  {
+    "name": "Réka",
+    "attention": 7,
+    "boredom": 8,
+    "emotion": 0,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:43"
+  },
+  {
+    "name": "Daniella",
+    "attention": 7,
+    "boredom": 7,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:43"
+  },
+  {
+    "name": "Panni",
+    "attention": 5,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:43"
+  },
+  {
+    "name": "Peti",
+    "attention": 7,
+    "boredom": 1,
+    "emotion": 7,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:44"
+  },
+  {
+    "name": "Zsuzsa",
+    "attention": 9,
+    "boredom": 9,
+    "emotion": 3,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:44"
+  },
+  {
+    "name": "Karcsi",
+    "attention": 8,
+    "boredom": 7,
+    "emotion": 5,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:44"
+  },
+  {
+    "name": "Géza",
+    "attention": 9,
+    "boredom": 0,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:44"
+  },
+  {
+    "name": "Margó",
+    "attention": 9,
     "boredom": 10,
     "emotion": 0,
     "action": "listen",
     "timestamp": "2026-03-02 08:44"
   },
   {
+    "name": "Sanyi",
+    "attention": 7,
+    "boredom": 9,
+    "emotion": 2,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:44"
+  },
+  {
+    "name": "Kristóf",
+    "attention": 9,
+    "boredom": 2,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:44"
+  },
+  {
+    "name": "Bálint",
+    "attention": 8,
+    "boredom": 1,
+    "emotion": 9,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:44"
+  },
+  {
+    "name": "Adrián",
+    "attention": 10,
+    "boredom": 1,
+    "emotion": 10,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:44"
+  },
+  {
+    "name": "Réka",
+    "attention": 10,
+    "boredom": 2,
+    "emotion": 6,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:44"
+  },
+  {
+    "name": "Daniella",
+    "attention": 6,
+    "boredom": 7,
+    "emotion": 4,
+    "action": "listen",
+    "timestamp": "2026-03-02 08:44"
+  },
+  {
     "name": "Panni",
-    "attention": 5,
-    "boredom": 5,
-    "emotion": 3,
+    "attention": 9,
+    "boredom": 8,
+    "emotion": 4,
     "action": "listen",
     "timestamp": "2026-03-02 08:44"
   }
