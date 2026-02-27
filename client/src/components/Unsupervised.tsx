@@ -1,23 +1,13 @@
-<<<<<<< HEAD
 import { useState } from "react";
-=======
-import { useMemo, useState } from "react";
->>>>>>> 39641d91906d4f06d73f2e3ffa13fca65a47018e
 import { Button } from "primereact/button";
 import { Tag } from "primereact/tag";
 
-<<<<<<< HEAD
 import { useSockets } from "../context/SocketContext";
 import ClassroomMockup, {
   type ClassroomStudent,
   type CommunicationBubble,
 } from "./ClassroomMockup";
 import ChartsModal from "./ChartsModal";
-=======
-import ClassroomMockup, { type ClassroomStudent } from "./ClassroomMockup";
-import ChartsModal from "./ChartsModal";
-import { useSockets } from "../context/SocketContext";
->>>>>>> 39641d91906d4f06d73f2e3ffa13fca65a47018e
 
 export type UnsupervisedProps = {
   sessionId: string | null;
@@ -29,7 +19,6 @@ export type UnsupervisedProps = {
   isPausedForTaskAssignment?: boolean;
 };
 
-<<<<<<< HEAD
 export const Unsupervised = ({
   sessionId,
   students,
@@ -39,33 +28,6 @@ export const Unsupervised = ({
   lastError,
   isPausedForTaskAssignment = false,
 }: UnsupervisedProps) => {
-=======
-const readStoredStudents = (): ClassroomStudent[] => {
-  if (typeof window === "undefined") {
-    return [];
-  }
-
-  const raw = window.localStorage.getItem("studentsSetup");
-
-  if (!raw) {
-    return [];
-  }
-
-  try {
-    const parsed = JSON.parse(raw) as StudentSetupPayload;
-    if (!Array.isArray(parsed.students)) {
-      return [];
-    }
-
-    return parsed.students;
-  } catch {
-    return [];
-  }
-};
-
-export const Unsupervised = () => {
-  const students = useMemo(() => readStoredStudents(), []);
->>>>>>> 39641d91906d4f06d73f2e3ffa13fca65a47018e
   const { unsupervisedSocket } = useSockets();
   const [isChartsVisible, setIsChartsVisible] = useState(false);
 

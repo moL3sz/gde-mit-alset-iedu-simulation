@@ -4,7 +4,6 @@ import type {
   GetSessionResponse,
   PostTurnRequest,
   PostTurnResponse,
-<<<<<<< HEAD
   SubmitSupervisorHintResponse,
   SubmitTaskAssignmentRequest,
   SubmitTaskAssignmentResponse,
@@ -12,12 +11,6 @@ import type {
 import { env } from '../../config/env';
 import { SessionMemory } from '../../core/memory/sessionMemory';
 import { Orchestrator, type AgentTurnEmission } from '../../core/orchestrator';
-=======
-} from '../../core/@types';
-import { env } from '../../config/env';
-import { SessionMemory } from '../../core/memory/sessionMemory';
-import { Orchestrator } from '../../core/orchestrator';
->>>>>>> 39641d91906d4f06d73f2e3ffa13fca65a47018e
 import {
   calculateStudentPersonalityChanges,
   extractStudentPersonalitySnapshots,

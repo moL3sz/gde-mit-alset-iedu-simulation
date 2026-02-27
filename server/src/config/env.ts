@@ -13,7 +13,6 @@ const envSchema = z.object({
   DB_PASSWORD: z.string().trim(),
   DB_NAME: z.string().trim(),
   DB_LOGGING: z.coerce.boolean().default(true),
-
 });
 
 const parsed = envSchema.safeParse(process.env);
