@@ -7,7 +7,6 @@ import type {
   CommunicationEdge,
   CommunicationGraph,
   CommunicationNode,
-  CommunicationNodeKind,
   InteractionType,
   RelationshipQuality,
   SessionConfig,
@@ -23,31 +22,18 @@ const RELATIONSHIP_WEIGHTS: Record<RelationshipQuality, number> = {
 
 const nowIso = (): string => new Date().toISOString();
 
+const TEACHER_NODE_ID = 'teacher';
+const USER_NODE_ID = 'user';
+
 const toEdgeId = (from: string, to: string): string => `edge_${from}__${to}`;
 
 const isStudentKind = (kind: AgentKind): boolean => kind.startsWith('student_');
 
-const toNodeKind = (kind: AgentKind): CommunicationNodeKind => {
-  if (isStudentKind(kind)) {
-    return 'student';
-  }
-
-  if (kind === 'observer') {
-    return 'observer';
-  }
-
-  if (kind === 'debate_coach') {
-    return 'coach';
-  }
-
-  if (kind === 'judge') {
-    return 'judge';
-  }
-
-  return 'system';
-};
-
-const createNode = (id: string, label: string, kind: CommunicationNodeKind): CommunicationNode => ({
+const createNode = (
+  id: string,
+  label: string,
+  kind: CommunicationNode['kind'],
+): CommunicationNode => ({
   id,
   label,
   kind,
@@ -192,32 +178,25 @@ const buildClassroomGraph = (
   agents: AgentProfile[],
   classroomConfig?: SessionConfig['classroom'],
 ): CommunicationGraph => {
-  const nodes: CommunicationNode[] = [createNode('teacher', 'Teacher', 'teacher')];
-  const edges: CommunicationEdge[] = [];
-
+  const teacher = agents.find((agent) => agent.kind === 'teacher');
   const students = agents.filter((agent) => isStudentKind(agent.kind));
-  const observer = agents.find((agent) => agent.kind === 'observer');
-
-  for (const student of students) {
-    nodes.push(createNode(student.id, student.name, 'student'));
-  }
-
-  if (observer) {
-    nodes.push(createNode(observer.id, observer.name, 'observer'));
-  }
 
   const graph: CommunicationGraph = {
-    nodes,
-    edges,
+    nodes: [createNode(TEACHER_NODE_ID, teacher?.name ?? 'Teacher', 'teacher')],
+    edges: [],
     activations: [],
     currentTurnActivations: [],
   };
 
   for (const student of students) {
-    upsertEdge(graph, 'teacher', student.id, 'neutral', {
+    graph.nodes.push(createNode(student.id, student.name, 'student'));
+  }
+
+  for (const student of students) {
+    upsertEdge(graph, TEACHER_NODE_ID, student.id, 'neutral', {
       channel: 'teacher_to_student',
     });
-    upsertEdge(graph, student.id, 'teacher', 'neutral', {
+    upsertEdge(graph, student.id, TEACHER_NODE_ID, 'neutral', {
       channel: 'student_to_teacher',
     });
   }
@@ -244,15 +223,6 @@ const buildClassroomGraph = (
     }
   }
 
-  if (observer) {
-    upsertEdge(graph, observer.id, 'teacher', 'neutral', {
-      channel: 'observer_to_teacher',
-    });
-    upsertEdge(graph, 'teacher', observer.id, 'neutral', {
-      channel: 'teacher_to_observer',
-    });
-  }
-
   applyRelationshipOverrides(
     graph,
     new Set(students.map((student) => student.id)),
@@ -263,35 +233,23 @@ const buildClassroomGraph = (
 };
 
 const buildDebateGraph = (agents: AgentProfile[]): CommunicationGraph => {
-  const nodes: CommunicationNode[] = [createNode('user', 'User', 'user')];
+  const teacher = agents.find((agent) => agent.kind === 'teacher');
   const graph: CommunicationGraph = {
-    nodes,
+    nodes: [
+      createNode(USER_NODE_ID, 'User', 'user'),
+      createNode(TEACHER_NODE_ID, teacher?.name ?? 'Teacher', 'teacher'),
+    ],
     edges: [],
     activations: [],
     currentTurnActivations: [],
   };
 
-  for (const agent of agents) {
-    nodes.push(createNode(agent.id, agent.name, toNodeKind(agent.kind)));
-  }
-
-  const coach = agents.find((agent) => agent.kind === 'debate_coach');
-  const judge = agents.find((agent) => agent.kind === 'judge');
-
-  if (coach) {
-    upsertEdge(graph, 'user', coach.id, 'neutral', {
-      channel: 'user_to_coach',
-    });
-    upsertEdge(graph, coach.id, 'user', 'neutral', {
-      channel: 'coach_to_user',
-    });
-  }
-
-  if (judge) {
-    upsertEdge(graph, judge.id, 'user', 'neutral', {
-      channel: 'judge_to_user',
-    });
-  }
+  upsertEdge(graph, USER_NODE_ID, TEACHER_NODE_ID, 'neutral', {
+    channel: 'user_to_teacher',
+  });
+  upsertEdge(graph, TEACHER_NODE_ID, USER_NODE_ID, 'neutral', {
+    channel: 'teacher_to_user',
+  });
 
   return graph;
 };

@@ -1,4 +1,4 @@
-import type { AgentKind, AgentState } from '../@types';
+import type { AgentKind, AgentState, SessionMode } from '../@types';
 
 export const buildStudentSystemPrompt = (
   kind: AgentKind,
@@ -20,19 +20,17 @@ export const buildStudentSystemPrompt = (
   ].join('\n');
 };
 
-export const buildDebateCoachPrompt = (topic: string): string => {
-  return [
-    `You are a debate coach for exam preparation.`,
-    `Topic: ${topic}`,
-    `Challenge weak logic, request evidence, and ask one probing question.`,
-    `Be concise and actionable.`,
-  ].join('\n');
-};
+export const buildTeacherSystemPrompt = (topic: string, mode: SessionMode): string => {
+  const modeInstruction =
+    mode === 'classroom'
+      ? 'Guide students with clarity, check understanding, and propose the next concrete teaching step.'
+      : 'Act as a debate teacher: challenge weak claims, ask one probing question, and strengthen argument quality.';
 
-export const buildObserverPrompt = (topic: string): string => {
   return [
-    `You observe a classroom interaction and provide feedback.`,
+    `You are a teacher agent for an education simulation platform.`,
     `Topic: ${topic}`,
-    `Return practical guidance on engagement, clarity, and misconceptions.`,
+    `Mode: ${mode}`,
+    modeInstruction,
+    `Be concise, specific, and actionable.`,
   ].join('\n');
 };

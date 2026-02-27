@@ -16,9 +16,8 @@ import type {
   Turn,
   TurnRole,
 } from './@types';
-import { DebateCoachAgent } from './agents/debateCoachAgent';
-import { ObserverAgent } from './agents/observerAgent';
 import { StudentAgent } from './agents/studentAgent';
+import { TeacherAgent } from './agents/teacherAgent';
 import type { SessionMemory } from './memory/sessionMemory';
 import { AppError } from './shared/errors/app-error';
 import {
@@ -30,10 +29,16 @@ import type { LlmTool } from './tools/llm';
 import { scoreDebateRubric } from './tools/rubric';
 import { applySafetyGuards } from './tools/safety';
 
+const TEACHER_AGENT_ID = 'teacher';
+
 const nowIso = (): string => new Date().toISOString();
 
+const clamp = (value: number, min: number, max: number): number => {
+  return Math.max(min, Math.min(max, value));
+};
+
 const clampInt = (value: number, min: number, max: number): number => {
-  return Math.max(min, Math.min(max, Math.floor(value)));
+  return clamp(Math.floor(value), min, max);
 };
 
 const isStudentKind = (kind: AgentKind): boolean => {
@@ -190,7 +195,12 @@ export class Orchestrator {
     eventCollector: SessionEvent[],
   ): Promise<void> {
     const session = this.mustGetSession(sessionId);
+    const teacherProfile = session.agents.find((agent) => agent.kind === 'teacher');
     const studentProfiles = session.agents.filter((agent) => isStudentKind(agent.kind));
+
+    if (!teacherProfile) {
+      throw new AppError(500, 'No teacher agent configured for classroom mode.');
+    }
 
     if (studentProfiles.length === 0) {
       throw new AppError(500, 'No student agents configured for classroom mode.');
@@ -215,7 +225,7 @@ export class Orchestrator {
 
     for (const student of studentProfiles) {
       this.activateGraphEdgeWithEvent(sessionId, requestTurn.id, eventCollector, {
-        from: 'teacher',
+        from: TEACHER_AGENT_ID,
         to: student.id,
         interactionType: 'teacher_broadcast',
         payload: {
@@ -226,7 +236,7 @@ export class Orchestrator {
 
     for (const student of selectedStudents) {
       this.activateGraphEdgeWithEvent(sessionId, requestTurn.id, eventCollector, {
-        from: 'teacher',
+        from: TEACHER_AGENT_ID,
         to: student.id,
         interactionType: 'teacher_to_student',
       });
@@ -296,7 +306,7 @@ export class Orchestrator {
 
       this.activateGraphEdgeWithEvent(sessionId, requestTurn.id, eventCollector, {
         from: profile.id,
-        to: 'teacher',
+        to: TEACHER_AGENT_ID,
         interactionType: 'student_to_teacher',
       });
 
@@ -317,68 +327,89 @@ export class Orchestrator {
       );
     }
 
-    const observerEnabled = classroomConfig.observerEnabled ?? true;
-    const observerProfile = session.agents.find((agent) => agent.kind === 'observer');
-
-    if (observerEnabled && observerProfile) {
-      const observer = new ObserverAgent(observerProfile);
-      eventCollector.push(
-        this.createEvent(
-          sessionId,
-          'agent_started',
-          {
-            requestTurnId: requestTurn.id,
-          },
-          requestTurn.id,
-          observerProfile.id,
-        ),
-      );
-
-      const observerResult = await observer.run(
-        {
-          teacherOrUserMessage: requestTurn.content,
-          session: this.mustGetSession(sessionId),
-          recentTurns: this.mustGetSession(sessionId).turns.slice(-12),
-        },
-        {
-          llm: this.llmTool,
-          topic: session.topic,
-          emitToken: () => {
-            return;
-          },
-        },
-      );
-
-      this.memory.appendTurn(
+    const teacherAgent = new TeacherAgent(teacherProfile);
+    eventCollector.push(
+      this.createEvent(
         sessionId,
-        this.createTurn(sessionId, 'observer', observerResult.message, observerProfile.id, {
-          kind: observerProfile.kind,
-          ...(observerResult.metadata ?? {}),
-        }),
-      );
+        'agent_started',
+        {
+          requestTurnId: requestTurn.id,
+        },
+        requestTurn.id,
+        teacherProfile.id,
+      ),
+    );
 
-      this.activateGraphEdgeWithEvent(sessionId, requestTurn.id, eventCollector, {
-        from: observerProfile.id,
-        to: 'teacher',
-        interactionType: 'observer_to_teacher',
+    const studentResponses = this.mustGetSession(sessionId).turns
+      .filter((turn) => turn.role === 'agent' && turn.agentId && selectedStudents.some((student) => student.id === turn.agentId))
+      .slice(-selectedStudents.length)
+      .map((turn) => {
+        const student = selectedStudents.find((value) => value.id === turn.agentId);
+        return `${student?.name ?? turn.agentId}: ${turn.content}`;
       });
 
-      if (observerResult.metricsPatch) {
-        this.memory.updateMetrics(sessionId, observerResult.metricsPatch);
-      }
+    const teacherInput = [
+      `Teacher instruction: ${requestTurn.content}`,
+      `Student responses:`,
+      ...studentResponses,
+      `Give a short teacher follow-up that keeps the class moving.`,
+    ].join('\n');
 
-      eventCollector.push(
-        this.createEvent(
-          sessionId,
-          'agent_done',
-          {
-            preview: observerResult.message.slice(0, 90),
-          },
-          requestTurn.id,
-          observerProfile.id,
-        ),
-      );
+    const teacherResult = await teacherAgent.run(
+      {
+        teacherOrUserMessage: teacherInput,
+        session: this.mustGetSession(sessionId),
+        recentTurns: this.mustGetSession(sessionId).turns.slice(-12),
+      },
+      {
+        llm: this.llmTool,
+        topic: session.topic,
+        emitToken: (token) => {
+          eventCollector.push(
+            this.createEvent(
+              sessionId,
+              'agent_token',
+              { token },
+              requestTurn.id,
+              teacherProfile.id,
+            ),
+          );
+        },
+      },
+    );
+
+    this.memory.appendTurn(
+      sessionId,
+      this.createTurn(sessionId, 'teacher', teacherResult.message, teacherProfile.id, {
+        kind: teacherProfile.kind,
+        ...(teacherResult.metadata ?? {}),
+      }),
+    );
+
+    for (const student of selectedStudents) {
+      this.activateGraphEdgeWithEvent(sessionId, requestTurn.id, eventCollector, {
+        from: TEACHER_AGENT_ID,
+        to: student.id,
+        interactionType: 'teacher_to_student',
+        payload: {
+          phase: 'follow_up',
+        },
+      });
     }
+
+    eventCollector.push(
+      this.createEvent(
+        sessionId,
+        'agent_done',
+        {
+          preview: teacherResult.message.slice(0, 90),
+        },
+        requestTurn.id,
+        teacherProfile.id,
+      ),
+    );
+
+    this.updateClassroomMetrics(sessionId);
   }
 
   private async processDebateTurn(
@@ -387,20 +418,19 @@ export class Orchestrator {
     eventCollector: SessionEvent[],
   ): Promise<void> {
     const session = this.mustGetSession(sessionId);
-    const coachProfile = session.agents.find((agent) => agent.kind === 'debate_coach');
-    const judgeProfile = session.agents.find((agent) => agent.kind === 'judge');
+    const teacherProfile = session.agents.find((agent) => agent.kind === 'teacher');
 
-    if (!coachProfile || !judgeProfile) {
-      throw new AppError(500, 'Debate mode requires both coach and judge agents.');
+    if (!teacherProfile) {
+      throw new AppError(500, 'Debate mode requires a teacher agent.');
     }
 
     this.activateGraphEdgeWithEvent(sessionId, requestTurn.id, eventCollector, {
       from: 'user',
-      to: coachProfile.id,
-      interactionType: 'user_to_coach',
+      to: TEACHER_AGENT_ID,
+      interactionType: 'user_to_teacher',
     });
 
-    const coachAgent = new DebateCoachAgent(coachProfile);
+    const teacherAgent = new TeacherAgent(teacherProfile);
 
     eventCollector.push(
       this.createEvent(
@@ -408,11 +438,11 @@ export class Orchestrator {
         'agent_started',
         { requestTurnId: requestTurn.id },
         requestTurn.id,
-        coachProfile.id,
+        teacherProfile.id,
       ),
     );
 
-    const coachResult = await coachAgent.run(
+    const teacherResult = await teacherAgent.run(
       {
         teacherOrUserMessage: requestTurn.content,
         session,
@@ -423,22 +453,34 @@ export class Orchestrator {
         topic: session.topic,
         emitToken: (token) => {
           eventCollector.push(
-            this.createEvent(sessionId, 'agent_token', { token }, requestTurn.id, coachProfile.id),
+            this.createEvent(
+              sessionId,
+              'agent_token',
+              { token },
+              requestTurn.id,
+              teacherProfile.id,
+            ),
           );
         },
       },
     );
 
-    const coachTurn = this.createTurn(sessionId, 'coach', coachResult.message, coachProfile.id, {
-      kind: coachProfile.kind,
-      ...(coachResult.metadata ?? {}),
-    });
-    this.memory.appendTurn(sessionId, coachTurn);
+    const teacherTurn = this.createTurn(
+      sessionId,
+      'teacher',
+      teacherResult.message,
+      teacherProfile.id,
+      {
+        kind: teacherProfile.kind,
+        ...(teacherResult.metadata ?? {}),
+      },
+    );
+    this.memory.appendTurn(sessionId, teacherTurn);
 
     this.activateGraphEdgeWithEvent(sessionId, requestTurn.id, eventCollector, {
-      from: coachProfile.id,
+      from: TEACHER_AGENT_ID,
       to: 'user',
-      interactionType: 'coach_to_user',
+      interactionType: 'teacher_to_user',
     });
 
     eventCollector.push(
@@ -446,50 +488,17 @@ export class Orchestrator {
         sessionId,
         'agent_done',
         {
-          preview: coachResult.message.slice(0, 90),
+          preview: teacherResult.message.slice(0, 90),
         },
         requestTurn.id,
-        coachProfile.id,
-      ),
-    );
-
-    eventCollector.push(
-      this.createEvent(
-        sessionId,
-        'agent_started',
-        { requestTurnId: requestTurn.id },
-        requestTurn.id,
-        judgeProfile.id,
+        teacherProfile.id,
       ),
     );
 
     const rubric = scoreDebateRubric({
       topic: session.topic,
       userMessage: requestTurn.content,
-      coachMessage: coachTurn.content,
-    });
-
-    const judgeMessage = [
-      `Rubric feedback:`,
-      `argumentStrength=${rubric.argumentStrength}/10`,
-      `evidenceUse=${rubric.evidenceUse}/10`,
-      `clarity=${rubric.clarity}/10`,
-      `rebuttal=${rubric.rebuttal}/10`,
-      `overall=${rubric.overall}/10`,
-      rubric.feedback,
-    ].join(' ');
-
-    this.memory.appendTurn(
-      sessionId,
-      this.createTurn(sessionId, 'judge', judgeMessage, judgeProfile.id, {
-        kind: judgeProfile.kind,
-      }),
-    );
-
-    this.activateGraphEdgeWithEvent(sessionId, requestTurn.id, eventCollector, {
-      from: judgeProfile.id,
-      to: 'user',
-      interactionType: 'judge_to_user',
+      teacherMessage: teacherTurn.content,
     });
 
     this.memory.updateMetrics(sessionId, {
@@ -507,21 +516,55 @@ export class Orchestrator {
           rubric,
         },
         requestTurn.id,
-        judgeProfile.id,
+        teacherProfile.id,
       ),
+    );
+  }
+
+  private updateClassroomMetrics(sessionId: string): void {
+    const session = this.mustGetSession(sessionId);
+    const students = session.agents.filter((agent) => isStudentKind(agent.kind));
+
+    if (students.length === 0) {
+      return;
+    }
+
+    const totals = students.reduce(
+      (acc, student) => {
+        acc.attention += student.state.attention;
+        acc.boredom += student.state.boredom;
+        acc.fatigue += student.state.fatigue;
+        acc.knowledgeRetention += student.state.knowledgeRetention;
+        acc.misconceptions += student.state.misconceptions.length;
+        return acc;
+      },
+      {
+        attention: 0,
+        boredom: 0,
+        fatigue: 0,
+        knowledgeRetention: 0,
+        misconceptions: 0,
+      },
     );
 
-    eventCollector.push(
-      this.createEvent(
-        sessionId,
-        'agent_done',
-        {
-          preview: judgeMessage.slice(0, 90),
-        },
-        requestTurn.id,
-        judgeProfile.id,
-      ),
+    const averages = {
+      attention: Number((totals.attention / students.length).toFixed(4)),
+      boredom: Number((totals.boredom / students.length).toFixed(4)),
+      fatigue: Number((totals.fatigue / students.length).toFixed(4)),
+      knowledgeRetention: Number((totals.knowledgeRetention / students.length).toFixed(4)),
+    };
+
+    const engagement = Math.round(clamp(averages.attention * (1 - averages.boredom), 0, 1) * 100);
+    const clarity = Math.round(
+      clamp(averages.knowledgeRetention * (1 - averages.fatigue * 0.4), 0, 1) * 100,
     );
+
+    this.memory.updateMetrics(sessionId, {
+      engagement,
+      clarity,
+      misconceptionsDetected: totals.misconceptions,
+      studentStateAverages: averages,
+    });
   }
 
   private mustGetSession(sessionId: string): Session {
@@ -615,8 +658,24 @@ export class Orchestrator {
   }
 
   private buildDefaultAgents(mode: SessionMode): AgentProfile[] {
+    const teacher: AgentProfile = {
+      id: TEACHER_AGENT_ID,
+      kind: 'teacher',
+      name: 'Teacher Agent',
+      state: {
+        attention: 0.96,
+        boredom: 0.05,
+        fatigue: 0.15,
+        knowledgeRetention: 0.95,
+        eslSupportNeeded: false,
+        emotion: 'engaged',
+        misconceptions: [],
+      },
+    };
+
     if (mode === 'classroom') {
       return [
+        teacher,
         {
           id: 'student_fast_1',
           kind: 'student_fast',
@@ -673,52 +732,9 @@ export class Orchestrator {
             misconceptions: ['self-doubt under pressure'],
           },
         },
-        {
-          id: 'observer_1',
-          kind: 'observer',
-          name: 'Classroom Observer',
-          state: {
-            attention: 1,
-            boredom: 0,
-            fatigue: 0.1,
-            knowledgeRetention: 1,
-            eslSupportNeeded: false,
-            emotion: 'calm',
-            misconceptions: [],
-          },
-        },
       ];
     }
 
-    return [
-      {
-        id: 'debate_coach_1',
-        kind: 'debate_coach',
-        name: 'Debate Coach',
-        state: {
-          attention: 1,
-          boredom: 0.05,
-          fatigue: 0.1,
-          knowledgeRetention: 1,
-          eslSupportNeeded: false,
-          emotion: 'engaged',
-          misconceptions: [],
-        },
-      },
-      {
-        id: 'judge_1',
-        kind: 'judge',
-        name: 'Rubric Judge',
-        state: {
-          attention: 1,
-          boredom: 0.05,
-          fatigue: 0.1,
-          knowledgeRetention: 1,
-          eslSupportNeeded: false,
-          emotion: 'calm',
-          misconceptions: [],
-        },
-      },
-    ];
+    return [teacher];
   }
 }
