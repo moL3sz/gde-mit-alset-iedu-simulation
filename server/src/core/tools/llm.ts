@@ -8,7 +8,7 @@ export interface GenerateChatCompletionInput {
 export interface GenerateChatCompletionOutput {
   text: string;
   model: string;
-  provider: 'mock' | 'stub-keyed';
+  provider: 'mock' | 'openai';
 }
 
 export interface LlmTool {
@@ -39,6 +39,23 @@ const stableHash = (value: string): number => {
   return hash;
 };
 
+const OPENAI_API_URL = 'https://api.openai.com/v1/responses';
+const DEFAULT_OPENAI_MODEL = 'gpt-4.1-mini';
+
+interface OpenAiTextContentItem {
+  type?: string;
+  text?: string;
+}
+
+interface OpenAiOutputItem {
+  content?: OpenAiTextContentItem[];
+}
+
+interface OpenAiResponsePayload {
+  output_text?: string;
+  output?: OpenAiOutputItem[];
+}
+
 class DeterministicMockLlmTool implements LlmTool {
   public generateChatCompletion(
     input: GenerateChatCompletionInput,
@@ -56,29 +73,85 @@ class DeterministicMockLlmTool implements LlmTool {
   }
 }
 
-class KeyedStubLlmTool implements LlmTool {
-  private readonly fallback = new DeterministicMockLlmTool();
+const extractOpenAiOutputText = (payload: OpenAiResponsePayload): string => {
+  if (typeof payload.output_text === 'string' && payload.output_text.trim()) {
+    return payload.output_text.trim();
+  }
 
-  public constructor(private readonly apiKey: string) {}
+  if (!Array.isArray(payload.output)) {
+    return '';
+  }
+
+  const textParts = payload.output.flatMap((item) => {
+    if (!Array.isArray(item.content)) {
+      return [];
+    }
+
+    return item.content
+      .filter((content) => content.type === 'output_text' && typeof content.text === 'string')
+      .map((content) => content.text?.trim() ?? '')
+      .filter(Boolean);
+  });
+
+  return textParts.join('\n').trim();
+};
+
+class OpenAiLlmTool implements LlmTool {
+  public constructor(
+    private readonly apiKey: string,
+    private readonly model: string = DEFAULT_OPENAI_MODEL,
+  ) {}
 
   public async generateChatCompletion(
     input: GenerateChatCompletionInput,
   ): Promise<GenerateChatCompletionOutput> {
-    const result = await this.fallback.generateChatCompletion(input);
+    const response = await fetch(OPENAI_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: this.model,
+        input: [
+          {
+            role: 'system',
+            content: [{ type: 'input_text', text: input.systemPrompt }],
+          },
+          {
+            role: 'user',
+            content: [{ type: 'input_text', text: input.userPrompt }],
+          },
+        ],
+        temperature: input.temperature ?? 0.35,
+        max_output_tokens: input.maxTokens ?? 220,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      throw new Error(
+        `OpenAI request failed (${response.status}): ${errorBody.slice(0, 500)}`,
+      );
+    }
+
+    const payload = (await response.json()) as OpenAiResponsePayload;
+    const text = extractOpenAiOutputText(payload);
 
     return {
-      ...result,
-      text: `${result.text} [keyed:${this.apiKey.slice(0, 4)}]`,
-      model: 'stub-keyed-v1',
-      provider: 'stub-keyed',
+      text:
+        text ||
+        'I can continue, but no text was returned from the language model for this turn.',
+      model: this.model,
+      provider: 'openai',
     };
   }
 }
 
-export const createLlmTool = (apiKey?: string): LlmTool => {
+export const createLlmTool = (apiKey?: string, model = DEFAULT_OPENAI_MODEL): LlmTool => {
   if (!apiKey) {
     return new DeterministicMockLlmTool();
   }
 
-  return new KeyedStubLlmTool(apiKey);
+  return new OpenAiLlmTool(apiKey, model);
 };

@@ -1,5 +1,6 @@
 import type { AgentKind, AgentProfile, AgentState } from '../@types';
 import { buildStudentSystemPrompt } from '../shared/prompts';
+import { limitToSentences } from '../shared/text';
 import type { Agent, AgentRunContext, AgentRunInput, AgentRunResult } from './Agent';
 
 const clamp = (value: number, min: number, max: number): number => {
@@ -22,40 +23,6 @@ const hasExampleCue = (message: string): boolean => {
 
 const hasAssessmentCue = (message: string): boolean => {
   return /\b(quiz|test|exam|assessment|grade|felmérés|mérősz|dolgozat)\b/i.test(message);
-};
-
-const buildPersonaLine = (kind: AgentKind, state: AgentState): string => {
-  const stateSignalParts: string[] = [];
-
-  if (state.boredom >= 0.65) {
-    stateSignalParts.push('I am getting bored, so I need more interaction.');
-  }
-
-  if (state.fatigue >= 0.7) {
-    stateSignalParts.push('I am mentally tired and need shorter steps.');
-  }
-
-  if (state.knowledgeRetention <= 0.4) {
-    stateSignalParts.push('I need a quick recap to retain this better.');
-  }
-
-  if (kind === 'student_fast') {
-    stateSignalParts.unshift(`Quick synthesis: I got the core quickly and can generalize it.`);
-  } else if (kind === 'student_esl') {
-    stateSignalParts.unshift(`Simple wording please: I understand better with short sentences.`);
-  } else if (kind === 'student_distracted') {
-    stateSignalParts.unshift(`I lost focus for a moment, but I am trying to reconnect.`);
-  } else if (kind === 'student_emotional') {
-    stateSignalParts.unshift(
-      state.emotion === 'anxious'
-        ? `I feel a bit anxious about this, so I need reassurance and structure.`
-        : `I feel more confident if we go step by step.`,
-    );
-  } else {
-    stateSignalParts.unshift(`I am participating as a student.`);
-  }
-
-  return stateSignalParts.join(' ');
 };
 
 const updateState = (kind: AgentKind, state: AgentState, message: string): Partial<AgentState> => {
@@ -156,8 +123,9 @@ export class StudentAgent implements Agent {
       temperature: 0.4,
     });
 
-    const personaLine = buildPersonaLine(this.kind, profile.state);
-    const message = `${personaLine} ${llmResult.text}`;
+    const message =
+      limitToSentences(llmResult.text, 2) ||
+      'I need one short clarification before I can answer this clearly.';
     context.emitToken(message.split(' ').slice(0, 6).join(' '));
 
     return {

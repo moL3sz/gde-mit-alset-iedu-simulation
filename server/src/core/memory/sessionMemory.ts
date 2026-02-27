@@ -2,7 +2,9 @@ import { randomUUID } from 'node:crypto';
 
 import type {
   AgentProfile,
+  ClassroomRuntime,
   CommunicationGraph,
+  SimulationChannel,
   Session,
   SessionConfig,
   SessionEvent,
@@ -14,6 +16,7 @@ import { AppError } from '../shared/errors/app-error';
 
 export interface CreateSessionInput {
   mode: SessionMode;
+  channel: SimulationChannel;
   topic: string;
   config?: SessionConfig;
   agents: AgentProfile[];
@@ -31,6 +34,12 @@ export interface SessionMemoryStore {
     patch: Partial<AgentProfile['state']>,
   ): Session;
   updateMetrics(sessionId: string, patch: Partial<SessionMetrics>): Session;
+  updateClassroomRuntime(
+    sessionId: string,
+    updater: (current: ClassroomRuntime | undefined) => ClassroomRuntime | undefined,
+  ): Session;
+  pushSupervisorHint(sessionId: string, hintText: string): Session;
+  consumeSupervisorHint(sessionId: string): string | undefined;
 }
 
 const nowIso = (): string => new Date().toISOString();
@@ -50,12 +59,14 @@ const defaultMetrics = (): SessionMetrics => ({
 
 export class SessionMemory implements SessionMemoryStore {
   private readonly sessions = new Map<string, Session>();
+  private readonly supervisorHints = new Map<string, string[]>();
 
   public createSession(input: CreateSessionInput): Session {
     const createdAt = nowIso();
     const session: Session = {
       id: randomUUID(),
       mode: input.mode,
+      channel: input.channel,
       topic: input.topic,
       config: input.config ?? {},
       agents: input.agents,
@@ -63,11 +74,21 @@ export class SessionMemory implements SessionMemoryStore {
       turns: [],
       events: [],
       metrics: defaultMetrics(),
+      classroomRuntime:
+        input.mode === 'classroom'
+          ? {
+              lessonTurn: 1,
+              phase: 'lecture',
+              paused: false,
+              pendingTaskAssignment: false,
+            }
+          : undefined,
       createdAt,
       updatedAt: createdAt,
     };
 
     this.sessions.set(session.id, session);
+    this.supervisorHints.set(session.id, []);
     return session;
   }
 
@@ -125,6 +146,46 @@ export class SessionMemory implements SessionMemoryStore {
     session.updatedAt = nowIso();
 
     return session;
+  }
+
+  public updateClassroomRuntime(
+    sessionId: string,
+    updater: (current: ClassroomRuntime | undefined) => ClassroomRuntime | undefined,
+  ): Session {
+    const session = this.mustGetSession(sessionId);
+    session.classroomRuntime = updater(session.classroomRuntime);
+    session.updatedAt = nowIso();
+    return session;
+  }
+
+  public pushSupervisorHint(sessionId: string, hintText: string): Session {
+    const session = this.mustGetSession(sessionId);
+    const queue = this.supervisorHints.get(sessionId) ?? [];
+
+    queue.push(hintText);
+    if (queue.length > 32) {
+      queue.splice(0, queue.length - 32);
+    }
+
+    this.supervisorHints.set(sessionId, queue);
+    session.updatedAt = nowIso();
+
+    return session;
+  }
+
+  public consumeSupervisorHint(sessionId: string): string | undefined {
+    const session = this.mustGetSession(sessionId);
+    const queue = this.supervisorHints.get(sessionId);
+
+    if (!queue || queue.length === 0) {
+      return undefined;
+    }
+
+    const next = queue.shift();
+    this.supervisorHints.set(sessionId, queue);
+    session.updatedAt = nowIso();
+
+    return next;
   }
 
   private mustGetSession(sessionId: string): Session {

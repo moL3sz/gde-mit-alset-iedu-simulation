@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const createSessionSchema = z.object({
   mode: z.enum(['classroom', 'debate']),
+  channel: z.enum(['supervised', 'unsupervised']).default('unsupervised'),
   topic: z.string().trim().min(2).max(300),
   config: z
     .object({
@@ -40,5 +41,24 @@ export const postTurnSchema = z.object({
   teacherOrUserMessage: z.string().trim().min(1).max(2000),
 });
 
+export const supervisorHintSchema = z.object({
+  hintText: z.string().trim().min(1).max(800),
+});
+
+export const taskAssignmentSchema = z.object({
+  mode: z.enum(['individual', 'pair', 'group']),
+  groups: z
+    .array(
+      z.object({
+        id: z.string().trim().min(1).max(64),
+        studentIds: z.array(z.string().trim().min(1)).min(1),
+      }),
+    )
+    .optional(),
+  autonomousGrouping: z.boolean().optional(),
+});
+
 export type CreateSessionBody = z.infer<typeof createSessionSchema>;
 export type PostTurnBody = z.infer<typeof postTurnSchema>;
+export type SupervisorHintBody = z.infer<typeof supervisorHintSchema>;
+export type TaskAssignmentBody = z.infer<typeof taskAssignmentSchema>;

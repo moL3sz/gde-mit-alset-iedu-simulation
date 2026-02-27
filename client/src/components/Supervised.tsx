@@ -1,37 +1,101 @@
-import { useMemo } from "react";
+import { useState } from "react";
 import { Button } from "primereact/button";
+import { Checkbox } from "primereact/checkbox";
+import { InputText } from "primereact/inputtext";
+import { Tag } from "primereact/tag";
+import type {
+  SubmitTaskAssignmentInput,
+  TaskAssignmentRequiredPayload,
+  TaskGroup,
+  TaskWorkMode,
+} from "../hooks/useSimulationChannel";
 
-import ClassroomMockup, { type ClassroomStudent } from "./ClassroomMockup";
+import ClassroomMockup, {
+  type ClassroomStudent,
+  type CommunicationBubble,
+} from "./ClassroomMockup";
 
-type StudentSetupPayload = {
-  students?: ClassroomStudent[];
+export type SupervisedProps = {
+  sessionId: string | null;
+  students: ClassroomStudent[];
+  studentNodeIds: string[];
+  nodeBubbles: CommunicationBubble[];
+  isSocketConnected: boolean;
+  lastError: string | null;
+  isPausedForTaskAssignment: boolean;
+  taskAssignmentRequired: TaskAssignmentRequiredPayload | null;
+  onSubmitTaskAssignment: (
+    input: SubmitTaskAssignmentInput,
+    applyToUnsupervised: boolean,
+  ) => Promise<boolean>;
+  onSendHint: (hintText: string) => boolean;
 };
 
-const readStoredStudents = (): ClassroomStudent[] => {
-  if (typeof window === "undefined") {
-    return [];
-  }
+export const Supervised = ({
+  sessionId,
+  students,
+  studentNodeIds,
+  nodeBubbles,
+  isSocketConnected,
+  lastError,
+  isPausedForTaskAssignment,
+  taskAssignmentRequired,
+  onSubmitTaskAssignment,
+  onSendHint,
+}: SupervisedProps) => {
+  const [hintDraft, setHintDraft] = useState("");
+  const [workMode, setWorkMode] = useState<TaskWorkMode>("individual");
+  const [applyToUnsupervised, setApplyToUnsupervised] = useState(false);
+  const [groupDraftByStudent, setGroupDraftByStudent] = useState<Record<string, string>>({});
 
-  const raw = window.localStorage.getItem("studentsSetup");
+  const submitHint = () => {
+    const sent = onSendHint(hintDraft);
+    if (sent) {
+      setHintDraft("");
+    }
+  };
 
-  if (!raw) {
-    return [];
-  }
+  const assignStudentGroup = (studentId: string, groupId: string) => {
+    setGroupDraftByStudent((previous) => ({
+      ...previous,
+      [studentId]: groupId,
+    }));
+  };
 
-  try {
-    const parsed = JSON.parse(raw) as StudentSetupPayload;
-    if (!Array.isArray(parsed.students)) {
-      return [];
+  const buildGroupsFromDraft = (): TaskGroup[] => {
+    const groupsById = new Map<string, string[]>();
+
+    for (const studentId of studentNodeIds) {
+      const groupId = groupDraftByStudent[studentId]?.trim();
+      if (!groupId) {
+        continue;
+      }
+
+      const bucket = groupsById.get(groupId) ?? [];
+      bucket.push(studentId);
+      groupsById.set(groupId, bucket);
     }
 
-    return parsed.students;
-  } catch {
-    return [];
-  }
-};
+    return Array.from(groupsById.entries()).map(([id, studentIds]) => ({
+      id,
+      studentIds,
+    }));
+  };
 
-export const Supervised = () => {
-  const students = useMemo(() => readStoredStudents(), []);
+  const submitTaskAssignment = async () => {
+    const input: SubmitTaskAssignmentInput = {
+      mode: workMode,
+    };
+
+    if (workMode !== "individual") {
+      input.groups = buildGroupsFromDraft();
+    }
+
+    const ok = await onSubmitTaskAssignment(input, applyToUnsupervised);
+    if (ok) {
+      setGroupDraftByStudent({});
+    }
+  };
 
   return (
     <section className="h-full w-full p-2 md:w-1/2 md:p-3">
@@ -45,7 +109,7 @@ export const Supervised = () => {
               Supervised Mode
             </h1>
             <p className="mt-1 text-xs font-semibold tracking-wide text-slate-600 sm:text-sm">
-              Élő osztályterem-térkép és csoportdinamika
+              Live run with supervisor whisper support
             </p>
           </div>
 
@@ -67,17 +131,102 @@ export const Supervised = () => {
           </div>
         </div>
 
-        <div className="flex items-center justify-between gap-2 px-4 py-2 sm:px-5">
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold tracking-wide text-slate-700 shadow-sm sm:text-xs">
-            Aktív diákhelyek: {students.length > 0 ? students.length : 12}
-          </span>
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold tracking-wide text-slate-700 shadow-sm sm:text-xs">
-            Realtime vizualizáció
-          </span>
+        <div className="flex flex-wrap items-center gap-2 px-4 py-2 sm:px-5">
+          <Tag
+            value={isSocketConnected ? "Socket Connected" : "Socket Connecting"}
+            className={isSocketConnected ? "!bg-emerald-100 !text-emerald-800" : "!bg-amber-100 !text-amber-800"}
+          />
+          <Tag
+            value={sessionId ? `Session ${sessionId.slice(0, 8)}` : "Session Initializing"}
+            className="!bg-slate-100 !text-slate-700"
+          />
+          <Tag
+            value={`Active seats: ${students.length > 0 ? students.length : 12}`}
+            className="!bg-slate-100 !text-slate-700"
+          />
+          {lastError ? (
+            <Tag value={lastError} className="!bg-rose-100 !text-rose-700" />
+          ) : null}
         </div>
 
-        <div className="min-h-0 flex-1 p-3 pt-1 sm:p-4 sm:pt-2">
-          <ClassroomMockup students={students} />
+        <div className="flex items-center gap-2 px-4 pb-1 sm:px-5">
+          <InputText
+            value={hintDraft}
+            onChange={(event) => setHintDraft(event.target.value)}
+            placeholder="Whisper to teacher (e.g. ask for slower pace)"
+            className="h-9 flex-1 text-sm"
+          />
+          <Button
+            icon="pi pi-send"
+            label="Whisper"
+            size="small"
+            onClick={submitHint}
+            disabled={!hintDraft.trim()}
+          />
+        </div>
+
+        {isPausedForTaskAssignment && taskAssignmentRequired ? (
+          <div className="mx-4 mb-2 rounded-xl border border-amber-300 bg-amber-50 p-3 sm:mx-5">
+            <div className="mb-2 flex items-center justify-between">
+              <h3 className="text-xs font-bold uppercase tracking-wide text-amber-800">
+                Task Assignment Required (Turn {taskAssignmentRequired.lessonTurn})
+              </h3>
+              <Tag value="Simulation Paused" className="!bg-amber-200 !text-amber-900" />
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {(["individual", "pair", "group"] as const).map((mode) => (
+                <Button
+                  key={mode}
+                  size="small"
+                  label={mode}
+                  outlined={workMode !== mode}
+                  onClick={() => setWorkMode(mode)}
+                />
+              ))}
+            </div>
+
+            {workMode !== "individual" ? (
+              <div className="mt-3 grid max-h-28 grid-cols-1 gap-2 overflow-auto pr-1 sm:grid-cols-2">
+                {studentNodeIds.map((studentId, index) => (
+                  <div key={studentId} className="flex items-center gap-2">
+                    <span className="min-w-[88px] text-xs font-medium text-slate-700">
+                      {students[index]?.name ?? studentId}
+                    </span>
+                    <InputText
+                      value={groupDraftByStudent[studentId] ?? ""}
+                      onChange={(event) => assignStudentGroup(studentId, event.target.value)}
+                      placeholder={workMode === "pair" ? "pair_a" : "group_1"}
+                      className="h-8 flex-1 text-xs"
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : null}
+
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  inputId="apply-unsupervised"
+                  checked={applyToUnsupervised}
+                  onChange={(event) => setApplyToUnsupervised(Boolean(event.checked))}
+                />
+                <label htmlFor="apply-unsupervised" className="text-xs text-slate-700">
+                  Apply same methodology to unsupervised run
+                </label>
+              </div>
+
+              <Button size="small" label="Resume Simulation" onClick={() => void submitTaskAssignment()} />
+            </div>
+          </div>
+        ) : null}
+
+        <div className="min-h-0 flex-1">
+          <ClassroomMockup
+            students={students}
+            studentNodeIds={studentNodeIds}
+            nodeBubbles={nodeBubbles}
+          />
         </div>
       </div>
     </section>

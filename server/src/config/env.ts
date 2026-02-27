@@ -6,6 +6,7 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(3001),
   LLM_API_KEY: z.string().trim().min(1).optional(),
+  LLM_MODEL: z.string().trim().min(1).default('gpt-4.1-mini'),
 });
 
 const parsed = envSchema.safeParse(process.env);

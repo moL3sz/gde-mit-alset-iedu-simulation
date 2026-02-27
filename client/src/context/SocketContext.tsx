@@ -10,6 +10,7 @@ type SocketContextType = {
 const SocketContext = createContext<SocketContextType | undefined>(undefined);
 
 const SOCKET_BASE_URL = import.meta.env.VITE_SOCKET_URL ?? "http://localhost:3000";
+const SOCKET_PATH = "/socket.io";
 
 export function SocketProvider({ children }: { children: ReactNode }) {
   const [supervisedSocket, setSupervisedSocket] = useState<Socket | null>(null);
@@ -21,7 +22,9 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         return currentSocket;
       }
 
-      return io(`${SOCKET_BASE_URL}/supervised`);
+      return io(`${SOCKET_BASE_URL}/supervised`, {
+        path: SOCKET_PATH,
+      });
     });
 
     setUnsupervisedSocket((currentSocket) => {
@@ -29,7 +32,9 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         return currentSocket;
       }
 
-      return io(`${SOCKET_BASE_URL}/unsupervised`);
+      return io(`${SOCKET_BASE_URL}/unsupervised`, {
+        path: SOCKET_PATH,
+      });
     });
   }, []);
 

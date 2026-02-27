@@ -1,8 +1,10 @@
 import type {
   AgentKind,
   AgentState,
+  ClassroomRuntime,
   CommunicationActivation,
   CommunicationGraph,
+  SimulationChannel,
   SessionEvent,
   SessionMetrics,
   SessionMode,
@@ -34,6 +36,7 @@ export interface SessionCreatedRealtimeEvent {
   type: 'session_created';
   sessionId: string;
   mode: SessionMode;
+  channel: SimulationChannel;
   topic: string;
   metrics: SessionMetrics;
   communicationGraph: CommunicationGraph;
@@ -44,6 +47,7 @@ export interface TurnProcessedRealtimeEvent {
   type: 'turn_processed';
   sessionId: string;
   mode: SessionMode;
+  channel: SimulationChannel;
   topic: string;
   turnId: string;
   transcript: Turn[];
@@ -55,7 +59,32 @@ export interface TurnProcessedRealtimeEvent {
   studentStateChanges: StudentPersonalityChange[];
 }
 
-export type SimulationRealtimeEvent = SessionCreatedRealtimeEvent | TurnProcessedRealtimeEvent;
+export interface AgentTurnEmittedRealtimeEvent {
+  type: 'agent_turn_emitted';
+  sessionId: string;
+  mode: SessionMode;
+  channel: SimulationChannel;
+  topic: string;
+  requestTurnId: string;
+  emittedTurn: Turn;
+}
+
+export interface TaskAssignmentRequiredRealtimeEvent {
+  type: 'task_assignment_required';
+  sessionId: string;
+  mode: SessionMode;
+  channel: SimulationChannel;
+  topic: string;
+  lessonTurn: number;
+  phase: 'practice';
+  classroomRuntime?: ClassroomRuntime;
+}
+
+export type SimulationRealtimeEvent =
+  | SessionCreatedRealtimeEvent
+  | TurnProcessedRealtimeEvent
+  | AgentTurnEmittedRealtimeEvent
+  | TaskAssignmentRequiredRealtimeEvent;
 
 export type RealtimeClientCommandType = 'subscribe' | 'unsubscribe' | 'ping';
 
@@ -74,6 +103,7 @@ export interface WsEnvelope<TType extends string, TPayload> {
 export interface WsConnectedPayload {
   connectionId: string;
   endpoint: '/socket.io';
+  channel: SimulationChannel;
 }
 
 export interface WsSubscriptionPayload {
@@ -85,6 +115,17 @@ export interface WsTurnPayload {
   transcript: Turn[];
   events: SessionEvent[];
   metrics: SessionMetrics;
+}
+
+export interface WsAgentTurnPayload {
+  requestTurnId: string;
+  emittedTurn: Turn;
+}
+
+export interface WsTaskAssignmentRequiredPayload {
+  lessonTurn: number;
+  phase: 'practice';
+  classroomRuntime?: ClassroomRuntime;
 }
 
 export interface WsGraphPayload {
@@ -101,4 +142,10 @@ export interface WsStudentStatesPayload {
 
 export interface WsErrorPayload {
   message: string;
+}
+
+export interface WsSupervisorHintPayload {
+  sessionId: string;
+  hintText: string;
+  createdAt: string;
 }

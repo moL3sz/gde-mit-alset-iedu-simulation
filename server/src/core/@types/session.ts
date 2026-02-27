@@ -1,4 +1,5 @@
 export type SessionMode = 'classroom' | 'debate';
+export type SimulationChannel = 'supervised' | 'unsupervised';
 
 export type AgentKind =
   | 'teacher'
@@ -12,6 +13,11 @@ export type TurnRole = 'teacher' | 'user' | 'agent' | 'system';
 export type SessionEventType =
   | 'session_created'
   | 'turn_received'
+  | 'task_assignment_required'
+  | 'task_assignment_submitted'
+  | 'task_review_completed'
+  | 'supervisor_hint_received'
+  | 'supervisor_hint_applied'
   | 'agent_started'
   | 'agent_token'
   | 'agent_done'
@@ -96,6 +102,32 @@ export interface SessionConfig {
   debate?: DebateModeConfig;
 }
 
+export type ClassroomPhase = 'lecture' | 'practice' | 'review';
+export type TaskWorkMode = 'individual' | 'pair' | 'group';
+export type AssignmentAuthority = 'supervisor_user' | 'teacher_agent' | 'system_default';
+
+export interface TaskGroup {
+  id: string;
+  studentIds: string[];
+}
+
+export interface TaskAssignment {
+  mode: TaskWorkMode;
+  groups: TaskGroup[];
+  assignedBy: AssignmentAuthority;
+  assignedAt: string;
+  lessonTurn: number;
+}
+
+export interface ClassroomRuntime {
+  lessonTurn: number;
+  phase: ClassroomPhase;
+  paused: boolean;
+  pendingTaskAssignment: boolean;
+  activeTaskAssignment?: TaskAssignment;
+  lastReviewTurn?: number;
+}
+
 export interface AgentState {
   attention: number;
   boredom: number;
@@ -159,6 +191,7 @@ export interface SessionMetrics {
 export interface Session {
   id: string;
   mode: SessionMode;
+  channel: SimulationChannel;
   topic: string;
   config: SessionConfig;
   agents: AgentProfile[];
@@ -166,6 +199,7 @@ export interface Session {
   turns: Turn[];
   events: SessionEvent[];
   metrics: SessionMetrics;
+  classroomRuntime?: ClassroomRuntime;
   createdAt: string;
   updatedAt: string;
 }

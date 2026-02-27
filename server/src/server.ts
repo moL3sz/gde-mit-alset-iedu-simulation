@@ -2,6 +2,7 @@ import type { Server } from 'node:http';
 
 import { app } from './app';
 import { env } from './config/env';
+import { sessionsService } from './core/modules/sessions/sessions.service';
 import { attachSimulationWebSocketGateway } from './core/realtime/websocketGateway';
 import { logger } from './core/shared/logger';
 
@@ -11,7 +12,9 @@ const server: Server = app.listen(env.PORT, () => {
     nodeEnv: env.NODE_ENV,
   });
 });
-const webSocketGateway = attachSimulationWebSocketGateway(server);
+const webSocketGateway = attachSimulationWebSocketGateway(server, {
+  submitSupervisorHint: (sessionId, hintText) => sessionsService.submitSupervisorHint(sessionId, hintText),
+});
 
 const shutdown = (signal: NodeJS.Signals): void => {
   logger.info('shutdown_signal_received', { signal });

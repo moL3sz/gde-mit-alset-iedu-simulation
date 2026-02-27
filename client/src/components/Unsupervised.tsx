@@ -1,38 +1,30 @@
-import { useMemo } from "react";
 import { Button } from "primereact/button";
+import { Tag } from "primereact/tag";
 
-import ClassroomMockup, { type ClassroomStudent } from "./ClassroomMockup";
+import ClassroomMockup, {
+  type ClassroomStudent,
+  type CommunicationBubble,
+} from "./ClassroomMockup";
 
-type StudentSetupPayload = {
-  students?: ClassroomStudent[];
+export type UnsupervisedProps = {
+  sessionId: string | null;
+  students: ClassroomStudent[];
+  studentNodeIds: string[];
+  nodeBubbles: CommunicationBubble[];
+  isSocketConnected: boolean;
+  lastError: string | null;
+  isPausedForTaskAssignment?: boolean;
 };
 
-const readStoredStudents = (): ClassroomStudent[] => {
-  if (typeof window === "undefined") {
-    return [];
-  }
-
-  const raw = window.localStorage.getItem("studentsSetup");
-
-  if (!raw) {
-    return [];
-  }
-
-  try {
-    const parsed = JSON.parse(raw) as StudentSetupPayload;
-    if (!Array.isArray(parsed.students)) {
-      return [];
-    }
-
-    return parsed.students;
-  } catch {
-    return [];
-  }
-};
-
-export const Unsupervised = () => {
-  const students = useMemo(() => readStoredStudents(), []);
-
+export const Unsupervised = ({
+  sessionId,
+  students,
+  studentNodeIds,
+  nodeBubbles,
+  isSocketConnected,
+  lastError,
+  isPausedForTaskAssignment = false,
+}: UnsupervisedProps) => {
   return (
     <section className="h-full w-full p-2 md:w-1/2 md:p-3">
       <div
@@ -45,7 +37,7 @@ export const Unsupervised = () => {
               Unsupervised
             </h1>
             <p className="mt-1 text-xs font-semibold tracking-wide text-slate-600 sm:text-sm">
-              Önálló interakciók vizualizációja
+              Teacher autonomously adapts lesson strategy
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -66,17 +58,32 @@ export const Unsupervised = () => {
           </div>
         </div>
 
-        <div className="flex items-center justify-between gap-2 px-4 py-2 sm:px-5">
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold tracking-wide text-slate-700 shadow-sm sm:text-xs">
-            Aktív diákhelyek: {students.length > 0 ? students.length : 12}
-          </span>
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold tracking-wide text-slate-700 shadow-sm sm:text-xs">
-            Classroom nézet
-          </span>
+        <div className="flex flex-wrap items-center gap-2 px-4 py-2 sm:px-5">
+          <Tag
+            value={isSocketConnected ? "Socket Connected" : "Socket Connecting"}
+            className={isSocketConnected ? "!bg-emerald-100 !text-emerald-800" : "!bg-amber-100 !text-amber-800"}
+          />
+          <Tag
+            value={sessionId ? `Session ${sessionId.slice(0, 8)}` : "Session Initializing"}
+            className="!bg-slate-100 !text-slate-700"
+          />
+          <Tag
+            value={`Active seats: ${students.length > 0 ? students.length : 12}`}
+            className="!bg-slate-100 !text-slate-700"
+          />
+          {isPausedForTaskAssignment ? (
+            <Tag value="Paused for Assignment" className="!bg-amber-100 !text-amber-800" />
+          ) : null}
         </div>
 
-        <div className="min-h-0 flex-1 p-3 pt-1 sm:p-4 sm:pt-2">
-          <ClassroomMockup students={students} />
+        {lastError ? <p className="px-4 text-xs font-medium text-rose-700 sm:px-5">{lastError}</p> : null}
+
+        <div className="min-h-0 flex-1">
+          <ClassroomMockup
+            students={students}
+            studentNodeIds={studentNodeIds}
+            nodeBubbles={nodeBubbles}
+          />
         </div>
       </div>
     </section>

@@ -4,10 +4,13 @@ import type {
   GetSessionResponse,
   PostTurnRequest,
   PostTurnResponse,
+  SubmitTaskAssignmentRequest,
+  SubmitTaskAssignmentResponse,
+  SubmitSupervisorHintResponse,
 } from '../../@types';
 import { env } from '../../../config/env';
 import { SessionMemory } from '../../memory/sessionMemory';
-import { Orchestrator } from '../../orchestrator';
+import { Orchestrator, type AgentTurnEmission } from '../../orchestrator';
 import {
   calculateStudentPersonalityChanges,
   extractStudentPersonalitySnapshots,
@@ -29,6 +32,7 @@ export class SessionsService {
         type: 'session_created',
         sessionId: created.sessionId,
         mode: summary.mode,
+        channel: summary.channel,
         topic: summary.topic,
         metrics: summary.metrics,
         communicationGraph: summary.communicationGraph,
@@ -52,16 +56,48 @@ export class SessionsService {
     const beforeSummary = this.orchestrator.getSessionSummary(sessionId);
     const beforeStudentStates = extractStudentPersonalitySnapshots(beforeSummary.agents);
 
-    const response = await this.orchestrator.processTurn(sessionId, payload.teacherOrUserMessage);
+    const response = await this.orchestrator.processTurn(
+      sessionId,
+      payload.teacherOrUserMessage,
+      (emission: AgentTurnEmission) => {
+        simulationRealtimeBus.publish({
+          type: 'agent_turn_emitted',
+          sessionId: emission.sessionId,
+          mode: emission.mode,
+          channel: emission.channel,
+          topic: emission.topic,
+          requestTurnId: emission.requestTurnId,
+          emittedTurn: emission.emittedTurn,
+        });
+      },
+    );
+
+    const taskAssignmentRequiredEvent = response.events.find(
+      (event) => event.type === 'task_assignment_required',
+    );
 
     try {
       const afterSummary = this.orchestrator.getSessionSummary(sessionId);
       const afterStudentStates = extractStudentPersonalitySnapshots(afterSummary.agents);
 
+      if (taskAssignmentRequiredEvent) {
+        simulationRealtimeBus.publish({
+          type: 'task_assignment_required',
+          sessionId,
+          mode: afterSummary.mode,
+          channel: afterSummary.channel,
+          topic: afterSummary.topic,
+          lessonTurn: Number(taskAssignmentRequiredEvent.payload.lessonTurn ?? 0),
+          phase: 'practice',
+          classroomRuntime: afterSummary.classroomRuntime,
+        });
+      }
+
       simulationRealtimeBus.publish({
         type: 'turn_processed',
         sessionId,
         mode: afterSummary.mode,
+        channel: afterSummary.channel,
         topic: afterSummary.topic,
         turnId: response.turnId,
         transcript: response.transcript,
@@ -85,10 +121,21 @@ export class SessionsService {
 
     return response;
   }
+
+  public submitSupervisorHint(sessionId: string, hintText: string): SubmitSupervisorHintResponse {
+    return this.orchestrator.submitSupervisorHint(sessionId, hintText);
+  }
+
+  public submitTaskAssignment(
+    sessionId: string,
+    payload: SubmitTaskAssignmentRequest,
+  ): SubmitTaskAssignmentResponse {
+    return this.orchestrator.submitTaskAssignment(sessionId, payload);
+  }
 }
 
 const memory = new SessionMemory();
-const llmTool = createLlmTool(env.LLM_API_KEY);
+const llmTool = createLlmTool(env.LLM_API_KEY, env.LLM_MODEL);
 const orchestrator = new Orchestrator(memory, llmTool);
 
 export const sessionsService = new SessionsService(orchestrator);
