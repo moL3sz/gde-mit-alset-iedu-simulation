@@ -3,17 +3,19 @@ import { Button } from "primereact/button";
 import { Checkbox } from "primereact/checkbox";
 import { InputText } from "primereact/inputtext";
 import { Tag } from "primereact/tag";
-import type {
-  SubmitTaskAssignmentInput,
-  TaskAssignmentRequiredPayload,
-  TaskGroup,
-  TaskWorkMode,
-} from "../hooks/useSimulationChannel";
 
+import {
+  type SubmitTaskAssignmentInput,
+  type TaskAssignmentRequiredPayload,
+  type TaskGroup,
+  type TaskWorkMode,
+} from "../hooks/useSimulationChannel";
+import { useSockets } from "../context/SocketContext";
 import ClassroomMockup, {
   type ClassroomStudent,
   type CommunicationBubble,
 } from "./ClassroomMockup";
+import ChartsModal from "./ChartsModal";
 
 export type SupervisedProps = {
   sessionId: string | null;
@@ -43,9 +45,11 @@ export const Supervised = ({
   onSubmitTaskAssignment,
   onSendHint,
 }: SupervisedProps) => {
+  const { supervisedSocket } = useSockets();
   const [hintDraft, setHintDraft] = useState("");
   const [workMode, setWorkMode] = useState<TaskWorkMode>("individual");
   const [applyToUnsupervised, setApplyToUnsupervised] = useState(false);
+  const [isChartsVisible, setIsChartsVisible] = useState(false);
   const [groupDraftByStudent, setGroupDraftByStudent] = useState<Record<string, string>>({});
 
   const submitHint = () => {
@@ -100,7 +104,7 @@ export const Supervised = ({
   return (
     <section className="h-full w-full p-2 md:w-1/2 md:p-3">
       <div
-        className="flex h-full flex-col rounded-3xl border border-slate-300/60 bg-[#f2f4f7] shadow-[0_16px_34px_rgba(28,49,83,0.1)]"
+        className="relative flex h-full flex-col rounded-3xl border border-slate-300/60 bg-[#f2f4f7] shadow-[0_16px_34px_rgba(28,49,83,0.1)]"
         style={{ fontFamily: "'Trebuchet MS', Verdana, sans-serif" }}
       >
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-300/70 px-4 py-3 sm:px-5 sm:py-4">
@@ -120,6 +124,7 @@ export const Supervised = ({
               severity="secondary"
               outlined
               size="small"
+              onClick={() => setIsChartsVisible((currentState) => !currentState)}
             />
             <Button
               icon="pi pi-sitemap"
@@ -228,6 +233,14 @@ export const Supervised = ({
             nodeBubbles={nodeBubbles}
           />
         </div>
+
+        <ChartsModal
+          visible={isChartsVisible}
+          onHide={() => setIsChartsVisible(false)}
+          socket={supervisedSocket}
+          title="Supervised Charts"
+          className="left-4 right-4 top-[112px] bottom-4"
+        />
       </div>
     </section>
   );
