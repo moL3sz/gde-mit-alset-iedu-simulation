@@ -3,6 +3,7 @@ import { Dropdown, type DropdownChangeEvent } from 'primereact/dropdown';
 import EduCover from "../assets/edu.jpg"
 import { useSockets } from ".././context/SocketContext.tsx";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const START_STORAGE_KEY = "startSetup";
 const STUDENTS_STORAGE_KEY = "studentsSetup";
@@ -34,6 +35,7 @@ const safeParse = (value: string | null) => {
 export const StartPage = () =>{
 
     const { initializeSockets } = useSockets();
+    const navigate = useNavigate();
     const [subject, setSubject] = useState<string | null>(null);
 
     useEffect(() => {
@@ -71,6 +73,7 @@ export const StartPage = () =>{
 
       console.log("Simulation setup:", simulationPayload);
       initializeSockets();
+      navigate("/simulation");
     };
 
     return <div className="flex flex-col items-center justify-center h-screen">
