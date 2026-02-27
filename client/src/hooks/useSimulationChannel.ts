@@ -90,6 +90,25 @@ type UseSimulationChannelResult = {
 };
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000/api";
+const CLASSROOM_ID_STORAGE_KEY = "classroomId";
+
+const getClassroomIdFromStorage = (): number | undefined => {
+  if (typeof window === "undefined") {
+    return undefined;
+  }
+
+  const raw = window.localStorage.getItem(CLASSROOM_ID_STORAGE_KEY);
+  if (!raw) {
+    return undefined;
+  }
+
+  const numeric = Number(raw);
+  if (!Number.isInteger(numeric) || numeric <= 0) {
+    return undefined;
+  }
+
+  return numeric;
+};
 
 const toActionLabel = (value: string): string =>
   value
@@ -266,6 +285,8 @@ export const useSimulationChannel = ({
 
     const createSession = async () => {
       try {
+        const classroomId = getClassroomIdFromStorage();
+
         const response = await fetch(`${API_BASE_URL}/sessions`, {
           method: "POST",
           headers: {
@@ -275,6 +296,7 @@ export const useSimulationChannel = ({
             mode: "classroom",
             channel,
             topic,
+            ...(typeof classroomId === "number" ? { classroomId } : {}),
           }),
         });
 

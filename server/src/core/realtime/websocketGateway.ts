@@ -13,6 +13,7 @@ import type {
   WsTurnPayload,
 } from '../@types';
 import { logger } from '../shared/logger';
+import { registerSocketCommandHandlers } from './socketCommandHandlers';
 import { simulationRealtimeBus } from './simulationRealtimeBus';
 
 const SOCKET_IO_PATH = '/socket.io';
@@ -151,6 +152,8 @@ class SimulationSocketGateway {
   }
 
   private handleConnection(socket: Socket, channel: SimulationChannel): void {
+    registerSocketCommandHandlers(socket);
+
     logger.info('socket_client_connected', {
       channel,
       socketId: socket.id,

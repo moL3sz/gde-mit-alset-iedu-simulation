@@ -83,7 +83,7 @@ export class Orchestrator {
     private readonly llmTool: LlmTool,
   ) {}
 
-  public createSession(input: CreateSessionRequest): CreateSessionResponse {
+  public async createSession(input: CreateSessionRequest): Promise<CreateSessionResponse> {
     const mode = input.mode;
     const channel: SimulationChannel = input.channel ?? 'unsupervised';
     const agents = this.buildDefaultAgents(mode);
@@ -91,6 +91,8 @@ export class Orchestrator {
     if (!input.topic.trim()) {
       throw new AppError(400, 'Topic is required.');
     }
+
+   
 
     const communicationGraph = createSessionCommunicationGraph(mode, agents, input.config);
 

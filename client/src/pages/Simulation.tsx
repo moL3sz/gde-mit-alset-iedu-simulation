@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { ProgressBar } from "primereact/progressbar";
-
 import { Supervised } from "../components/Supervised";
 import { Unsupervised } from "../components/Unsupervised";
 import { useSockets } from "../context/SocketContext";
