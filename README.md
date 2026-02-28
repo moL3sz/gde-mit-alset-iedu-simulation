@@ -17,35 +17,35 @@
 
 ## Project Goal
 
-Ez a projekt egy **agent-mode oktatási szimulációs platform**:
+This project is an **agent-mode education simulation platform** with:
 
-- valós idejű (Socket.IO) osztálytermi interakciókkal,
-- teacher + student agent viselkedéssel,
-- kommunikációs gráf vizualizációval,
-- élő állapot- és metrika chartokkal,
-- supervised és unsupervised futási móddal.
+- real-time classroom interactions via Socket.IO,
+- teacher + student agent behavior modeling,
+- communication graph visualization,
+- live state and metric charts,
+- supervised and unsupervised simulation modes.
 
-A cél az, hogy realisztikusan modellezhető legyen, hogyan változik egy osztály dinamika, figyelem, és tudásátadás egy teljes tanórán.
+The core goal is to realistically simulate how classroom dynamics, attention, and knowledge transfer evolve during a full lesson.
 
 ## Main Features
 
 - **Dual simulation mode**
-  - `supervised`: a felhasználó be tud avatkozni (teacher whisper, task assignment).
-  - `unsupervised`: a teacher agent autonóm adaptációt végez.
+  - `supervised`: a human supervisor can intervene (teacher whisper, task assignment).
+  - `unsupervised`: the teacher agent adapts the lesson autonomously.
 - **Realtime classroom graph**
-  - node-ok: teacher + students,
-  - edge-ek: teacher broadcast, teacher->student, student->teacher, student<->student.
+  - nodes: teacher + students
+  - edges: teacher broadcast, teacher->student, student->teacher, student<->student
 - **Live bubbles & action stream**
-  - kommunikációs buborékok az avatarok körül,
-  - student állapotból levezetett akciók.
+  - communication bubbles near avatars
+  - student state-driven live actions
 - **Metrics and analytics**
-  - attention/boredom/emotion idősorok,
-  - “How well did they grasp the material?” százalékos összegzés.
+  - attention/boredom/emotion timelines
+  - “How well did they grasp the material?” percentage summary
 - **Production-ready backend baseline**
-  - typed Express API, request id + structured logger, middleware-k, health endpoint.
+  - typed Express API, request id, structured logging, middleware chain, health endpoint
 - **Azure OpenAI integration**
-  - Azure OpenAI hívás támogatás,
-  - deterministic fallback/mock viselkedés.
+  - Azure OpenAI support
+  - deterministic mock fallback behavior
 
 ## Repository Layout
 
@@ -74,7 +74,7 @@ flowchart LR
 
 ## API Overview
 
-Base URL: `http://localhost:3000/api` (vagy a beállított `PORT`).
+Base URL: `http://localhost:3000/api` (or your configured `PORT`).
 
 ### Health
 
@@ -82,11 +82,11 @@ Base URL: `http://localhost:3000/api` (vagy a beállított `PORT`).
 
 ### Simulation Sessions
 
-- `POST /api/sessions` - session indítás
-- `GET /api/sessions/:id` - session summary
-- `POST /api/sessions/:id/turn` - turn futtatás
-- `POST /api/sessions/:id/task-assignment` - supervised task assignment
-- `GET /api/sessions/:id/stream` - SSE placeholder (jelenleg 501)
+- `POST /api/sessions` - create session
+- `GET /api/sessions/:id` - get session summary
+- `POST /api/sessions/:id/turn` - process simulation turn
+- `POST /api/sessions/:id/task-assignment` - submit supervised task assignment
+- `GET /api/sessions/:id/stream` - SSE placeholder (currently `501`)
 
 ### Classroom & Student Management
 
@@ -110,7 +110,7 @@ Client -> server:
 - `unsubscribe`
 - `ping`
 - `command`
-- `supervisor.whisper` (csak supervised)
+- `supervisor.whisper` (supervised only)
 
 Server -> client:
 
@@ -129,19 +129,19 @@ Server -> client:
 
 ## Local Development
 
-## 1. Prerequisites
+### 1. Prerequisites
 
 - Node.js 20+
 - npm
-- Docker (Postgres-hez ajánlott)
+- Docker (recommended for PostgreSQL)
 
-## 2. Start PostgreSQL (local)
+### 2. Start PostgreSQL (local)
 
 ```bash
 docker compose up -d postgres
 ```
 
-## 3. Backend setup
+### 3. Backend setup
 
 ```bash
 cd server
@@ -150,9 +150,9 @@ cp .env.example .env
 npm run dev
 ```
 
-Megjegyzés: a szerver induláskor futtatja a migrációkat automatikusan.
+Note: the server automatically runs migrations at startup.
 
-## 4. Frontend setup
+### 4. Frontend setup
 
 ```bash
 cd client
@@ -160,16 +160,16 @@ npm install
 npm run dev
 ```
 
-Ajánlott `client/.env`:
+Recommended `client/.env`:
 
 ```bash
 VITE_API_URL=http://localhost:3000/api
 VITE_SOCKET_URL=http://localhost:3000
 ```
 
-Frontend: `http://localhost:5173`
+Frontend URL: `http://localhost:5173`
 
-## 5. TypeORM migration manuálisan
+### 5. Run TypeORM migration manually
 
 ```bash
 cd server
@@ -178,28 +178,28 @@ npm run typeorm:migrate
 
 ## Production Deployment
 
-## Docker images build + push
+### Build and push Docker images
 
 ```bash
 ./deploy.sh <dockerhub_username> [tag] [vite_api_url]
 ```
 
-Példa:
+Example:
 
 ```bash
 ./deploy.sh mydockeruser v1.2.0 https://mydomain.com/api
 ```
 
-## Full stack indítás prod compose-szal
+### Start full production stack
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d
 ```
 
-Fontos env változók `docker-compose.prod.yml`-hez:
+Important env vars for `docker-compose.prod.yml`:
 
-- `DOCKERHUB_USERNAME` (kötelező)
-- `IMAGE_TAG` (opcionális, default: `latest`)
+- `DOCKERHUB_USERNAME` (required)
+- `IMAGE_TAG` (optional, default: `latest`)
 - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`
 - `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_DEPLOYMENT`
 
@@ -207,16 +207,16 @@ Reverse proxy routing:
 
 - `/api/*` -> `server`
 - `/socket.io/*` -> `server`
-- minden más -> `client`
+- everything else -> `client`
 
 ## Tech Notes
 
 - Backend: `Express + TypeScript + TypeORM + Socket.IO + Zod`
 - Frontend: `React + Vite + PrimeReact + Chart.js + Tailwind`
 - Logging: request id + structured logs
-- Security baseline: safety guardrails + error middleware
-- Auth: MVP-ben még nincs bekötve (placeholder van)
+- Security baseline: safety guardrails + centralized error middleware
+- Auth: currently placeholder-only (MVP phase)
 
 ## License
 
-MIT - lásd: [LICENSE](./LICENSE)
+MIT - see [LICENSE](./LICENSE)
