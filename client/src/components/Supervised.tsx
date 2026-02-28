@@ -52,6 +52,8 @@ export const Supervised = ({
   graph,
 }: SupervisedProps) => {
   const { supervisedSocket } = useSockets();
+  const laraPrimary = "var(--primary-color, #6366f1)";
+  const laraPrimaryDark = "var(--primary-600, #4f46e5)";
   const [hintDraft, setHintDraft] = useState("");
   const [workMode, setWorkMode] = useState<TaskWorkMode>("individual");
   const [applyToUnsupervised, setApplyToUnsupervised] = useState(false);
@@ -112,12 +114,12 @@ export const Supervised = ({
   return (
     <section className="h-full w-full p-2 md:w-1/2 md:p-3">
       <div
-        className="relative flex h-full flex-col rounded-3xl border border-slate-300/60 bg-[#f2f4f7] shadow-[0_16px_34px_rgba(28,49,83,0.1)]"
-        style={{ fontFamily: "'Trebuchet MS', Verdana, sans-serif" }}
+        className="relative flex h-full flex-col overflow-hidden rounded-3xl border border-white/55 bg-white/90 shadow-[0_18px_42px_rgba(28,49,83,0.16)] backdrop-blur-sm"
+        style={{ fontFamily: "'Avenir Next', 'Segoe UI', 'Trebuchet MS', sans-serif" }}
       >
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-300/70 px-4 py-3 sm:px-5 sm:py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-gradient-to-r from-white via-indigo-50/50 to-cyan-50/45 px-4 py-3 sm:px-5 sm:py-4">
           <div className="min-w-0">
-            <h1 className="truncate text-xl font-black uppercase tracking-[0.14em] text-slate-800 sm:text-2xl">
+            <h1 className="truncate text-xl font-black uppercase tracking-[0.14em] text-slate-900 sm:text-2xl">
               Supervised Mode
             </h1>
             <p className="mt-1 text-xs font-semibold tracking-wide text-slate-600 sm:text-sm">
@@ -132,6 +134,7 @@ export const Supervised = ({
               severity="secondary"
               outlined
               size="small"
+              className="h-9 !border-indigo-200 !text-indigo-700 hover:!bg-indigo-50"
               onClick={() => setIsChartsVisible((currentState) => !currentState)}
             />
             <Button
@@ -140,12 +143,13 @@ export const Supervised = ({
               severity="secondary"
               outlined
               size="small"
+              className="h-9 !border-indigo-200 !text-indigo-700 hover:!bg-indigo-50"
               onClick={() => setIsGraphVisible((currentState) => !currentState)}
             />
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 px-4 py-2 sm:px-5">
+        <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 px-4 py-2.5 sm:px-5">
           <Tag
             value={isSocketConnected ? "Socket Connected" : "Socket Connecting"}
             className={isSocketConnected ? "!bg-emerald-100 !text-emerald-800" : "!bg-amber-100 !text-amber-800"}
@@ -163,24 +167,29 @@ export const Supervised = ({
           ) : null}
         </div>
 
-        <div className="flex items-center gap-2 px-4 pb-1 sm:px-5">
+        <div className="flex items-center gap-2 px-4 pb-2 pt-2 sm:px-5">
           <InputText
             value={hintDraft}
             onChange={(event) => setHintDraft(event.target.value)}
             placeholder="Whisper to teacher (e.g. ask for slower pace)"
-            className="h-9 flex-1 text-sm"
+            className="h-10 flex-1 rounded-lg text-sm"
           />
           <Button
             icon="pi pi-send"
             label="Whisper"
             size="small"
+            className="h-10 !border-0"
+            style={{
+              background: `linear-gradient(135deg, ${laraPrimaryDark}, ${laraPrimary})`,
+              color: "#ffffff",
+            }}
             onClick={submitHint}
             disabled={!hintDraft.trim()}
           />
         </div>
 
         {isPausedForTaskAssignment && taskAssignmentRequired ? (
-          <div className="mx-4 mb-2 rounded-xl border border-amber-300 bg-amber-50 p-3 sm:mx-5">
+          <div className="mx-4 mb-3 rounded-2xl border border-amber-200 bg-amber-50/90 p-3 shadow-sm sm:mx-5">
             <div className="mb-2 flex items-center justify-between">
               <h3 className="text-xs font-bold uppercase tracking-wide text-amber-800">
                 Task Assignment Required (Turn {taskAssignmentRequired.lessonTurn})
@@ -194,6 +203,7 @@ export const Supervised = ({
                   key={mode}
                   size="small"
                   label={mode}
+                  className="h-8"
                   outlined={workMode !== mode}
                   onClick={() => setWorkMode(mode)}
                 />
@@ -211,7 +221,7 @@ export const Supervised = ({
                       value={groupDraftByStudent[studentId] ?? ""}
                       onChange={(event) => assignStudentGroup(studentId, event.target.value)}
                       placeholder={workMode === "pair" ? "pair_a" : "group_1"}
-                      className="h-8 flex-1 text-xs"
+                      className="h-8 flex-1 rounded-md text-xs"
                     />
                   </div>
                 ))}
@@ -230,12 +240,21 @@ export const Supervised = ({
                 </label>
               </div>
 
-              <Button size="small" label="Resume Simulation" onClick={() => void submitTaskAssignment()} />
+              <Button
+                size="small"
+                label="Resume Simulation"
+                className="!border-0"
+                style={{
+                  background: `linear-gradient(135deg, ${laraPrimaryDark}, ${laraPrimary})`,
+                  color: "#ffffff",
+                }}
+                onClick={() => void submitTaskAssignment()}
+              />
             </div>
           </div>
         ) : null}
 
-        <div className="min-h-0 flex-1">
+        <div className="min-h-0 flex-1 px-2 pb-2 sm:px-3 sm:pb-3">
           <ClassroomMockup
             students={students}
             studentNodeIds={studentNodeIds}

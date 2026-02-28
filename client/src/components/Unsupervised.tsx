@@ -41,12 +41,12 @@ export const Unsupervised = ({
   return (
     <section className="h-full w-full p-2 md:w-1/2 md:p-3">
       <div
-        className="relative flex h-full flex-col rounded-3xl border border-slate-300/70 bg-[#f2f4f7] shadow-[0_16px_34px_rgba(15,23,42,0.1)]"
-        style={{ fontFamily: "'Trebuchet MS', Verdana, sans-serif" }}
+        className="relative flex h-full flex-col overflow-hidden rounded-3xl border border-white/55 bg-white/90 shadow-[0_18px_42px_rgba(15,23,42,0.16)] backdrop-blur-sm"
+        style={{ fontFamily: "'Avenir Next', 'Segoe UI', 'Trebuchet MS', sans-serif" }}
       >
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-300/70 px-4 py-3 sm:px-5 sm:py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-gradient-to-r from-white via-indigo-50/45 to-cyan-50/40 px-4 py-3 sm:px-5 sm:py-4">
           <div className="min-w-0">
-            <h1 className="truncate text-xl font-black uppercase tracking-[0.14em] text-slate-700 sm:text-2xl">
+            <h1 className="truncate text-xl font-black uppercase tracking-[0.14em] text-slate-900 sm:text-2xl">
               Unsupervised
             </h1>
             <p className="mt-1 text-xs font-semibold tracking-wide text-slate-600 sm:text-sm">
@@ -60,6 +60,7 @@ export const Unsupervised = ({
               severity="secondary"
               outlined
               size="small"
+              className="h-9 !border-indigo-200 !text-indigo-700 hover:!bg-indigo-50"
               onClick={() => setIsChartsVisible((currentState) => !currentState)}
             />
             <Button
@@ -68,12 +69,13 @@ export const Unsupervised = ({
               severity="secondary"
               outlined
               size="small"
+              className="h-9 !border-indigo-200 !text-indigo-700 hover:!bg-indigo-50"
               onClick={() => setIsGraphVisible((currentState) => !currentState)}
             />
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 px-4 py-2 sm:px-5">
+        <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 px-4 py-2.5 sm:px-5">
           <Tag
             value={isSocketConnected ? "Socket Connected" : "Socket Connecting"}
             className={isSocketConnected ? "!bg-emerald-100 !text-emerald-800" : "!bg-amber-100 !text-amber-800"}
@@ -91,9 +93,13 @@ export const Unsupervised = ({
           ) : null}
         </div>
 
-        {lastError ? <p className="px-4 text-xs font-medium text-rose-700 sm:px-5">{lastError}</p> : null}
+        {lastError ? (
+          <p className="mx-4 mt-2 rounded-lg bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 sm:mx-5">
+            {lastError}
+          </p>
+        ) : null}
 
-        <div className="min-h-0 flex-1">
+        <div className="min-h-0 flex-1 px-2 pb-2 sm:px-3 sm:pb-3">
           <ClassroomMockup
             students={students}
             studentNodeIds={studentNodeIds}

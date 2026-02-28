@@ -120,6 +120,11 @@ export const ClassRoom = () => {
   const [classroomName, setClassroomName] = useState("Classroom");
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const laraPrimary = "var(--primary-color, #6366f1)";
+  const laraPrimaryDark = "var(--primary-600, #4f46e5)";
+  const laraSurface = "var(--surface-card, #ffffff)";
+  const laraText = "var(--text-color, #1f2937)";
+  const laraTextMuted = "var(--text-color-secondary, #64748b)";
 
   useEffect(() => {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -341,28 +346,161 @@ export const ClassRoom = () => {
 
   if (seatIds.length === 0) {
     return (
-      <div className="p-4 flex justify-center">
-        <Card title="No students found" className="max-w-md w-full">
-          <p className="mb-3">You need to configure students first.</p>
-          <Button label="Back to Students" onClick={() => navigate("/")} />
-        </Card>
+      <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 py-10">
+        <style>
+          {`
+            @keyframes classroomSkyShift {
+              0% { background-position: 0% 40%; }
+              50% { background-position: 100% 60%; }
+              100% { background-position: 0% 40%; }
+            }
+            @keyframes classroomBlobFloatA {
+              0% { transform: translate3d(-8%, 0%, 0) rotate(-4deg) scale(1.02); }
+              50% { transform: translate3d(7%, -4%, 0) rotate(4deg) scale(1.1); }
+              100% { transform: translate3d(-8%, 0%, 0) rotate(-4deg) scale(1.02); }
+            }
+            @keyframes classroomBlobFloatB {
+              0% { transform: translate3d(8%, 0%, 0) rotate(4deg) scale(1.03); }
+              50% { transform: translate3d(-8%, 4%, 0) rotate(-4deg) scale(1.12); }
+              100% { transform: translate3d(8%, 0%, 0) rotate(4deg) scale(1.03); }
+            }
+          `}
+        </style>
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(122deg, #4f46e5 0%, #6366f1 18%, #818cf8 36%, #60a5fa 54%, #38bdf8 72%, #6366f1 100%)",
+            backgroundSize: "230% 230%",
+            animation: "classroomSkyShift 14s ease-in-out infinite",
+          }}
+        />
+        <div
+          className="pointer-events-none absolute -left-[20%] -top-[26%] h-[60%] w-[120%] rounded-[100%] blur-3xl"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 70%)",
+            animation: "classroomBlobFloatA 16s ease-in-out infinite",
+          }}
+        />
+        <div
+          className="pointer-events-none absolute -bottom-[32%] -right-[18%] h-[72%] w-[130%] rounded-[100%] blur-3xl"
+          style={{
+            background: "radial-gradient(circle, rgba(79,70,229,0.28) 0%, rgba(79,70,229,0) 75%)",
+            animation: "classroomBlobFloatB 18s ease-in-out infinite",
+          }}
+        />
+
+        <section
+          className="relative z-10 w-full max-w-lg rounded-2xl p-7 shadow-[0_24px_64px_rgba(30,41,59,0.35)]"
+          style={{
+            background: laraSurface,
+            fontFamily: "'Avenir Next', 'Segoe UI', 'Trebuchet MS', sans-serif",
+          }}
+        >
+          <h1 className="text-2xl font-black tracking-tight" style={{ color: laraText }}>
+            No Students Found
+          </h1>
+          <p className="mt-3 text-sm leading-6" style={{ color: laraTextMuted }}>
+            You need to configure students first before setting up classroom seats.
+          </p>
+          <Button
+            label="Back to Students"
+            className="mt-6 h-11 rounded-xl !border-0 px-6 font-semibold"
+            style={{
+              background: `linear-gradient(135deg, ${laraPrimaryDark}, ${laraPrimary})`,
+              color: "#ffffff",
+              boxShadow: "0 12px 30px rgba(99,102,241,0.34)",
+            }}
+            onClick={() => navigate("/students")}
+          />
+        </section>
       </div>
     );
   }
 
   return (
-    <div className="p-4">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold">Classroom Seating</h1>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm">Classroom name</span>
-          <InputText
-            value={classroomName}
-            onChange={(event) => setClassroomName(event.target.value)}
-            placeholder="Enter classroom name"
-            className="p-inputtext-sm w-56"
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 py-10 sm:py-14">
+      <style>
+        {`
+          @keyframes classroomSkyShift {
+            0% { background-position: 0% 40%; }
+            50% { background-position: 100% 60%; }
+            100% { background-position: 0% 40%; }
+          }
+          @keyframes classroomBlobFloatA {
+            0% { transform: translate3d(-8%, 0%, 0) rotate(-4deg) scale(1.02); }
+            50% { transform: translate3d(7%, -4%, 0) rotate(4deg) scale(1.1); }
+            100% { transform: translate3d(-8%, 0%, 0) rotate(-4deg) scale(1.02); }
+          }
+          @keyframes classroomBlobFloatB {
+            0% { transform: translate3d(8%, 0%, 0) rotate(4deg) scale(1.03); }
+            50% { transform: translate3d(-8%, 4%, 0) rotate(-4deg) scale(1.12); }
+            100% { transform: translate3d(8%, 0%, 0) rotate(4deg) scale(1.03); }
+          }
+        `}
+      </style>
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(122deg, #4f46e5 0%, #6366f1 18%, #818cf8 36%, #60a5fa 54%, #38bdf8 72%, #6366f1 100%)",
+          backgroundSize: "230% 230%",
+          animation: "classroomSkyShift 14s ease-in-out infinite",
+        }}
+      />
+      <div
+        className="pointer-events-none absolute -left-[20%] -top-[26%] h-[60%] w-[120%] rounded-[100%] blur-3xl"
+        style={{
+          background: "radial-gradient(circle, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 70%)",
+          animation: "classroomBlobFloatA 16s ease-in-out infinite",
+        }}
+      />
+      <div
+        className="pointer-events-none absolute -bottom-[32%] -right-[18%] h-[72%] w-[130%] rounded-[100%] blur-3xl"
+        style={{
+          background: "radial-gradient(circle, rgba(79,70,229,0.28) 0%, rgba(79,70,229,0) 75%)",
+          animation: "classroomBlobFloatB 18s ease-in-out infinite",
+        }}
+      />
+
+      <section
+        className="relative z-10 w-full max-w-6xl overflow-hidden rounded-2xl p-6 shadow-[0_24px_64px_rgba(30,41,59,0.35)] sm:p-10"
+        style={{
+          background: laraSurface,
+          fontFamily: "'Avenir Next', 'Segoe UI', 'Trebuchet MS', sans-serif",
+        }}
+      >
+        <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-black tracking-tight" style={{ color: laraText }}>
+              Classroom Seating
+            </h1>
+            <p className="mt-2 text-sm" style={{ color: laraTextMuted }}>
+              Assign students to desks and save your classroom before starting the lesson.
+            </p>
+          </div>
+
+          <div className="rounded-xl bg-slate-50/90 p-3 sm:p-4">
+            <span className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-600">
+              Classroom name
+            </span>
+            <InputText
+              value={classroomName}
+              onChange={(event) => setClassroomName(event.target.value)}
+              placeholder="Enter classroom name"
+              className="p-inputtext-sm w-full sm:w-64"
+            />
+          </div>
+        </div>
+
+        <div className="mb-5 flex flex-wrap gap-2">
+          <Button
+            label="Back"
+            severity="secondary"
+            outlined
+            onClick={() => navigate("/students")}
           />
-          <Button label="Back" severity="secondary" outlined onClick={() => navigate("/")} />
           <Button
             label="Continue"
             icon="pi pi-arrow-right"
@@ -372,69 +510,81 @@ export const ClassRoom = () => {
             disabled={isSaving || classroomName.trim().length === 0}
           />
         </div>
-      </div>
-      {saveError ? <small className="mb-3 block text-red-600">{saveError}</small> : null}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {deskGroups.map((deskSeatIds, deskIndex) => (
-          <Card
-            key={deskIndex}
-            title={`Desk ${deskIndex + 1}`}
-            pt={{
-              body: { className: "p-3" },
-              title: { className: "text-sm mb-2" },
-              content: { className: "p-0" },
-            }}
-          >
-            <div className="flex justify-center gap-4">
-              {deskSeatIds.map((seatId) => {
-                const assignedStudentId = assignments[seatId];
-                const assignedStudent =
-                  typeof assignedStudentId === "number"
-                    ? students.find((student) => student.id === assignedStudentId)
-                    : undefined;
+        {saveError ? (
+          <small className="mb-4 block rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+            {saveError}
+          </small>
+        ) : null}
 
-                return (
-                  <div key={seatId} className="flex flex-col items-center gap-1">
-                    <Avatar
-                      shape="circle"
-                      size="xlarge"
-                      label={assignedStudent ? getInitials(assignedStudent.name) : undefined}
-                      icon={assignedStudent ? undefined : "pi pi-plus"}
-                      style={{
-                        cursor: "pointer",
-                        backgroundColor: assignedStudent
-                          ? getAvatarColor(assignedStudent.id)
-                          : "#e5e7eb",
-                        color: assignedStudent ? "#ffffff" : "#334155",
-                      }}
-                      onClick={(event) => handleSeatClick(event, seatId)}
-                    />
-                    <small className="text-xs">
-                      {assignedStudent ? assignedStudent.name : `Seat ${seatId}`}
-                    </small>
-                  </div>
-                );
-              })}
-            </div>
-          </Card>
-        ))}
-      </div>
+        <div className="relative rounded-2xl bg-white p-4 sm:p-5">
+          <div className="relative grid grid-cols-1 gap-4 lg:grid-cols-3">
+            {deskGroups.map((deskSeatIds, deskIndex) => (
+              <Card
+                key={deskIndex}
+                title={`Desk ${deskIndex + 1}`}
+                className="border border-slate-200/70 shadow-sm"
+                pt={{
+                  root: { className: "rounded-xl bg-white" },
+                  body: { className: "p-3" },
+                  title: { className: "text-sm mb-2 text-slate-700" },
+                  content: { className: "p-0" },
+                }}
+              >
+                <div className="flex justify-center gap-4">
+                  {deskSeatIds.map((seatId) => {
+                    const assignedStudentId = assignments[seatId];
+                    const assignedStudent =
+                      typeof assignedStudentId === "number"
+                        ? students.find((student) => student.id === assignedStudentId)
+                        : undefined;
 
-      <OverlayPanel ref={overlayRef} onHide={() => setActiveSeatId(null)}>
-        <div className="flex flex-col gap-2">
-          <span className="text-sm font-medium">
-            {activeSeatId ? `Select student for seat ${activeSeatId}` : "Select student"}
-          </span>
-          <ListBox
-            options={selectableStudentOptions}
-            value={activeSeatValue}
-            onChange={handleSelectStudent}
-            className="w-64"
-            listStyle={{ maxHeight: "220px" }}
-          />
+                    return (
+                      <div key={seatId} className="flex flex-col items-center gap-1">
+                        <Avatar
+                          shape="circle"
+                          size="xlarge"
+                          label={assignedStudent ? getInitials(assignedStudent.name) : undefined}
+                          icon={assignedStudent ? undefined : "pi pi-plus"}
+                          style={{
+                            cursor: "pointer",
+                            backgroundColor: assignedStudent
+                              ? getAvatarColor(assignedStudent.id)
+                              : "#e5e7eb",
+                            color: assignedStudent ? "#ffffff" : "#334155",
+                            boxShadow: assignedStudent
+                              ? "0 10px 22px rgba(15,23,42,0.2)"
+                              : "inset 0 0 0 1px rgba(100,116,139,0.35)",
+                          }}
+                          onClick={(event) => handleSeatClick(event, seatId)}
+                        />
+                        <small className="max-w-24 truncate text-xs text-slate-600">
+                          {assignedStudent ? assignedStudent.name : `Seat ${seatId}`}
+                        </small>
+                      </div>
+                    );
+                  })}
+                </div>
+              </Card>
+            ))}
+          </div>
         </div>
-      </OverlayPanel>
+
+        <OverlayPanel ref={overlayRef} onHide={() => setActiveSeatId(null)}>
+          <div className="flex flex-col gap-2">
+            <span className="text-sm font-medium">
+              {activeSeatId ? `Select student for seat ${activeSeatId}` : "Select student"}
+            </span>
+            <ListBox
+              options={selectableStudentOptions}
+              value={activeSeatValue}
+              onChange={handleSelectStudent}
+              className="w-64"
+              listStyle={{ maxHeight: "220px" }}
+            />
+          </div>
+        </OverlayPanel>
+      </section>
     </div>
   );
 };

@@ -8,6 +8,7 @@ import { Simulation } from "./pages/Simulation.tsx";
 import { Students } from "./pages/Students.tsx";
 import { ClassRoom } from "./pages/ClassRoom.tsx";
 import { Statics } from "./pages/Statics.tsx";
+import { Welcome } from "./pages/Welcome.tsx";
 
 function App() {
   
@@ -17,7 +18,8 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Students/>}/>
+        <Route path="/" element={<Welcome/>}/>
+        <Route path="/students" element={<Students/>}/>
         <Route path="/start" element={<StartPage/>}/>
         <Route path="/simulation" element={<Simulation/>}/>
         <Route path="/classrom" element={<ClassRoom/>}/>
