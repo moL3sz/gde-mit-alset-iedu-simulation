@@ -18,6 +18,7 @@ const bootstrap = async (): Promise<void> => {
     logger.info('server_started', {
       port: env.PORT,
       nodeEnv: env.NODE_ENV,
+      
     });
   });
 

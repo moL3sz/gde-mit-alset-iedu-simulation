@@ -102,7 +102,6 @@ export const Simulation = () => {
     return unsupervisedOk;
   };
 
-  console.log(supervisedRuntime.students)
 
   return (
     <div className="flex min-h-screen w-full flex-col overflow-hidden bg-slate-200">
@@ -121,6 +120,7 @@ export const Simulation = () => {
       <div className="min-h-0 flex-1 overflow-auto md:overflow-hidden">
         <div className="flex min-h-full w-full flex-col md:h-full md:flex-row">
           <Supervised
+            graph={supervisedRuntime.graph}
             sessionId={supervisedRuntime.sessionId}
             students={supervisedRuntime.students}
             studentNodeIds={supervisedRuntime.studentNodeIds}
@@ -133,6 +133,7 @@ export const Simulation = () => {
             onSendHint={supervisedRuntime.sendSupervisorHint}
           />
           <Unsupervised
+            graph={unsupervisedRuntime.graph}
             sessionId={unsupervisedRuntime.sessionId}
             students={unsupervisedRuntime.students}
             studentNodeIds={unsupervisedRuntime.studentNodeIds}

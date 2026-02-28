@@ -5,6 +5,7 @@ import { InputText } from "primereact/inputtext";
 import { Tag } from "primereact/tag";
 
 import {
+  type SimulationGraph,
   type SubmitTaskAssignmentInput,
   type TaskAssignmentRequiredPayload,
   type TaskGroup,
@@ -16,8 +17,10 @@ import ClassroomMockup, {
   type CommunicationBubble,
 } from "./ClassroomMockup";
 import ChartsModal from "./ChartsModal";
+import GraphModal from "./GraphModal";
 
 export type SupervisedProps = {
+  graph: SimulationGraph | null;
   sessionId: string | null;
   students: ClassroomStudent[];
   studentNodeIds: string[];
@@ -44,13 +47,16 @@ export const Supervised = ({
   taskAssignmentRequired,
   onSubmitTaskAssignment,
   onSendHint,
+  graph,
 }: SupervisedProps) => {
   const { supervisedSocket } = useSockets();
   const [hintDraft, setHintDraft] = useState("");
   const [workMode, setWorkMode] = useState<TaskWorkMode>("individual");
   const [applyToUnsupervised, setApplyToUnsupervised] = useState(false);
   const [isChartsVisible, setIsChartsVisible] = useState(false);
+  const [isGraphVisible, setIsGraphVisible] = useState(false);
   const [groupDraftByStudent, setGroupDraftByStudent] = useState<Record<string, string>>({});
+
 
   const submitHint = () => {
     const sent = onSendHint(hintDraft);
@@ -132,6 +138,7 @@ export const Supervised = ({
               severity="secondary"
               outlined
               size="small"
+              onClick={() => setIsGraphVisible((currentState) => !currentState)}
             />
           </div>
         </div>
@@ -239,7 +246,14 @@ export const Supervised = ({
           onHide={() => setIsChartsVisible(false)}
           socket={supervisedSocket}
           title="Supervised Charts"
-          className="left-4 right-4 top-[112px] bottom-4"
+          className="left-4 right-4 top-[80px] bottom-4"
+        />
+        <GraphModal
+          visible={isGraphVisible}
+          graph={graph}
+          onHide={() => setIsGraphVisible(false)}
+          title="Supervised Graph"
+          className="left-4 right-4 top-[80px] bottom-4"
         />
       </div>
     </section>
