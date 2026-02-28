@@ -18,6 +18,7 @@ export interface CreateSessionRequest {
   topic: string;
   config?: SessionConfig;
   channel?: SimulationChannel;
+  period?: number;
   classroomId?: number;
 }
 

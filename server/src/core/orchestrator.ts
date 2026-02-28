@@ -30,9 +30,8 @@ import { TeacherAgent } from './agents/teacherAgent';
 import type { SessionMemory } from './memory/sessionMemory';
 import { AppError } from './shared/errors/app-error';
 import {
-  FRACTIONS_LESSON_TOTAL_TURNS,
-  getFractionsLessonStep,
-  type FractionsLessonStep,
+  getLessonPlanTotalTurns,
+  getLessonStepForTopic,
 } from './shared/prompts';
 import {
   activateCommunicationEdge,
@@ -47,8 +46,6 @@ import { AppDataSource } from '../database/data-source';
 import { ClassRoom } from '../database/entities/ClassRoom';
 
 const TEACHER_AGENT_ID = 'teacher';
-const PRACTICE_PHASE_START_TURN = Math.ceil(FRACTIONS_LESSON_TOTAL_TURNS / 3) + 1;
-const REVIEW_PHASE_START_TURN = Math.ceil((FRACTIONS_LESSON_TOTAL_TURNS * 2) / 3) + 1;
 const STUDENT_TO_STUDENT_BOREDOM_THRESHOLD = 4.2;
 const MIN_STUDENT_ACTION_DELAY_MS = 120;
 const MAX_STUDENT_ACTION_DELAY_MS = 900;
@@ -450,8 +447,9 @@ export class Orchestrator {
       ...studentProfiles.slice(0, startIndex),
     ];
     let selectedStudents = orderedStudents.slice(0, responderCount);
-    const lessonTurn = this.getClassroomLessonTurnIndex(session);
-    const phase = this.resolveClassroomPhase(lessonTurn);
+    const lessonPlanTotalTurns = getLessonPlanTotalTurns(session.topic);
+    const lessonTurn = this.getClassroomLessonTurnIndex(session, lessonPlanTotalTurns);
+    const phase = this.resolveClassroomPhase(lessonTurn, lessonPlanTotalTurns);
     let runtime = this.ensureClassroomRuntime(sessionId, lessonTurn, phase);
     let activeClarification = runtime.activeClarification;
     const supervisorHint =
@@ -539,7 +537,7 @@ export class Orchestrator {
         return;
       }
 
-      const autonomousMode = this.pickAutonomousTaskMode(lessonTurn);
+      const autonomousMode = this.pickAutonomousTaskMode(lessonTurn, lessonPlanTotalTurns);
       const autonomousGroups = this.buildAutonomousTaskGroups(
         autonomousMode,
         studentProfiles.map((student) => student.id),
@@ -654,7 +652,7 @@ export class Orchestrator {
 
     const teacherMode = activeClarification ? 'clarification_dialogue' : 'lesson_delivery';
     const lessonStepTurn = activeClarification ? Math.max(lessonTurn - 1, 1) : lessonTurn;
-    const lessonStep = getFractionsLessonStep(lessonStepTurn);
+    const lessonStep = getLessonStepForTopic(session.topic, lessonStepTurn);
     const graphContext = this.buildTeacherGraphContext(session, selectedStudents);
     const assignmentContext = runtime.activeTaskAssignment
       ? this.describeTaskAssignment(runtime.activeTaskAssignment)
@@ -676,7 +674,7 @@ export class Orchestrator {
       });
     const teacherInput = [
       `You are in parallel real-time classroom loop mode.`,
-      `Lesson turn: ${lessonStep.turn}/${FRACTIONS_LESSON_TOTAL_TURNS}`,
+      `Lesson turn: ${lessonStep.turn}/${lessonPlanTotalTurns}`,
       `Teacher response mode: ${teacherMode}`,
       `Classroom phase: ${phase}`,
       `Current lesson focus: ${lessonStep.title}`,
@@ -1260,12 +1258,15 @@ export class Orchestrator {
     session.updatedAt = nowIso();
   }
 
-  private resolveClassroomPhase(lessonTurn: number): ClassroomPhase {
-    if (lessonTurn < PRACTICE_PHASE_START_TURN) {
+  private resolveClassroomPhase(lessonTurn: number, totalTurns: number): ClassroomPhase {
+    const practicePhaseStartTurn = Math.ceil(totalTurns / 3) + 1;
+    const reviewPhaseStartTurn = Math.ceil((totalTurns * 2) / 3) + 1;
+
+    if (lessonTurn < practicePhaseStartTurn) {
       return 'lecture';
     }
 
-    if (lessonTurn < REVIEW_PHASE_START_TURN) {
+    if (lessonTurn < reviewPhaseStartTurn) {
       return 'practice';
     }
 
@@ -1302,12 +1303,15 @@ export class Orchestrator {
     return updated.classroomRuntime;
   }
 
-  private pickAutonomousTaskMode(lessonTurn: number): TaskWorkMode {
-    if (lessonTurn <= PRACTICE_PHASE_START_TURN + 2) {
+  private pickAutonomousTaskMode(lessonTurn: number, totalTurns: number): TaskWorkMode {
+    const practicePhaseStartTurn = Math.ceil(totalTurns / 3) + 1;
+    const reviewPhaseStartTurn = Math.ceil((totalTurns * 2) / 3) + 1;
+
+    if (lessonTurn <= practicePhaseStartTurn + 2) {
       return 'individual';
     }
 
-    if (lessonTurn <= REVIEW_PHASE_START_TURN - 1) {
+    if (lessonTurn <= reviewPhaseStartTurn - 1) {
       return 'pair';
     }
 
@@ -1470,12 +1474,12 @@ export class Orchestrator {
     );
   }
 
-  private getClassroomLessonTurnIndex(session: Session): number {
+  private getClassroomLessonTurnIndex(session: Session, totalTurns: number): number {
     const instructorTurns = session.turns.filter(
       (turn) => turn.role === 'teacher' && !turn.agentId,
     ).length;
 
-    return clampInt(instructorTurns, 1, FRACTIONS_LESSON_TOTAL_TURNS);
+    return clampInt(instructorTurns, 1, totalTurns);
   }
 
   private extractLatestStudentQuestion(session: Session): StudentQuestionSignal | undefined {
