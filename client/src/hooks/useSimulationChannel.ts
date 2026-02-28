@@ -11,6 +11,23 @@ type GraphNode = {
   kind: string;
 };
 
+type GraphEdge = {
+  id: string;
+  from: string;
+  to: string;
+  relationship?: string;
+  weight?: number;
+  interactionTypes?: string[];
+  currentTurnActive?: boolean;
+  lastInteractionType?: string;
+};
+
+export type SimulationGraph = {
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+  currentTurnActivations?: CommunicationActivation[];
+};
+
 type CommunicationActivation = {
   id?: string;
   createdAt?: string;
@@ -22,9 +39,7 @@ type CommunicationActivation = {
 
 type GraphPayload = {
   turnId?: string;
-  communicationGraph: {
-    nodes: GraphNode[];
-  };
+  communicationGraph: SimulationGraph;
   currentTurnActivations: CommunicationActivation[];
 };
 
@@ -110,6 +125,7 @@ type UseSimulationChannelResult = {
   taskAssignmentRequired: TaskAssignmentRequiredPayload | null;
   submitTaskAssignment: (input: SubmitTaskAssignmentInput) => Promise<boolean>;
   sendSupervisorHint: (hintText: string) => boolean;
+  graph: SimulationGraph | null;
 };
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000/api";
@@ -454,6 +470,8 @@ export const useSimulationChannel = ({
     useState<TaskAssignmentRequiredPayload | null>(null);
   const isEffectivelyPaused = isPausedForTaskAssignment || forcedPause;
 
+  const [graph, setGraph] = useState<SimulationGraph | null>(null);
+
   const creatingSessionRef = useRef(false);
   const turnInFlightRef = useRef(false);
   const turnStepRef = useRef(0);
@@ -545,6 +563,10 @@ export const useSimulationChannel = ({
       const nextStudentNodeIds = studentNodes.map((node) => node.id);
       studentNodeIdsRef.current = nextStudentNodeIds;
 
+      setGraph({
+        ...envelope.payload.communicationGraph,
+        currentTurnActivations: envelope.payload.currentTurnActivations,
+      });
       setStudents(
         studentNodes.map((node) => ({
           name: studentSnapshotByNodeIdRef.current[node.id]?.name ?? node.label,
@@ -831,6 +853,7 @@ export const useSimulationChannel = ({
       taskAssignmentRequired,
       submitTaskAssignment,
       sendSupervisorHint,
+      graph
     }),
     [
       isEffectivelyPaused,
@@ -844,6 +867,7 @@ export const useSimulationChannel = ({
       students,
       submitTaskAssignment,
       taskAssignmentRequired,
+      graph
     ],
   );
 };

@@ -3,13 +3,16 @@ import { Button } from "primereact/button";
 import { Tag } from "primereact/tag";
 
 import { useSockets } from "../context/SocketContext";
+import type { SimulationGraph } from "../hooks/useSimulationChannel";
 import ClassroomMockup, {
   type ClassroomStudent,
   type CommunicationBubble,
 } from "./ClassroomMockup";
 import ChartsModal from "./ChartsModal";
+import GraphModal from "./GraphModal";
 
 export type UnsupervisedProps = {
+  graph: SimulationGraph | null;
   sessionId: string | null;
   students: ClassroomStudent[];
   studentNodeIds: string[];
@@ -21,6 +24,7 @@ export type UnsupervisedProps = {
 };
 
 export const Unsupervised = ({
+  graph,
   sessionId,
   students,
   studentNodeIds,
@@ -32,6 +36,7 @@ export const Unsupervised = ({
 }: UnsupervisedProps) => {
   const { unsupervisedSocket } = useSockets();
   const [isChartsVisible, setIsChartsVisible] = useState(false);
+  const [isGraphVisible, setIsGraphVisible] = useState(false);
 
   return (
     <section className="h-full w-full p-2 md:w-1/2 md:p-3">
@@ -63,6 +68,7 @@ export const Unsupervised = ({
               severity="secondary"
               outlined
               size="small"
+              onClick={() => setIsGraphVisible((currentState) => !currentState)}
             />
           </div>
         </div>
@@ -102,6 +108,13 @@ export const Unsupervised = ({
           socket={unsupervisedSocket}
           sessionId={sessionId}
           title="Unsupervised Charts"
+          className="left-4 right-4 top-[112px] bottom-4"
+        />
+        <GraphModal
+          graph={graph}
+          visible={isGraphVisible}
+          onHide={() => setIsGraphVisible(false)}
+          title="Unsupervised Graph"
           className="left-4 right-4 top-[112px] bottom-4"
         />
       </div>
