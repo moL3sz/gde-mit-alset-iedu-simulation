@@ -55,6 +55,7 @@ export interface TurnProcessedRealtimeEvent {
   metrics: SessionMetrics;
   communicationGraph: CommunicationGraph;
   currentTurnActivations: CommunicationActivation[];
+  classroomRuntime?: ClassroomRuntime;
   studentStates: StudentPersonalitySnapshot[];
   studentStateChanges: StudentPersonalityChange[];
 }
@@ -126,6 +127,7 @@ export interface WsStudentStatesPayload {
   turnId: string;
   studentStates: StudentPersonalitySnapshot[];
   studentStateChanges: StudentPersonalityChange[];
+  classroomRuntime?: ClassroomRuntime;
 }
 
 export interface WsErrorPayload {

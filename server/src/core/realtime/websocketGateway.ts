@@ -434,6 +434,8 @@ class SimulationSocketGateway {
       studentStates: (event.studentStates as WsStudentStatesPayload['studentStates']) ?? [],
       studentStateChanges:
         (event.studentStateChanges as WsStudentStatesPayload['studentStateChanges']) ?? [],
+      classroomRuntime:
+        (event.classroomRuntime as WsStudentStatesPayload['classroomRuntime']) ?? undefined,
     };
 
     for (const channel of channels) {

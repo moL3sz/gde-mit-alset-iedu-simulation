@@ -18,18 +18,20 @@ export type CommunicationBubble = {
   actionType: string;
   text: string;
   messageId: string;
+  createdAt?: number;
+  expiresAt?: number;
 };
 
 export type ClassroomMockupProps = {
   students?: ClassroomStudent[];
   studentNodeIds?: string[];
   nodeBubbles?: CommunicationBubble[];
+  interactiveBoardActive?: boolean;
 };
 
 type StudentState = "engaged" | "steady" | "distracted";
 
 const STUDENTS_PER_DESK = 2;
-const STUDENT_BUBBLE_AUTO_HIDE_MS = 9000;
 
 const CONTAINER_PT = {
   body: { style: { padding: 0 } },
@@ -52,17 +54,17 @@ const STATE_STYLES: Record<
   engaged: {
     label: "Focused",
     panelClass: "border-slate-300 bg-slate-50 text-slate-700",
-    tagClass: "!bg-slate-200 !text-slate-700 !border !border-slate-300",
+    tagClass: "!bg-green-200 !text-slate-700 !border !border-slate-300",
   },
   steady: {
     label: "Steady",
     panelClass: "border-slate-300 bg-slate-100 text-slate-700",
-    tagClass: "!bg-slate-200 !text-slate-700 !border !border-slate-300",
+    tagClass: "!bg-blue-200 !text-slate-700 !border !border-slate-300",
   },
   distracted: {
     label: "Distracted",
     panelClass: "border-slate-400 bg-slate-100 text-slate-600",
-    tagClass: "!bg-slate-300 !text-slate-700 !border !border-slate-400",
+    tagClass: "!bg-yellow-400 !text-slate-700 !border !border-slate-400",
   },
 };
 
@@ -126,11 +128,11 @@ const ClassroomMockup = ({
   students = [],
   studentNodeIds = [],
   nodeBubbles = [],
+  interactiveBoardActive = false,
 }: ClassroomMockupProps) => {
   const anchorByNodeRef = useRef<Record<string, HTMLElement | null>>({});
   const overlayByNodeRef = useRef<Record<string, OverlayPanel | null>>({});
-  const messageByNodeRef = useRef<Record<string, string>>({});
-  const hideTimerByNodeRef = useRef<Record<string, number>>({});
+  const latestMessageByNodeRef = useRef<Record<string, string>>({});
 
   const seatStudents = students.map((source, index): ClassroomStudent => {
     const candidateName = source?.name?.trim();
@@ -149,79 +151,62 @@ const ClassroomMockup = ({
   });
   const deskGroupCount = Math.ceil(seatStudents.length / STUDENTS_PER_DESK);
 
-  const bubbleByNodeId = useMemo(() => {
-    return new Map(nodeBubbles.map((bubble) => [bubble.nodeId, bubble]));
+  const bubbleStackByNodeId = useMemo(() => {
+    const grouped = new Map<string, CommunicationBubble[]>();
+
+    for (const bubble of nodeBubbles) {
+      const bucket = grouped.get(bubble.nodeId) ?? [];
+      bucket.push(bubble);
+      grouped.set(bubble.nodeId, bucket);
+    }
+
+    for (const [nodeId, stack] of grouped.entries()) {
+      grouped.set(
+        nodeId,
+        [...stack].sort((left, right) => (right.createdAt ?? 0) - (left.createdAt ?? 0)),
+      );
+    }
+
+    return grouped;
   }, [nodeBubbles]);
 
   useEffect(() => {
-    const currentNodeIds = new Set(nodeBubbles.map((bubble) => bubble.nodeId));
+    const currentNodeIds = new Set(bubbleStackByNodeId.keys());
 
-    for (const nodeId of Object.keys(messageByNodeRef.current)) {
+    for (const nodeId of Object.keys(latestMessageByNodeRef.current)) {
       if (currentNodeIds.has(nodeId)) {
         continue;
       }
 
       overlayByNodeRef.current[nodeId]?.hide();
-      delete messageByNodeRef.current[nodeId];
-
-      if (hideTimerByNodeRef.current[nodeId]) {
-        window.clearTimeout(hideTimerByNodeRef.current[nodeId]);
-        delete hideTimerByNodeRef.current[nodeId];
-      }
+      delete latestMessageByNodeRef.current[nodeId];
     }
 
-    for (const bubble of nodeBubbles) {
-      if (messageByNodeRef.current[bubble.nodeId] === bubble.messageId) {
+    for (const [nodeId, stack] of bubbleStackByNodeId.entries()) {
+      const latestBubble = stack[0];
+      if (!latestBubble) {
         continue;
       }
 
-      const anchor = anchorByNodeRef.current[bubble.nodeId];
-      const overlay = overlayByNodeRef.current[bubble.nodeId];
+      const anchor = anchorByNodeRef.current[nodeId];
+      const overlay = overlayByNodeRef.current[nodeId];
 
       if (!anchor || !overlay) {
         continue;
       }
 
-      overlay.hide();
-      overlay.show(undefined, anchor);
-      messageByNodeRef.current[bubble.nodeId] = bubble.messageId;
-
-      if (hideTimerByNodeRef.current[bubble.nodeId]) {
-        window.clearTimeout(hideTimerByNodeRef.current[bubble.nodeId]);
-      }
-
-      const messageId = bubble.messageId;
-      if (bubble.nodeId === "teacher") {
+      if (
+        latestMessageByNodeRef.current[nodeId] === latestBubble.messageId &&
+        overlay.isVisible()
+      ) {
         continue;
       }
 
-      hideTimerByNodeRef.current[bubble.nodeId] = window.setTimeout(() => {
-        if (messageByNodeRef.current[bubble.nodeId] !== messageId) {
-          return;
-        }
-
-        overlayByNodeRef.current[bubble.nodeId]?.hide();
-      }, STUDENT_BUBBLE_AUTO_HIDE_MS);
+      overlay.hide();
+      overlay.show(undefined, anchor);
+      latestMessageByNodeRef.current[nodeId] = latestBubble.messageId;
     }
-
-    const teacherBubble = nodeBubbles.find((bubble) => bubble.nodeId === "teacher");
-    if (teacherBubble) {
-      const teacherAnchor = anchorByNodeRef.current.teacher;
-      const teacherOverlay = overlayByNodeRef.current.teacher;
-
-      if (teacherAnchor && teacherOverlay && !teacherOverlay.isVisible()) {
-        teacherOverlay.show(undefined, teacherAnchor);
-      }
-    }
-  }, [nodeBubbles]);
-
-  useEffect(() => {
-    return () => {
-      for (const timer of Object.values(hideTimerByNodeRef.current)) {
-        window.clearTimeout(timer);
-      }
-    };
-  }, []);
+  }, [bubbleStackByNodeId]);
 
   const attachAnchor = (nodeId: string) => (element: HTMLElement | null) => {
     anchorByNodeRef.current[nodeId] = element;
@@ -232,7 +217,7 @@ const ClassroomMockup = ({
   };
 
   const renderBubble = (nodeId: string, isTeacher: boolean) => {
-    const bubble = bubbleByNodeId.get(nodeId);
+    const bubbleStack = bubbleStackByNodeId.get(nodeId) ?? [];
 
     return (
       <OverlayPanel
@@ -249,19 +234,26 @@ const ClassroomMockup = ({
           content: { className: "!p-3" },
         }}
       >
-        {bubble ? (
-          <div className="space-y-1">
-            <Tag
-              value={toActionLabel(bubble.actionType)}
-              className="!border !border-slate-300 !bg-slate-100 !text-slate-700 !text-[10px]"
-            />
-            <p
-              className={`${
-                isTeacher ? "text-sm leading-5" : "text-xs leading-5"
-              } whitespace-pre-wrap text-slate-700`}
-            >
-              {bubble.text}
-            </p>
+        {bubbleStack.length > 0 ? (
+          <div className="max-h-72 space-y-2 overflow-auto pr-1">
+            {bubbleStack.map((bubble) => (
+              <div
+                key={bubble.messageId}
+                className="rounded-lg border border-slate-200 bg-slate-50/80 px-2 py-1.5"
+              >
+                <Tag
+                  value={toActionLabel(bubble.actionType)}
+                  className="!border !border-slate-300 !bg-slate-100 !text-slate-700 !text-[10px]"
+                />
+                <p
+                  className={`${
+                    isTeacher ? "text-sm leading-5" : "text-xs leading-5"
+                  } mt-1 whitespace-pre-wrap text-slate-700`}
+                >
+                  {bubble.text}
+                </p>
+              </div>
+            ))}
           </div>
         ) : null}
       </OverlayPanel>
@@ -307,11 +299,15 @@ const ClassroomMockup = ({
           <div className="absolute right-[20%] top-[7%] h-[16%] w-[9%] rounded-md border border-slate-300/70 bg-[#e8ebf0]" />
 
           <Card
-            className="absolute left-5 top-4 h-8 w-[34%] min-w-[130px] border border-slate-500/80 bg-[#69707b] text-center text-[11px] font-semibold uppercase tracking-wide text-slate-100 sm:h-10 sm:text-sm"
+            className={`absolute left-5 top-4 h-8 w-[34%] min-w-[130px] border text-center text-[11px] font-semibold uppercase tracking-wide sm:h-10 sm:text-sm ${
+              interactiveBoardActive
+                ? "border-emerald-500/80 bg-emerald-600 text-emerald-50"
+                : "border-slate-500/80 bg-[#69707b] text-slate-100"
+            }`}
             pt={CONTAINER_PT}
           >
             <div className="flex h-full w-full items-center justify-center px-2 py-1">
-              Interactive Board
+              {interactiveBoardActive ? "Interactive Board · Active" : "Interactive Board"}
             </div>
           </Card>
 
@@ -384,7 +380,7 @@ const ClassroomMockup = ({
                         </span>
                         <Tag
                           value={firstStyle.label}
-                          className={`!mt-0.5 !text-[7px] ${firstStyle.tagClass}`}
+                          className={`!mt-0.5 !text-[9px] ${firstStyle.tagClass}`}
                         />
                         {renderBubble(firstNodeId, false)}
                       </div>
@@ -402,10 +398,14 @@ const ClassroomMockup = ({
                           </div>
                           <span className="mt-0.5 truncate text-[8px] font-semibold leading-tight sm:text-[9px]">
                             {secondName}
+
+
+                            
                           </span>
                           <Tag
                             value={secondStyle.label}
-                            className={`!mt-0.5 !text-[7px] ${secondStyle.tagClass}`}
+                            className={`!mt-0.5 !text-[9px]  ${secondStyle.tagClass}`}
+                            
                           />
                           {renderBubble(secondNodeId, false)}
                         </div>

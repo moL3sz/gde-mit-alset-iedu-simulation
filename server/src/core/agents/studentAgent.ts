@@ -7,6 +7,10 @@ const clamp = (value: number, min: number, max: number): number => {
   return Math.max(min, Math.min(max, value));
 };
 
+const round1 = (value: number): number => {
+  return Math.round(value * 10) / 10;
+};
+
 const countWords = (value: string): number => {
   return value.trim().split(/\s+/).filter(Boolean).length;
 };
@@ -81,7 +85,8 @@ const buildMemoryConstrainedPrompt = (instruction: string, knowledgeLines: strin
     '',
     'Response rules:',
     '- Use only Student Memory Context and keep it concise.',
-    '- If memory is not enough, say you do not remember enough yet.',
+    '- If memory is not enough, ask one short clarification question.',
+    '- If teacher guidance exists in memory, do not answer with "I do not remember".',
   ].join('\n');
 };
 
@@ -97,43 +102,106 @@ const ensureTeacherQuestion = (message: string, kind: AgentKind): string => {
   return limitToSentences(`${message} ${question}`, 2);
 };
 
+const hasTeacherGuidanceInKnowledge = (knowledgeLines: string[]): boolean => {
+  return knowledgeLines.some((line) => {
+    const lowered = line.toLowerCase();
+    return (
+      lowered.includes('teacher') &&
+      (lowered.includes('teacher_to_student') ||
+        lowered.includes('teacher_broadcast') ||
+        lowered.includes('teacher said'))
+    );
+  });
+};
+
+const getStateFloors = (kind: AgentKind): {
+  attentiveness: number;
+  behavior: number;
+  comprehension: number;
+} => {
+  if (kind === 'ADHD') {
+    return {
+      attentiveness: 1.5,
+      behavior: 1.5,
+      comprehension: 1,
+    };
+  }
+
+  if (kind === 'Autistic') {
+    return {
+      attentiveness: 2.5,
+      behavior: 2,
+      comprehension: 1.5,
+    };
+  }
+
+  if (kind === 'Typical') {
+    return {
+      attentiveness: 2.5,
+      behavior: 2,
+      comprehension: 1.5,
+    };
+  }
+
+  return {
+    attentiveness: 2,
+    behavior: 2,
+    comprehension: 1,
+  };
+};
+
 const updateState = (kind: AgentKind, state: AgentState, message: string): Partial<AgentState> => {
   const wordCount = countWords(message);
-  const complexity = clamp(wordCount / 42, 0, 1);
+  const complexity = clamp(wordCount / 55, 0, 1);
 
   const interactiveCue = hasInteractiveCue(message);
   const exampleCue = hasExampleCue(message);
   const assessmentCue = hasAssessmentCue(message);
+  const floors = getStateFloors(kind);
 
   let nextAttentiveness = clamp(
-    state.attentiveness + (interactiveCue ? 1.1 : -0.7) - complexity * 1.8,
-    0,
+    state.attentiveness +
+      (interactiveCue ? 0.8 : -0.2) +
+      (exampleCue ? 0.2 : 0) -
+      complexity * 0.6 -
+      (assessmentCue ? 0.15 : 0),
+    floors.attentiveness,
     10,
   );
   let nextBehavior = clamp(
-    state.behavior + (interactiveCue ? 0.7 : -0.4) - (assessmentCue ? 0.4 : 0),
-    0,
+    state.behavior +
+      (interactiveCue ? 0.45 : -0.15) +
+      (exampleCue ? 0.2 : 0) -
+      (assessmentCue ? 0.2 : 0),
+    floors.behavior,
     10,
   );
   let nextComprehension = clamp(
-    state.comprehension + (exampleCue ? 1.4 : 0.6) + (interactiveCue ? 0.4 : 0) - complexity * 0.7,
-    0,
+    state.comprehension +
+      (exampleCue ? 1.1 : 0.45) +
+      (interactiveCue ? 0.35 : 0) -
+      complexity * 0.45,
+    floors.comprehension,
     10,
   );
 
+  if (state.attentiveness <= floors.attentiveness + 0.8) {
+    nextAttentiveness = clamp(nextAttentiveness + 0.4, floors.attentiveness, 10);
+  }
+
   if (kind === 'ADHD') {
-    nextAttentiveness = clamp(nextAttentiveness - 0.8, 0, 10);
-    nextBehavior = clamp(nextBehavior - 0.6, 0, 10);
+    nextAttentiveness = clamp(nextAttentiveness - 0.3, floors.attentiveness, 10);
+    nextBehavior = clamp(nextBehavior - 0.25, floors.behavior, 10);
   }
 
   if (kind === 'Autistic' && exampleCue) {
-    nextComprehension = clamp(nextComprehension + 0.8, 0, 10);
+    nextComprehension = clamp(nextComprehension + 0.6, floors.comprehension, 10);
   }
 
   return {
-    attentiveness: Math.round(nextAttentiveness),
-    behavior: Math.round(nextBehavior),
-    comprehension: Math.round(nextComprehension),
+    attentiveness: round1(nextAttentiveness),
+    behavior: round1(nextBehavior),
+    comprehension: round1(nextComprehension),
   };
 };
 
@@ -175,6 +243,7 @@ export class StudentAgent implements Agent {
           : minimumDirectKnowledge;
     const knowledgeWindow = getKnowledgeWindow(profile.state);
     const allowedKnowledge = knowledgePool.slice(-knowledgeWindow);
+    const hasTeacherGuidance = hasTeacherGuidanceInKnowledge(allowedKnowledge);
 
     if (allowedKnowledge.length === 0) {
       return {
@@ -204,9 +273,13 @@ export class StudentAgent implements Agent {
       profile.state.comprehension < 6 ||
       profile.state.attentiveness < 5 ||
       profile.state.behavior < 5;
-    const baseMessage =
+    let baseMessage =
       limitToSentences(llmResult.text, 2) ||
       'I need one short clarification before I can answer this clearly.';
+    if (hasTeacherGuidance && /\bi do not remember\b/i.test(baseMessage)) {
+      baseMessage =
+        'I understand better now from your explanation, and I can try the first step.';
+    }
     const message = shouldAskTeacherFollowUp
       ? ensureTeacherQuestion(baseMessage, this.kind)
       : baseMessage;

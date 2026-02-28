@@ -27,7 +27,8 @@ export type SessionEventType =
   | 'supervisor_hint_applied'
   | 'task_assignment_required'
   | 'task_assignment_submitted'
-  | 'task_review_completed';
+  | 'task_review_completed'
+  | 'interactive_board_mode_changed';
 
 export type CommunicationNodeKind =
   | 'teacher'
@@ -119,12 +120,25 @@ export interface TaskAssignment {
   lessonTurn: number;
 }
 
+export interface ClassroomClarificationThread {
+  studentId: string;
+  studentName: string;
+  question: string;
+  askedTurnId: string;
+  askedAt: string;
+  teacherResponseCount: number;
+  requiredResponseCount: number;
+}
+
 export interface ClassroomRuntime {
   lessonTurn: number;
   phase: ClassroomPhase;
   paused: boolean;
   pendingTaskAssignment: boolean;
+  interactiveBoardActive: boolean;
   activeTaskAssignment?: TaskAssignment;
+  activeClarification?: ClassroomClarificationThread;
+  lastClarifiedQuestionTurnId?: string;
   lastReviewTurn?: number;
 }
 

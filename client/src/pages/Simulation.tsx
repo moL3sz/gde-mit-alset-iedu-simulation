@@ -125,6 +125,7 @@ export const Simulation = () => {
             students={supervisedRuntime.students}
             studentNodeIds={supervisedRuntime.studentNodeIds}
             nodeBubbles={supervisedRuntime.nodeBubbles}
+            interactiveBoardActive={supervisedRuntime.interactiveBoardActive}
             isSocketConnected={supervisedRuntime.isSocketConnected}
             lastError={supervisedRuntime.lastError}
             isPausedForTaskAssignment={supervisedRuntime.isPausedForTaskAssignment}
@@ -137,6 +138,7 @@ export const Simulation = () => {
             students={unsupervisedRuntime.students}
             studentNodeIds={unsupervisedRuntime.studentNodeIds}
             nodeBubbles={unsupervisedRuntime.nodeBubbles}
+            interactiveBoardActive={unsupervisedRuntime.interactiveBoardActive}
             isSocketConnected={unsupervisedRuntime.isSocketConnected}
             lastError={unsupervisedRuntime.lastError}
             isPausedForTaskAssignment={unsupervisedRuntime.isPausedForTaskAssignment}

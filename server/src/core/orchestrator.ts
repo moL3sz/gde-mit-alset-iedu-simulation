@@ -42,6 +42,7 @@ import {
 import type { LlmTool } from './tools/llm';
 import { scoreDebateRubric } from './tools/rubric';
 import { applySafetyGuards } from './tools/safety';
+import { logger } from './shared/logger';
 import { AppDataSource } from '../database/data-source';
 import { ClassRoom } from '../database/entities/ClassRoom';
 
@@ -49,6 +50,14 @@ const TEACHER_AGENT_ID = 'teacher';
 const PRACTICE_PHASE_START_TURN = Math.ceil(FRACTIONS_LESSON_TOTAL_TURNS / 3) + 1;
 const REVIEW_PHASE_START_TURN = Math.ceil((FRACTIONS_LESSON_TOTAL_TURNS * 2) / 3) + 1;
 const STUDENT_TO_STUDENT_BOREDOM_THRESHOLD = 4.2;
+const MIN_STUDENT_ACTION_DELAY_MS = 120;
+const MAX_STUDENT_ACTION_DELAY_MS = 900;
+const INATTENTIVE_ATTENTION_THRESHOLD = 4.5;
+const INTERACTIVE_BOARD_ACTIVATE_RATIO = 0.45;
+const INTERACTIVE_BOARD_DEACTIVATE_RATIO = 0.2;
+const INTERACTIVE_BOARD_RECOVERY_AVERAGE_ATTENTION = 6.5;
+const INTERACTIVE_BOARD_ACTIVATE_BOOST = 1.2;
+const INTERACTIVE_BOARD_SUSTAIN_BOOST = 0.35;
 
 const nowIso = (): string => new Date().toISOString();
 
@@ -62,6 +71,43 @@ const clampInt = (value: number, min: number, max: number): number => {
 
 const estimateBoredness = (state: AgentProfile['state']): number => {
   return clamp(10 - (state.attentiveness * 0.6 + state.behavior * 0.4), 0, 10);
+};
+
+const estimateFatigue = (state: AgentProfile['state']): number => {
+  return clamp(10 - (state.attentiveness * 0.7 + state.comprehension * 0.3), 0, 10);
+};
+
+const stableRoll = (seed: string): number => {
+  let hash = 0;
+  for (let index = 0; index < seed.length; index += 1) {
+    hash = (hash * 33 + seed.charCodeAt(index)) >>> 0;
+  }
+
+  return hash / 0xffffffff;
+};
+
+const getStudentStateFloors = (kind: AgentKind): {
+  attentiveness: number;
+  behavior: number;
+} => {
+  if (kind === 'ADHD') {
+    return {
+      attentiveness: 1.5,
+      behavior: 1.5,
+    };
+  }
+
+  if (kind === 'Autistic' || kind === 'Typical') {
+    return {
+      attentiveness: 2.5,
+      behavior: 2,
+    };
+  }
+
+  return {
+    attentiveness: 2,
+    behavior: 2,
+  };
 };
 
 const isStudentKind = (kind: AgentKind): boolean => {
@@ -82,6 +128,35 @@ export interface AgentTurnEmission {
 }
 
 export type AgentTurnEmissionHandler = (payload: AgentTurnEmission) => void;
+
+type StudentInteractionAction = 'student_to_teacher' | 'student_to_student' | 'silent';
+
+interface StudentInteractionPlan {
+  studentId: string;
+  action: StudentInteractionAction;
+  peerTargetId?: string;
+  delayMs: number;
+  boredness: number;
+  fatigue: number;
+}
+
+interface StudentQuestionSignal {
+  studentId: string;
+  studentName: string;
+  question: string;
+  turnId: string;
+  askedAt: string;
+}
+
+interface InteractiveBoardDecision {
+  nextActive: boolean;
+  changed: boolean;
+  reason: 'low_attention_detected' | 'attention_recovered' | 'stable';
+  inattentiveCount: number;
+  totalStudents: number;
+  inattentiveRatio: number;
+  averageAttentiveness: number;
+}
 
 export class Orchestrator {
   public constructor(
@@ -308,6 +383,7 @@ export class Orchestrator {
         phase: 'practice',
         paused: false,
         pendingTaskAssignment: false,
+        interactiveBoardActive: false,
       };
 
       return {
@@ -373,12 +449,55 @@ export class Orchestrator {
       ...studentProfiles.slice(startIndex),
       ...studentProfiles.slice(0, startIndex),
     ];
-    const selectedStudents = orderedStudents.slice(0, responderCount);
+    let selectedStudents = orderedStudents.slice(0, responderCount);
     const lessonTurn = this.getClassroomLessonTurnIndex(session);
     const phase = this.resolveClassroomPhase(lessonTurn);
     let runtime = this.ensureClassroomRuntime(sessionId, lessonTurn, phase);
+    let activeClarification = runtime.activeClarification;
     const supervisorHint =
       session.channel === 'supervised' ? this.memory.consumeSupervisorHint(sessionId) : undefined;
+
+    const latestQuestion = this.extractLatestStudentQuestion(session);
+    if (
+      latestQuestion &&
+      latestQuestion.turnId !== activeClarification?.askedTurnId &&
+      latestQuestion.turnId !== runtime.lastClarifiedQuestionTurnId
+    ) {
+      const askingStudent = studentProfiles.find(
+        (candidate) => candidate.id === latestQuestion.studentId,
+      );
+      const requiredResponseCount =
+        askingStudent && askingStudent.state.comprehension < 5 ? 2 : 1;
+
+      activeClarification = {
+        studentId: latestQuestion.studentId,
+        studentName: latestQuestion.studentName,
+        question: latestQuestion.question,
+        askedTurnId: latestQuestion.turnId,
+        askedAt: latestQuestion.askedAt,
+        teacherResponseCount: 0,
+        requiredResponseCount,
+      };
+
+      runtime = this.ensureClassroomRuntime(sessionId, lessonTurn, phase, {
+        activeClarification,
+      });
+    }
+
+    const clarificationTargetProfile = activeClarification
+      ? studentProfiles.find((candidate) => candidate.id === activeClarification?.studentId)
+      : undefined;
+
+    if (activeClarification && !clarificationTargetProfile) {
+      activeClarification = undefined;
+      runtime = this.ensureClassroomRuntime(sessionId, lessonTurn, phase, {
+        activeClarification: undefined,
+      });
+    }
+
+    if (activeClarification && clarificationTargetProfile) {
+      selectedStudents = [clarificationTargetProfile];
+    }
 
     if (supervisorHint) {
       eventCollector.push(
@@ -456,32 +575,86 @@ export class Orchestrator {
       );
     }
 
-    for (const student of studentProfiles) {
-      this.activateGraphEdgeWithEvent(sessionId, requestTurn.id, eventCollector, {
-        from: TEACHER_AGENT_ID,
-        to: student.id,
-        interactionType: 'teacher_broadcast',
-        payload: {
-          actionType: 'teacher_broadcast',
-          text: requestTurn.content,
-          scope: 'classroom',
-        },
+    const interactiveBoardDecision = this.resolveInteractiveBoardMode(
+      studentProfiles,
+      runtime.interactiveBoardActive,
+    );
+    const interactiveBoardActive = interactiveBoardDecision.nextActive;
+
+    if (interactiveBoardDecision.changed) {
+      runtime = this.ensureClassroomRuntime(sessionId, lessonTurn, phase, {
+        interactiveBoardActive,
       });
+
+      eventCollector.push(
+        this.createEvent(
+          sessionId,
+          'interactive_board_mode_changed',
+          {
+            interactiveBoardActive,
+            reason: interactiveBoardDecision.reason,
+            inattentiveCount: interactiveBoardDecision.inattentiveCount,
+            totalStudents: interactiveBoardDecision.totalStudents,
+            inattentiveRatio: Number(interactiveBoardDecision.inattentiveRatio.toFixed(4)),
+            averageAttentiveness: Number(
+              interactiveBoardDecision.averageAttentiveness.toFixed(4),
+            ),
+          },
+          requestTurn.id,
+          teacherProfile.id,
+        ),
+      );
     }
 
-    for (const student of selectedStudents) {
+    if (interactiveBoardActive) {
+      this.applyInteractiveBoardAttentionBoost(
+        sessionId,
+        studentProfiles.map((student) => student.id),
+        interactiveBoardDecision.changed,
+      );
+    }
+
+    if (!activeClarification) {
+      for (const student of studentProfiles) {
+        this.activateGraphEdgeWithEvent(sessionId, requestTurn.id, eventCollector, {
+          from: TEACHER_AGENT_ID,
+          to: student.id,
+          interactionType: 'teacher_broadcast',
+          payload: {
+            actionType: 'teacher_broadcast',
+            text: requestTurn.content,
+            scope: 'classroom',
+          },
+        });
+      }
+
+      for (const student of selectedStudents) {
+        this.activateGraphEdgeWithEvent(sessionId, requestTurn.id, eventCollector, {
+          from: TEACHER_AGENT_ID,
+          to: student.id,
+          interactionType: 'teacher_to_student',
+          payload: {
+            actionType: 'teacher_to_student',
+            text: requestTurn.content,
+          },
+        });
+      }
+    } else if (clarificationTargetProfile) {
       this.activateGraphEdgeWithEvent(sessionId, requestTurn.id, eventCollector, {
         from: TEACHER_AGENT_ID,
-        to: student.id,
+        to: clarificationTargetProfile.id,
         interactionType: 'teacher_to_student',
         payload: {
           actionType: 'teacher_to_student',
-          text: requestTurn.content,
+          phase: 'clarification_kickoff',
+          text: `We are clarifying your question now: ${activeClarification.question}`,
         },
       });
     }
 
-    const lessonStep = getFractionsLessonStep(lessonTurn);
+    const teacherMode = activeClarification ? 'clarification_dialogue' : 'lesson_delivery';
+    const lessonStepTurn = activeClarification ? Math.max(lessonTurn - 1, 1) : lessonTurn;
+    const lessonStep = getFractionsLessonStep(lessonStepTurn);
     const graphContext = this.buildTeacherGraphContext(session, selectedStudents);
     const assignmentContext = runtime.activeTaskAssignment
       ? this.describeTaskAssignment(runtime.activeTaskAssignment)
@@ -504,10 +677,12 @@ export class Orchestrator {
     const teacherInput = [
       `You are in parallel real-time classroom loop mode.`,
       `Lesson turn: ${lessonStep.turn}/${FRACTIONS_LESSON_TOTAL_TURNS}`,
+      `Teacher response mode: ${teacherMode}`,
       `Classroom phase: ${phase}`,
       `Current lesson focus: ${lessonStep.title}`,
       `Delivery goal for this turn: ${lessonStep.deliveryGoal}`,
       `Task assignment context: ${assignmentContext}`,
+      `Interactive board mode: ${interactiveBoardActive ? 'ON' : 'OFF'}`,
       `Incoming instruction to adapt: ${requestTurn.content}`,
       `Recent student signals from prior cycles:`,
       ...recentStudentSignals,
@@ -519,8 +694,22 @@ export class Orchestrator {
       ...graphContext.relationshipSignals,
       `Current active channels this cycle:`,
       ...graphContext.activeChannelSignals,
+      activeClarification
+        ? `Clarification Dialogue Mode is ACTIVE.`
+        : undefined,
+      activeClarification
+        ? `Student to help first: ${activeClarification.studentName} (${activeClarification.studentId}).`
+        : undefined,
+      activeClarification
+        ? `Student question to answer now: ${activeClarification.question}`
+        : undefined,
+      activeClarification
+        ? `Rule: answer this question first with short steps and one quick check question. Do not introduce the next new lesson concept yet.`
+        : undefined,
       supervisorHint ? `Supervisor hint: ${supervisorHint}` : undefined,
-      `Output exactly one teacher micro-step for the class now, aligned to this lesson turn.`,
+      activeClarification
+        ? `Output exactly one clarification response for the asking student now.`
+        : `Output exactly one teacher micro-step for the class now, aligned to this lesson turn.`,
     ]
       .filter((line): line is string => Boolean(line))
       .join('\n');
@@ -545,14 +734,22 @@ export class Orchestrator {
         profile,
         memoryLines,
         stimulusText,
-        requestTurn.content,
+        activeClarification ? activeClarification.question : requestTurn.content,
       );
 
       studentInputById.set(profile.id, { prompt, memoryLines, allowedKnowledge, stimulusText });
     }
 
     const teacherAgent = new TeacherAgent(teacherProfile);
-    const studentMessages = new Map<string, string>();
+    let teacherResponseTargetIds: string[] = [];
+    let passiveListenerTargetIds: string[] = [];
+    let teacherProducedResponse = false;
+    const interactionPlans = this.buildStudentInteractionPlans(
+      session,
+      requestTurn.id,
+      selectedStudents,
+      studentProfiles,
+    );
 
     eventCollector.push(
       this.createEvent(
@@ -567,22 +764,6 @@ export class Orchestrator {
         teacherProfile.id,
       ),
     );
-
-    for (const profile of selectedStudents) {
-      eventCollector.push(
-        this.createEvent(
-          sessionId,
-          'agent_started',
-          {
-            requestTurnId: requestTurn.id,
-            executionMode: 'parallel_realtime_loop',
-            lessonTurn: lessonStep.turn,
-          },
-          requestTurn.id,
-          profile.id,
-        ),
-      );
-    }
 
     const teacherRun = async (): Promise<void> => {
       const teacherResult = await teacherAgent.run(
@@ -617,6 +798,9 @@ export class Orchestrator {
           kind: teacherProfile.kind,
           lessonTurn: lessonStep.turn,
           lessonFocus: lessonStep.title,
+          teacherMode,
+          clarificationTargetId: activeClarification?.studentId,
+          clarificationAskedTurnId: activeClarification?.askedTurnId,
           ...(teacherResult.metadata ?? {}),
         },
       );
@@ -628,7 +812,13 @@ export class Orchestrator {
         onAgentTurnEmission,
       );
 
-      for (const student of selectedStudents) {
+      const teacherFollowUpTargets =
+        activeClarification && clarificationTargetProfile
+          ? [clarificationTargetProfile]
+          : selectedStudents;
+      teacherResponseTargetIds = teacherFollowUpTargets.map((student) => student.id);
+      teacherProducedResponse = teacherResult.message.trim().length > 0;
+      for (const student of teacherFollowUpTargets) {
         this.activateGraphEdgeWithEvent(sessionId, requestTurn.id, eventCollector, {
           from: TEACHER_AGENT_ID,
           to: student.id,
@@ -636,9 +826,58 @@ export class Orchestrator {
           payload: {
             actionType: 'teacher_to_student',
             text: teacherResult.message,
-            phase: 'follow_up',
+            phase: activeClarification ? 'clarification_follow_up' : 'follow_up',
             lessonTurn: lessonStep.turn,
+            clarificationTargetId: activeClarification?.studentId,
           },
+        });
+      }
+
+      if (activeClarification && teacherResult.message.trim().length > 0) {
+        const passiveListeners = studentProfiles.filter(
+          (student) => student.id !== activeClarification?.studentId,
+        );
+        passiveListenerTargetIds = passiveListeners.map((student) => student.id);
+        const overhearText = this.summarizeTeacherResponseForOverhear(teacherResult.message);
+
+        for (const listener of passiveListeners) {
+          this.activateGraphEdgeWithEvent(sessionId, requestTurn.id, eventCollector, {
+            from: TEACHER_AGENT_ID,
+            to: listener.id,
+            interactionType: 'teacher_broadcast',
+            payload: {
+              actionType: 'teacher_broadcast',
+              phase: 'clarification_overhear',
+              confidence: 'low',
+              sourceStudentId: activeClarification.studentId,
+              text: overhearText,
+            },
+          });
+        }
+      } else {
+        passiveListenerTargetIds = [];
+      }
+
+      let clarificationResolved: boolean | undefined;
+      if (activeClarification) {
+        const nextResponseCount = activeClarification.teacherResponseCount + 1;
+        const responseSeemsSufficient = this.isClarificationExplanationSufficient(
+          teacherResult.message,
+        );
+        clarificationResolved =
+          responseSeemsSufficient &&
+          nextResponseCount >= activeClarification.requiredResponseCount;
+
+        runtime = this.ensureClassroomRuntime(sessionId, lessonTurn, phase, {
+          activeClarification: clarificationResolved
+            ? undefined
+            : {
+                ...activeClarification,
+                teacherResponseCount: nextResponseCount,
+              },
+          lastClarifiedQuestionTurnId: clarificationResolved
+            ? activeClarification.askedTurnId
+            : runtime.lastClarifiedQuestionTurnId,
         });
       }
 
@@ -650,6 +889,8 @@ export class Orchestrator {
             preview: teacherResult.message.slice(0, 90),
             executionMode: 'parallel_realtime_loop',
             lessonTurn: lessonStep.turn,
+            teacherMode,
+            clarificationResolved: clarificationResolved ?? null,
           },
           requestTurn.id,
           teacherProfile.id,
@@ -657,19 +898,80 @@ export class Orchestrator {
       );
     };
 
-    const studentRuns = selectedStudents.map((profile) => {
+    const studentRuns = interactionPlans.map((plan) => {
       return (async (): Promise<void> => {
+        const profile = selectedStudents.find((item) => item.id === plan.studentId);
+        if (!profile) {
+          return;
+        }
+
+        await this.waitFor(plan.delayMs);
+
+        eventCollector.push(
+          this.createEvent(
+            sessionId,
+            'agent_started',
+            {
+              requestTurnId: requestTurn.id,
+              executionMode: 'parallel_realtime_loop',
+              lessonTurn: lessonStep.turn,
+              action: plan.action,
+              boredness: Number(plan.boredness.toFixed(2)),
+              fatigue: Number(plan.fatigue.toFixed(2)),
+              delayMs: plan.delayMs,
+            },
+            requestTurn.id,
+            profile.id,
+          ),
+        );
+
+        if (plan.action === 'silent') {
+          const floors = getStudentStateFloors(profile.kind);
+          this.memory.updateAgentState(sessionId, profile.id, {
+            attentiveness: clamp(
+              Math.round((profile.state.attentiveness - 0.6) * 10) / 10,
+              floors.attentiveness,
+              10,
+            ),
+            behavior: clamp(
+              Math.round((profile.state.behavior - 0.4) * 10) / 10,
+              floors.behavior,
+              10,
+            ),
+          });
+
+          eventCollector.push(
+            this.createEvent(
+              sessionId,
+              'agent_done',
+              {
+                preview: 'silent_cycle',
+                executionMode: 'parallel_realtime_loop',
+                lessonTurn: lessonStep.turn,
+                action: 'silent',
+              },
+              requestTurn.id,
+              profile.id,
+            ),
+          );
+          return;
+        }
+
         const agent = new StudentAgent(profile);
         const studentInput = studentInputById.get(profile.id);
+        const interactionDirective = this.buildStudentInteractionDirective(
+          plan,
+          studentProfiles,
+        );
         const result = await agent.run(
           {
             teacherOrUserMessage:
-              studentInput?.prompt ??
-              this.buildStudentClassroomInput(
-                profile,
-                assignmentContext,
-                [],
-              ),
+              `${studentInput?.prompt ??
+                this.buildStudentClassroomInput(
+                  profile,
+                  assignmentContext,
+                  [],
+                )}\n${interactionDirective}`,
             session: this.mustGetSession(sessionId),
             recentTurns: this.mustGetSession(sessionId).turns.slice(-8),
             allowedKnowledge: studentInput?.allowedKnowledge ?? [],
@@ -711,18 +1013,36 @@ export class Orchestrator {
           studentTurn,
           onAgentTurnEmission,
         );
-        studentMessages.set(profile.id, result.message);
 
-        this.activateGraphEdgeWithEvent(sessionId, requestTurn.id, eventCollector, {
-          from: profile.id,
-          to: TEACHER_AGENT_ID,
-          interactionType: 'student_to_teacher',
-          payload: {
-            actionType: 'student_to_teacher',
-            text: result.message,
-            lessonTurn: lessonStep.turn,
-          },
-        });
+        if (plan.action === 'student_to_student' && plan.peerTargetId) {
+          this.activateGraphEdgeWithEvent(sessionId, requestTurn.id, eventCollector, {
+            from: profile.id,
+            to: plan.peerTargetId,
+            interactionType: 'student_to_student',
+            payload: {
+              actionType: 'student_to_student',
+              trigger: 'state_driven_realtime_loop',
+              text: result.message,
+              lessonTurn: lessonStep.turn,
+              boredness: Number(plan.boredness.toFixed(2)),
+              fatigue: Number(plan.fatigue.toFixed(2)),
+            },
+          });
+        } else {
+          this.activateGraphEdgeWithEvent(sessionId, requestTurn.id, eventCollector, {
+            from: profile.id,
+            to: TEACHER_AGENT_ID,
+            interactionType: 'student_to_teacher',
+            payload: {
+              actionType: 'student_to_teacher',
+              trigger: 'state_driven_realtime_loop',
+              text: result.message,
+              lessonTurn: lessonStep.turn,
+              boredness: Number(plan.boredness.toFixed(2)),
+              fatigue: Number(plan.fatigue.toFixed(2)),
+            },
+          });
+        }
 
         if (result.statePatch && Object.keys(result.statePatch).length > 0) {
           this.memory.updateAgentState(sessionId, profile.id, result.statePatch);
@@ -736,6 +1056,7 @@ export class Orchestrator {
               preview: result.message.slice(0, 90),
               executionMode: 'parallel_realtime_loop',
               lessonTurn: lessonStep.turn,
+              action: plan.action,
             },
             requestTurn.id,
             profile.id,
@@ -754,51 +1075,13 @@ export class Orchestrator {
       throw new AppError(500, `Parallel classroom loop failed: ${String(firstFailure.reason)}`);
     }
 
-    const latestSession = this.mustGetSession(sessionId);
-    const latestStudentById = new Map(
-      latestSession.agents
-        .filter((agent) => isStudentKind(agent.kind))
-        .map((agent) => [agent.id, agent]),
-    );
-
-    for (let index = 0; index < selectedStudents.length; index += 1) {
-      for (let nested = index + 1; nested < selectedStudents.length; nested += 1) {
-        const left = selectedStudents[index];
-        const right = selectedStudents[nested];
-
-        if (!left || !right) {
-          continue;
-        }
-
-        const leftState = latestStudentById.get(left.id)?.state;
-        const rightState = latestStudentById.get(right.id)?.state;
-
-        if (leftState && estimateBoredness(leftState) <= STUDENT_TO_STUDENT_BOREDOM_THRESHOLD) {
-          this.activateGraphEdgeWithEvent(sessionId, requestTurn.id, eventCollector, {
-            from: left.id,
-            to: right.id,
-            interactionType: 'student_to_student',
-            payload: {
-              actionType: 'student_to_student',
-              trigger: 'low_boredom_engagement',
-              text: this.buildPeerMessageForGraph(left.name, studentMessages.get(left.id)),
-            },
-          });
-        }
-
-        if (rightState && estimateBoredness(rightState) <= STUDENT_TO_STUDENT_BOREDOM_THRESHOLD) {
-          this.activateGraphEdgeWithEvent(sessionId, requestTurn.id, eventCollector, {
-            from: right.id,
-            to: left.id,
-            interactionType: 'student_to_student',
-            payload: {
-              actionType: 'student_to_student',
-              trigger: 'low_boredom_engagement',
-              text: this.buildPeerMessageForGraph(right.name, studentMessages.get(right.id)),
-            },
-          });
-        }
-      }
+    if (teacherProducedResponse && teacherResponseTargetIds.length > 0) {
+      this.applyTeacherResponseAttentivenessBoost(
+        sessionId,
+        teacherResponseTargetIds,
+        teacherMode,
+        passiveListenerTargetIds,
+      );
     }
 
     if (phase === 'review' && runtime.activeTaskAssignment) {
@@ -1001,6 +1284,7 @@ export class Orchestrator {
         phase,
         paused: false,
         pendingTaskAssignment: false,
+        interactiveBoardActive: false,
       };
 
       return {
@@ -1140,6 +1424,8 @@ export class Orchestrator {
           student.state.attentiveness * 0.35 +
           student.state.comprehension * 0.45 +
           student.state.behavior * 0.2;
+
+        
         const solved = performanceSignal >= 5.5;
         const comprehensionDelta = solved ? 1 : -1;
         const behaviorDelta = solved ? 1 : -1;
@@ -1192,6 +1478,78 @@ export class Orchestrator {
     return clampInt(instructorTurns, 1, FRACTIONS_LESSON_TOTAL_TURNS);
   }
 
+  private extractLatestStudentQuestion(session: Session): StudentQuestionSignal | undefined {
+    const studentById = new Map(
+      session.agents
+        .filter((agent) => isStudentKind(agent.kind))
+        .map((student) => [student.id, student]),
+    );
+
+    const recentStudentTurns = session.turns
+      .filter((turn) => turn.role === 'agent' && Boolean(turn.agentId))
+      .slice(-16);
+
+    for (let index = recentStudentTurns.length - 1; index >= 0; index -= 1) {
+      const candidate = recentStudentTurns[index];
+      if (!candidate?.agentId) {
+        continue;
+      }
+
+      const student = studentById.get(candidate.agentId);
+      if (!student) {
+        continue;
+      }
+
+      if (!this.isStudentQuestionMessage(candidate.content)) {
+        continue;
+      }
+
+      return {
+        studentId: student.id,
+        studentName: student.name,
+        question: this.truncatePayloadText(candidate.content, 260),
+        turnId: candidate.id,
+        askedAt: candidate.createdAt,
+      };
+    }
+
+    return undefined;
+  }
+
+  private isStudentQuestionMessage(message: string): boolean {
+    const compact = message.trim();
+    if (!compact) {
+      return false;
+    }
+
+    if (compact.includes('?')) {
+      return true;
+    }
+
+    return /\b(can|could|why|how|what|which|help|miert|miért|hogyan|melyik|segit|segít)\b/i.test(
+      compact,
+    );
+  }
+
+  private isClarificationExplanationSufficient(message: string): boolean {
+    const compact = message.trim();
+    if (!compact) {
+      return false;
+    }
+
+    const sentenceCount = compact
+      .split(/[.!?]+/)
+      .map((part) => part.trim())
+      .filter((part) => part.length > 0).length;
+
+    const hasExplanationCue = /\b(step|first|second|because|means|for example|example)\b/i.test(
+      compact,
+    );
+    const hasCheckForUnderstanding = compact.includes('?');
+
+    return sentenceCount >= 2 && hasExplanationCue && hasCheckForUnderstanding;
+  }
+
   private buildStudentMemoryLines(
     session: Session,
     student: AgentProfile,
@@ -1209,17 +1567,45 @@ export class Orchestrator {
           typeof activation.payload?.text === 'string' && activation.payload.text.trim().length > 0
             ? this.truncatePayloadText(activation.payload.text, 180)
             : `Action=${activation.interactionType}`;
+        const isLowWeight = this.isLowConfidenceActivation(activation);
+        const prefix = isLowWeight
+          ? 'Overheard graph message (low weight):'
+          : 'Direct graph message:';
 
-        return `Direct graph message: ${fromLabel} -> ${student.name} (${activation.interactionType}): ${payloadText}`;
+        return `${prefix} ${fromLabel} -> ${student.name} (${activation.interactionType}): ${payloadText}`;
+      });
+    const teacherResponseMemory = session.communicationGraph.activations
+      .filter(
+        (activation) =>
+          activation.from === TEACHER_AGENT_ID &&
+          activation.to === student.id &&
+          (activation.interactionType === 'teacher_to_student' ||
+            activation.interactionType === 'teacher_broadcast'),
+      )
+      .slice(-6)
+      .map((activation) => {
+        const payloadText =
+          typeof activation.payload?.text === 'string' && activation.payload.text.trim().length > 0
+            ? this.truncatePayloadText(activation.payload.text, 170)
+            : `Action=${activation.interactionType}`;
+        const isLowWeight = this.isLowConfidenceActivation(activation);
+        const prefix = isLowWeight
+          ? 'Overheard graph message (low weight):'
+          : 'Direct graph message:';
+
+        return `${prefix} Teacher memory -> ${student.name} (${activation.interactionType}): ${payloadText}`;
       });
     const selfMemory = session.turns
       .filter((turn) => turn.role === 'agent' && turn.agentId === student.id)
       .slice(-2)
       .map((turn) => `I said earlier: ${this.truncatePayloadText(turn.content, 170)}`);
 
+    const uniqueTeacherAndGraphMessages = Array.from(
+      new Set([...directGraphMessages, ...teacherResponseMemory]),
+    );
     const graphInputSummary =
-      directGraphMessages.length > 0
-        ? directGraphMessages
+      uniqueTeacherAndGraphMessages.length > 0
+        ? uniqueTeacherAndGraphMessages
         : ['No direct graph message reached me this cycle.'];
 
     return [
@@ -1228,6 +1614,156 @@ export class Orchestrator {
       ...graphInputSummary,
       ...selfMemory,
     ];
+  }
+
+  private applyTeacherResponseAttentivenessBoost(
+    sessionId: string,
+    studentIds: string[],
+    teacherMode: 'clarification_dialogue' | 'lesson_delivery',
+    passiveListenerIds: string[] = [],
+  ): void {
+    const session = this.mustGetSession(sessionId);
+    const increment = teacherMode === 'clarification_dialogue' ? 0.9 : 0.5;
+    const uniqueStudentIds = Array.from(new Set(studentIds));
+    const passiveIncrement = teacherMode === 'clarification_dialogue' ? 0.25 : 0.15;
+    const uniquePassiveIds = Array.from(new Set(passiveListenerIds)).filter(
+      (studentId) => !uniqueStudentIds.includes(studentId),
+    );
+
+    for (const studentId of uniqueStudentIds) {
+      const student = session.agents.find(
+        (agent) => agent.id === studentId && isStudentKind(agent.kind),
+      );
+      if (!student) {
+        continue;
+      }
+
+      const floors = getStudentStateFloors(student.kind);
+      const nextAttentiveness = clamp(
+        Math.round((student.state.attentiveness + increment) * 10) / 10,
+        floors.attentiveness,
+        10,
+      );
+
+      this.memory.updateAgentState(sessionId, student.id, {
+        attentiveness: nextAttentiveness,
+      });
+    }
+
+    for (const studentId of uniquePassiveIds) {
+      const student = session.agents.find(
+        (agent) => agent.id === studentId && isStudentKind(agent.kind),
+      );
+      if (!student) {
+        continue;
+      }
+
+      const floors = getStudentStateFloors(student.kind);
+      const nextAttentiveness = clamp(
+        Math.round((student.state.attentiveness + passiveIncrement) * 10) / 10,
+        floors.attentiveness,
+        10,
+      );
+
+      this.memory.updateAgentState(sessionId, student.id, {
+        attentiveness: nextAttentiveness,
+      });
+    }
+  }
+
+  private resolveInteractiveBoardMode(
+    students: AgentProfile[],
+    currentActive: boolean,
+  ): InteractiveBoardDecision {
+    const totalStudents = students.length;
+    if (totalStudents === 0) {
+      return {
+        nextActive: currentActive,
+        changed: false,
+        reason: 'stable',
+        inattentiveCount: 0,
+        totalStudents: 0,
+        inattentiveRatio: 0,
+        averageAttentiveness: 0,
+      };
+    }
+
+    const inattentiveCount = students.filter(
+      (student) => student.state.attentiveness <= INATTENTIVE_ATTENTION_THRESHOLD,
+    ).length;
+    const inattentiveRatio = inattentiveCount / totalStudents;
+    const averageAttentiveness =
+      students.reduce((total, student) => total + student.state.attentiveness, 0) / totalStudents;
+
+    if (!currentActive && inattentiveRatio >= INTERACTIVE_BOARD_ACTIVATE_RATIO) {
+      return {
+        nextActive: true,
+        changed: true,
+        reason: 'low_attention_detected',
+        inattentiveCount,
+        totalStudents,
+        inattentiveRatio,
+        averageAttentiveness,
+      };
+    }
+
+    if (
+      currentActive &&
+      inattentiveRatio <= INTERACTIVE_BOARD_DEACTIVATE_RATIO &&
+      averageAttentiveness >= INTERACTIVE_BOARD_RECOVERY_AVERAGE_ATTENTION
+    ) {
+      return {
+        nextActive: false,
+        changed: true,
+        reason: 'attention_recovered',
+        inattentiveCount,
+        totalStudents,
+        inattentiveRatio,
+        averageAttentiveness,
+      };
+    }
+
+    return {
+      nextActive: currentActive,
+      changed: false,
+      reason: 'stable',
+      inattentiveCount,
+      totalStudents,
+      inattentiveRatio,
+      averageAttentiveness,
+    };
+  }
+
+  private applyInteractiveBoardAttentionBoost(
+    sessionId: string,
+    studentIds: string[],
+    activatedThisTurn: boolean,
+  ): void {
+    const session = this.mustGetSession(sessionId);
+    const increment = activatedThisTurn
+      ? INTERACTIVE_BOARD_ACTIVATE_BOOST
+      : INTERACTIVE_BOARD_SUSTAIN_BOOST;
+    const uniqueStudentIds = Array.from(new Set(studentIds));
+
+    for (const studentId of uniqueStudentIds) {
+      const student = session.agents.find(
+        (agent) => agent.id === studentId && isStudentKind(agent.kind),
+      );
+      if (!student) {
+        continue;
+      }
+
+      const floors = getStudentStateFloors(student.kind);
+      const nextAttentiveness = clamp(
+        Math.round((student.state.attentiveness + increment) * 10) / 10,
+        floors.attentiveness,
+        10,
+      );
+
+      this.memory.updateAgentState(sessionId, student.id, {
+        attentiveness: nextAttentiveness,
+      });
+    }
   }
 
   private buildStudentClassroomInput(
@@ -1273,8 +1809,15 @@ export class Orchestrator {
     fallbackTeacherInput: string,
   ): string[] {
     const directedLines = memoryLines.filter((line) => line.startsWith('Direct graph message:'));
+    const overheardLines = memoryLines.filter((line) =>
+      line.startsWith('Overheard graph message (low weight):'),
+    );
     if (directedLines.length > 0) {
-      return directedLines;
+      return [...directedLines.slice(-6), ...overheardLines.slice(-2)];
+    }
+
+    if (overheardLines.length > 0) {
+      return overheardLines.slice(-4);
     }
 
     const fallbackText = this.truncatePayloadText(
@@ -1285,6 +1828,183 @@ export class Orchestrator {
     return [
       `Direct graph message: Teacher -> ${student.name} (teacher_broadcast): ${fallbackText}`,
     ];
+  }
+
+  private isLowConfidenceActivation(activation: CommunicationActivation): boolean {
+    if (activation.payload?.confidence === 'low') {
+      return true;
+    }
+
+    if (activation.payload?.phase === 'clarification_overhear') {
+      return true;
+    }
+
+    return false;
+  }
+
+  private summarizeTeacherResponseForOverhear(message: string): string {
+    const compact = message.replace(/\s+/g, ' ').trim();
+    if (!compact) {
+      return 'Teacher is clarifying a student question.';
+    }
+
+    const firstSentence = compact.split(/(?<=[.!?])\s+/)[0] ?? compact;
+    return this.truncatePayloadText(firstSentence, 200);
+  }
+
+  private buildStudentInteractionPlans(
+    session: Session,
+    requestTurnId: string,
+    selectedStudents: AgentProfile[],
+    allStudents: AgentProfile[],
+  ): StudentInteractionPlan[] {
+    return selectedStudents.map((student) => {
+      const boredness = estimateBoredness(student.state);
+      const fatigue = estimateFatigue(student.state);
+      const hasTeacherBroadcast = session.communicationGraph.currentTurnActivations.some(
+        (activation) =>
+          activation.to === student.id && activation.interactionType === 'teacher_broadcast',
+      );
+
+      let teacherWeight =
+        0.45 +
+        student.state.attentiveness * 0.035 +
+        student.state.comprehension * 0.02 -
+        boredness * 0.03 -
+        fatigue * 0.01;
+      let peerWeight =
+        0.2 +
+        student.state.behavior * 0.03 +
+        student.state.attentiveness * 0.01 +
+        (10 - fatigue) * 0.01;
+      if (hasTeacherBroadcast) {
+        peerWeight *= 0.35;
+      }
+      if (boredness <= STUDENT_TO_STUDENT_BOREDOM_THRESHOLD) {
+        peerWeight += 0.12;
+      }
+
+      let silentWeight = 0.12 + fatigue * 0.04 + Math.max(0, boredness - 6) * 0.05;
+      if (student.state.attentiveness < 4 || student.state.behavior < 4) {
+        silentWeight += 0.12;
+      }
+
+      teacherWeight = Math.max(0.05, teacherWeight);
+      peerWeight = Math.max(0, peerWeight);
+      silentWeight = Math.max(0.05, silentWeight);
+
+      const total = teacherWeight + peerWeight + silentWeight;
+      const roll = stableRoll(`${session.id}:${requestTurnId}:${student.id}:action`) * total;
+      let action: StudentInteractionAction = 'student_to_teacher';
+
+      if (roll >= teacherWeight + peerWeight) {
+        action = 'silent';
+      } else if (roll >= teacherWeight) {
+        action = 'student_to_student';
+      }
+
+      let peerTargetId: string | undefined;
+      if (action === 'student_to_student') {
+        peerTargetId = this.pickPeerTargetId(
+          session,
+          student.id,
+          allStudents.filter((candidate) => isStudentKind(candidate.kind)),
+          `${session.id}:${requestTurnId}:${student.id}:peer_target`,
+        );
+
+        if (!peerTargetId) {
+          action = 'student_to_teacher';
+        }
+      }
+
+      const jitter = stableRoll(`${session.id}:${requestTurnId}:${student.id}:delay`);
+      const delayMs = clampInt(
+        MIN_STUDENT_ACTION_DELAY_MS + fatigue * 35 + boredness * 18 + jitter * 180,
+        MIN_STUDENT_ACTION_DELAY_MS,
+        MAX_STUDENT_ACTION_DELAY_MS,
+      );
+
+      return {
+        studentId: student.id,
+        action,
+        peerTargetId,
+        delayMs,
+        boredness,
+        fatigue,
+      };
+    });
+  }
+
+  private buildStudentInteractionDirective(
+    plan: StudentInteractionPlan,
+    allStudents: AgentProfile[],
+  ): string {
+    if (plan.action === 'student_to_student' && plan.peerTargetId) {
+      const peerName =
+        allStudents.find((student) => student.id === plan.peerTargetId)?.name ??
+        plan.peerTargetId;
+      return `Interaction target for this cycle: speak to peer ${peerName} (student_to_student). Do not address the teacher in this message.`;
+    }
+
+    return 'Interaction target for this cycle: respond directly to the teacher (student_to_teacher).';
+  }
+
+  private pickPeerTargetId(
+    session: Session,
+    fromStudentId: string,
+    candidates: AgentProfile[],
+    seed: string,
+  ): string | undefined {
+    const peerCandidates = candidates.filter((candidate) => candidate.id !== fromStudentId);
+    if (peerCandidates.length === 0) {
+      return undefined;
+    }
+
+    const scored = peerCandidates.map((candidate) => {
+      const forwardEdge = session.communicationGraph.edges.find(
+        (edge) => edge.from === fromStudentId && edge.to === candidate.id,
+      );
+      const backwardEdge = session.communicationGraph.edges.find(
+        (edge) => edge.from === candidate.id && edge.to === fromStudentId,
+      );
+      const relation = forwardEdge?.relationship ?? backwardEdge?.relationship ?? 'neutral';
+      const relationWeight =
+        relation === 'good' ? 1.25 : relation === 'neutral' ? 1 : 0.65;
+      const edgeWeight = clamp(
+        ((forwardEdge?.weight ?? 0.6) + (backwardEdge?.weight ?? 0.6)) / 2,
+        0.2,
+        2,
+      );
+      const engagementWeight = clamp(
+        (candidate.state.behavior * 0.6 + candidate.state.attentiveness * 0.4) / 10,
+        0.2,
+        1.2,
+      );
+
+      return {
+        candidateId: candidate.id,
+        weight: Math.max(0.05, edgeWeight * relationWeight * engagementWeight),
+      };
+    });
+
+    const total = scored.reduce((sum, item) => sum + item.weight, 0);
+    if (total <= 0) {
+      return peerCandidates[0]?.id;
+    }
+
+    let threshold = stableRoll(seed) * total;
+    for (const item of scored) {
+      threshold -= item.weight;
+      if (threshold <= 0) {
+        return item.candidateId;
+      }
+    }
+
+    return scored[scored.length - 1]?.candidateId;
+  }
+
+  private waitFor(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   private buildPeerMessageForGraph(studentName: string, message?: string): string {
@@ -1457,7 +2177,7 @@ export class Orchestrator {
     turnId?: string,
     agentId?: string,
   ): SessionEvent {
-    return {
+    const event: SessionEvent = {
       id: `evt_${randomUUID()}`,
       sessionId,
       type,
@@ -1466,6 +2186,35 @@ export class Orchestrator {
       payload,
       createdAt: nowIso(),
     };
+
+    this.logStudentStateSnapshot(sessionId, event);
+    return event;
+  }
+
+  private logStudentStateSnapshot(sessionId: string, event: SessionEvent): void {
+    const session = this.memory.getSession(sessionId);
+
+    if (!session) {
+      return;
+    }
+
+    const students = session.agents
+      .filter((agent) => isStudentKind(agent.kind))
+      .map((student) => ({
+        id: student.id,
+        name: student.name,
+        kind: student.kind,
+        state: { ...student.state },
+      }));
+
+    logger.info('student_state_activity_snapshot', {
+      sessionId,
+      eventId: event.id,
+      eventType: event.type,
+      turnId: event.turnId ?? null,
+      agentId: event.agentId ?? null,
+      students,
+    });
   }
 
   private activateGraphEdgeWithEvent(

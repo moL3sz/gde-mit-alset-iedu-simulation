@@ -22,6 +22,7 @@ export type SupervisedProps = {
   students: ClassroomStudent[];
   studentNodeIds: string[];
   nodeBubbles: CommunicationBubble[];
+  interactiveBoardActive: boolean;
   isSocketConnected: boolean;
   lastError: string | null;
   isPausedForTaskAssignment: boolean;
@@ -38,6 +39,7 @@ export const Supervised = ({
   students,
   studentNodeIds,
   nodeBubbles,
+  interactiveBoardActive,
   isSocketConnected,
   lastError,
   isPausedForTaskAssignment,
@@ -231,6 +233,7 @@ export const Supervised = ({
             students={students}
             studentNodeIds={studentNodeIds}
             nodeBubbles={nodeBubbles}
+            interactiveBoardActive={interactiveBoardActive}
           />
         </div>
 
@@ -238,6 +241,7 @@ export const Supervised = ({
           visible={isChartsVisible}
           onHide={() => setIsChartsVisible(false)}
           socket={supervisedSocket}
+          sessionId={sessionId}
           title="Supervised Charts"
           className="left-4 right-4 top-[112px] bottom-4"
         />

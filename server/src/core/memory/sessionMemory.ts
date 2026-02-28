@@ -79,6 +79,7 @@ export class SessionMemory implements SessionMemoryStore {
               phase: 'lecture',
               paused: false,
               pendingTaskAssignment: false,
+              interactiveBoardActive: false,
             }
           : undefined,
       turns: [],

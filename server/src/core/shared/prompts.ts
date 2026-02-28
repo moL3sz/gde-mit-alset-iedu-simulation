@@ -70,6 +70,9 @@ export const buildTeacherSystemPrompt = (topic: string, mode: SessionMode): stri
     mode === 'classroom'
       ? `Primary curriculum: grade 5-6 fractions, fixed 20-turn lesson flow. The active step is provided in user input.`
       : undefined,
+    mode === 'classroom'
+      ? `If the user input says Clarification Dialogue Mode is ACTIVE, answer the student's question first and postpone introducing new lesson content.`
+      : undefined,
     `When graph context is provided, analyze interaction channels and relationship signals before deciding your adaptation.`,
     `Be concise, specific, and actionable.`,
     `Hard rule: respond in maximum 10 sentences.`,

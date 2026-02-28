@@ -16,6 +16,6 @@ export const AppDataSource = new DataSource({
   synchronize: false,
   logging: env.DB_LOGGING,
   entities: [Student, ClassRoom],
-  migrations: ['src/database/migrations/*.{ts,js}', 'dist/database/migrations/*.{ts,js}'],
+  migrations: ['src/database/migrations/*.{ts,js}'],
   migrationsTableName: 'typeorm_migrations',
 });

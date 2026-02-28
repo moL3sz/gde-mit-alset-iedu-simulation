@@ -45,6 +45,9 @@ type StudentSnapshot = {
 type StudentStatesPayload = {
   turnId?: string;
   studentStates?: StudentSnapshot[];
+  classroomRuntime?: {
+    interactiveBoardActive?: boolean;
+  };
 };
 
 type EmittedTurnPayload = {
@@ -100,6 +103,7 @@ type UseSimulationChannelResult = {
   students: ClassroomStudent[];
   studentNodeIds: string[];
   nodeBubbles: CommunicationBubble[];
+  interactiveBoardActive: boolean;
   isSocketConnected: boolean;
   lastError: string | null;
   isPausedForTaskAssignment: boolean;
@@ -110,6 +114,12 @@ type UseSimulationChannelResult = {
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000/api";
 const CLASSROOM_ID_STORAGE_KEY = "classroomId";
+const BUBBLE_SWEEP_MS = 600;
+const MAX_BUBBLES_PER_NODE = 4;
+const DEFAULT_BUBBLE_TTL_MS = 3000;
+const STUDENT_BUBBLE_TTL_MS = 4000;
+const TEACHER_BUBBLE_TTL_MS = 6000;
+const SUPERVISOR_BUBBLE_TTL_MS = 14000;
 
 const getClassroomIdFromStorage = (): number | undefined => {
   if (typeof window === "undefined") {
@@ -137,6 +147,15 @@ const toActionLabel = (value: string): string =>
 
 const toShortText = (value: string, maxLength = 260): string =>
   value.length <= maxLength ? value : `${value.slice(0, maxLength - 1)}…`;
+
+const parseIsoTimestamp = (value: string | undefined): number | undefined => {
+  if (!value) {
+    return undefined;
+  }
+
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+};
 
 const buildAutomaticTurnMessage = (channel: SimulationChannel, topic: string, step: number): string => {
   if (channel === "supervised") {
@@ -235,6 +254,7 @@ const buildBubblesFromActivations = (
       actionType,
       text: toShortText(text),
       messageId,
+      createdAt: parseIsoTimestamp(activation.createdAt) ?? Date.now(),
       priority,
     });
   }
@@ -245,6 +265,7 @@ const buildBubblesFromActivations = (
     actionType: value.actionType,
     text: value.text,
     messageId: value.messageId,
+    createdAt: value.createdAt,
   }));
 };
 
@@ -258,6 +279,7 @@ const buildBubbleFromEmittedTurn = (
       actionType: "teacher_to_student",
       text: toShortText(emittedTurn.content),
       messageId: emittedTurn.id,
+      createdAt: Date.now(),
     };
   }
 
@@ -268,10 +290,151 @@ const buildBubbleFromEmittedTurn = (
       actionType: "student_to_teacher",
       text: toShortText(emittedTurn.content),
       messageId: emittedTurn.id,
+      createdAt: Date.now(),
     };
   }
 
   return null;
+};
+
+const resolveBubbleTtl = (bubble: CommunicationBubble): number => {
+  if (bubble.actionType === "supervisor_hint") {
+    return SUPERVISOR_BUBBLE_TTL_MS;
+  }
+
+  if (bubble.nodeId === "teacher") {
+    return TEACHER_BUBBLE_TTL_MS;
+  }
+
+  if (bubble.actionType === "student_to_student" || bubble.actionType === "student_to_teacher") {
+    return STUDENT_BUBBLE_TTL_MS;
+  }
+
+  return DEFAULT_BUBBLE_TTL_MS;
+};
+
+const withLifecycle = (bubble: CommunicationBubble, now: number): CommunicationBubble => {
+  const createdAt = bubble.createdAt ?? now;
+  const expiresAt = bubble.expiresAt ?? createdAt + resolveBubbleTtl(bubble);
+
+  return {
+    ...bubble,
+    createdAt,
+    expiresAt,
+  };
+};
+
+const pruneExpiredBubbles = (bubbles: CommunicationBubble[], now: number): CommunicationBubble[] => {
+  return bubbles.filter((bubble) => (bubble.expiresAt ?? now + DEFAULT_BUBBLE_TTL_MS) > now);
+};
+
+const enforceNodeStackLimit = (bubbles: CommunicationBubble[]): CommunicationBubble[] => {
+  const byNode = new Map<string, CommunicationBubble[]>();
+
+  for (const bubble of bubbles) {
+    const bucket = byNode.get(bubble.nodeId) ?? [];
+    bucket.push(bubble);
+    byNode.set(bubble.nodeId, bucket);
+  }
+
+  const next: CommunicationBubble[] = [];
+  for (const bucket of byNode.values()) {
+    bucket
+      .sort((left, right) => (right.createdAt ?? 0) - (left.createdAt ?? 0))
+      .slice(0, MAX_BUBBLES_PER_NODE)
+      .forEach((bubble) => next.push(bubble));
+  }
+
+  return next.sort((left, right) => (right.createdAt ?? 0) - (left.createdAt ?? 0));
+};
+
+const appendBubbleStack = (
+  previous: CommunicationBubble[],
+  incoming: CommunicationBubble[],
+): CommunicationBubble[] => {
+  if (incoming.length === 0) {
+    return previous;
+  }
+
+  const now = Date.now();
+  const active = pruneExpiredBubbles(previous, now);
+  const normalizeBubbleText = (value: string): string =>
+    value.replace(/\s+/g, " ").trim().toLowerCase();
+  const dedupedActiveByText = [...active]
+    .sort((left, right) => (right.createdAt ?? 0) - (left.createdAt ?? 0))
+    .filter((bubble, index, all) => {
+      const normalized = normalizeBubbleText(bubble.text);
+      return (
+        all.findIndex(
+          (candidate) => normalizeBubbleText(candidate.text) === normalized,
+        ) === index
+      );
+    });
+  const knownIds = new Set(dedupedActiveByText.map((bubble) => bubble.messageId));
+  const knownTexts = new Set(
+    dedupedActiveByText.map((bubble) => normalizeBubbleText(bubble.text)),
+  );
+  const merged = [...dedupedActiveByText];
+  let hasNewBubble = false;
+
+  const isTeacherBroadcastLike = (actionType: string): boolean =>
+    actionType === "teacher_broadcast" || actionType === "teacher_to_student";
+
+  const isNearDuplicate = (
+    existing: CommunicationBubble,
+    candidate: CommunicationBubble,
+  ): boolean => {
+    if (existing.nodeId !== candidate.nodeId) {
+      return false;
+    }
+
+    if (existing.text !== candidate.text) {
+      return false;
+    }
+
+    const teacherBroadcastDuplicate =
+      isTeacherBroadcastLike(existing.actionType) &&
+      isTeacherBroadcastLike(candidate.actionType);
+    const studentToTeacherDuplicate =
+      existing.actionType === "student_to_teacher" &&
+      candidate.actionType === "student_to_teacher";
+
+    if (!teacherBroadcastDuplicate && !studentToTeacherDuplicate) {
+      return false;
+    }
+
+    const existingCreatedAt = existing.createdAt ?? now;
+    const candidateCreatedAt = candidate.createdAt ?? now;
+    const duplicateWindowMs = teacherBroadcastDuplicate ? 6000 : 5000;
+    return Math.abs(existingCreatedAt - candidateCreatedAt) <= duplicateWindowMs;
+  };
+
+  for (const bubble of incoming) {
+    if (knownIds.has(bubble.messageId)) {
+      continue;
+    }
+
+    const normalizedIncomingText = normalizeBubbleText(bubble.text);
+    if (knownTexts.has(normalizedIncomingText)) {
+      continue;
+    }
+
+    const duplicateBubble = merged.some((existing) => isNearDuplicate(existing, bubble));
+    if (duplicateBubble) {
+      continue;
+    }
+
+    merged.push(withLifecycle(bubble, now));
+    knownIds.add(bubble.messageId);
+    knownTexts.add(normalizedIncomingText);
+    hasNewBubble = true;
+  }
+
+  if (!hasNewBubble && dedupedActiveByText.length === previous.length) {
+    return previous;
+  }
+
+  return enforceNodeStackLimit(merged);
 };
 
 export const useSimulationChannel = ({
@@ -284,6 +447,7 @@ export const useSimulationChannel = ({
   const [students, setStudents] = useState<ClassroomStudent[]>([]);
   const [studentNodeIds, setStudentNodeIds] = useState<string[]>([]);
   const [nodeBubbles, setNodeBubbles] = useState<CommunicationBubble[]>([]);
+  const [interactiveBoardActive, setInteractiveBoardActive] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
   const [isPausedForTaskAssignment, setIsPausedForTaskAssignment] = useState(false);
   const [taskAssignmentRequired, setTaskAssignmentRequired] =
@@ -392,18 +556,13 @@ export const useSimulationChannel = ({
       );
       setStudentNodeIds(nextStudentNodeIds);
       setNodeBubbles((previous) => {
-        const graphBubbles = buildBubblesFromActivations(
-          envelope.payload.currentTurnActivations,
-          envelope.payload.turnId,
+        return appendBubbleStack(
+          previous,
+          buildBubblesFromActivations(
+            envelope.payload.currentTurnActivations,
+            envelope.payload.turnId,
+          ),
         );
-        const byNode = new Map(graphBubbles.map((bubble) => [bubble.nodeId, bubble]));
-
-        const previousTeacherBubble = previous.find((bubble) => bubble.nodeId === "teacher");
-        if (!byNode.has("teacher") && previousTeacherBubble) {
-          byNode.set("teacher", previousTeacherBubble);
-        }
-
-        return Array.from(byNode.values());
       });
     };
 
@@ -441,6 +600,11 @@ export const useSimulationChannel = ({
           };
         }),
       );
+
+      const boardActive = envelope.payload.classroomRuntime?.interactiveBoardActive;
+      if (typeof boardActive === "boolean") {
+        setInteractiveBoardActive(boardActive);
+      }
     };
 
     const handleSupervisorHint = (envelope: WsEnvelope<SupervisorHintPayload>) => {
@@ -449,18 +613,16 @@ export const useSimulationChannel = ({
       }
 
       setNodeBubbles((previous) => {
-        const withoutTeacher = previous.filter((bubble) => bubble.nodeId !== "teacher");
-
-        return [
+        return appendBubbleStack(previous, [
           {
             nodeId: "teacher",
             fromNodeId: "supervisor",
             actionType: "supervisor_hint",
             text: toShortText(envelope.payload.hintText),
             messageId: envelope.payload.createdAt || `hint:${Date.now()}`,
+            createdAt: parseIsoTimestamp(envelope.payload.createdAt) ?? Date.now(),
           },
-          ...withoutTeacher,
-        ];
+        ]);
       });
     };
 
@@ -475,9 +637,7 @@ export const useSimulationChannel = ({
       }
 
       setNodeBubbles((previous) => {
-        const byNode = new Map(previous.map((item) => [item.nodeId, item]));
-        byNode.set(bubble.nodeId, bubble);
-        return Array.from(byNode.values());
+        return appendBubbleStack(previous, [bubble]);
       });
     };
 
@@ -515,6 +675,24 @@ export const useSimulationChannel = ({
       socket.off("system.error", handleSystemError);
     };
   }, [sessionId, socket]);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      const now = Date.now();
+      setNodeBubbles((previous) => {
+        const next = pruneExpiredBubbles(previous, now);
+        if (next.length === previous.length) {
+          return previous;
+        }
+
+        return next;
+      });
+    }, BUBBLE_SWEEP_MS);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, []);
 
   useEffect(() => {
     if (!sessionId) {
@@ -590,18 +768,16 @@ export const useSimulationChannel = ({
       });
 
       setNodeBubbles((previous) => {
-        const withoutTeacher = previous.filter((bubble) => bubble.nodeId !== "teacher");
-
-        return [
+        return appendBubbleStack(previous, [
           {
             nodeId: "teacher",
             fromNodeId: "supervisor",
             actionType: "supervisor_hint",
             text: toShortText(cleanedHint),
             messageId: `hint-local:${Date.now()}`,
+            createdAt: Date.now(),
           },
-          ...withoutTeacher,
-        ];
+        ]);
       });
 
       return true;
@@ -648,6 +824,7 @@ export const useSimulationChannel = ({
       students,
       studentNodeIds,
       nodeBubbles,
+      interactiveBoardActive,
       isSocketConnected: Boolean(socket?.connected),
       lastError,
       isPausedForTaskAssignment: isEffectivelyPaused,
@@ -657,6 +834,7 @@ export const useSimulationChannel = ({
     }),
     [
       isEffectivelyPaused,
+      interactiveBoardActive,
       lastError,
       nodeBubbles,
       sendSupervisorHint,

@@ -105,6 +105,7 @@ export class SessionsService {
         metrics: response.metrics,
         communicationGraph: response.communicationGraph,
         currentTurnActivations: response.communicationGraph.currentTurnActivations,
+        classroomRuntime: afterSummary.classroomRuntime,
         studentStates: afterStudentStates,
         studentStateChanges: calculateStudentPersonalityChanges(
           beforeStudentStates,

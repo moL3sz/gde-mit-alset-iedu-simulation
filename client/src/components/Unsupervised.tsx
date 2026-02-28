@@ -14,6 +14,7 @@ export type UnsupervisedProps = {
   students: ClassroomStudent[];
   studentNodeIds: string[];
   nodeBubbles: CommunicationBubble[];
+  interactiveBoardActive: boolean;
   isSocketConnected: boolean;
   lastError: string | null;
   isPausedForTaskAssignment?: boolean;
@@ -24,6 +25,7 @@ export const Unsupervised = ({
   students,
   studentNodeIds,
   nodeBubbles,
+  interactiveBoardActive,
   isSocketConnected,
   lastError,
   isPausedForTaskAssignment = false,
@@ -90,6 +92,7 @@ export const Unsupervised = ({
             students={students}
             studentNodeIds={studentNodeIds}
             nodeBubbles={nodeBubbles}
+            interactiveBoardActive={interactiveBoardActive}
           />
         </div>
 
@@ -97,6 +100,7 @@ export const Unsupervised = ({
           visible={isChartsVisible}
           onHide={() => setIsChartsVisible(false)}
           socket={unsupervisedSocket}
+          sessionId={sessionId}
           title="Unsupervised Charts"
           className="left-4 right-4 top-[112px] bottom-4"
         />
