@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { ProgressBar } from "primereact/progressbar";
 import { Supervised } from "../components/Supervised";
 import { Unsupervised } from "../components/Unsupervised";
@@ -43,7 +43,6 @@ const getSimulationTopic = (): string => {
 };
 
 export const Simulation = () => {
-  const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
   const { supervisedSocket, unsupervisedSocket, initializeSockets } = useSockets();
   const laraPrimary = "var(--primary-color, #6366f1)";
   const laraPrimaryDark = "var(--primary-600, #4f46e5)";
@@ -54,18 +53,6 @@ export const Simulation = () => {
   useEffect(() => {
     initializeSockets();
   }, [initializeSockets]);
-
-  useEffect(() => {
-    const startedAt = Date.now();
-    const intervalId = window.setInterval(() => {
-      const nextElapsed = Math.floor((Date.now() - startedAt) / 1000);
-      setElapsedSeconds(Math.min(nextElapsed, SIMULATION_DURATION_SECONDS));
-    }, 1000);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, []);
 
   const topic = useMemo(() => getSimulationTopic(), []);
 
@@ -82,9 +69,33 @@ export const Simulation = () => {
     forcedPause: supervisedRuntime.isPausedForTaskAssignment,
   });
 
+  const elapsedSeconds = useMemo(() => {
+    return Math.max(
+      supervisedRuntime.simulationElapsedSeconds,
+      unsupervisedRuntime.simulationElapsedSeconds,
+      0,
+    );
+  }, [
+    supervisedRuntime.simulationElapsedSeconds,
+    unsupervisedRuntime.simulationElapsedSeconds,
+  ]);
+
+  const totalSeconds = useMemo(() => {
+    const serverTotal = Math.max(
+      supervisedRuntime.simulationTotalSeconds,
+      unsupervisedRuntime.simulationTotalSeconds,
+      0,
+    );
+
+    return serverTotal > 0 ? serverTotal : SIMULATION_DURATION_SECONDS;
+  }, [
+    supervisedRuntime.simulationTotalSeconds,
+    unsupervisedRuntime.simulationTotalSeconds,
+  ]);
+
   const progressValue = useMemo(() => {
-    return Math.min(100, (elapsedSeconds / SIMULATION_DURATION_SECONDS) * 100);
-  }, [elapsedSeconds]);
+    return totalSeconds > 0 ? Math.min(100, (elapsedSeconds / totalSeconds) * 100) : 0;
+  }, [elapsedSeconds, totalSeconds]);
 
   const submitSupervisedTaskAssignment = async (
     input: SubmitTaskAssignmentInput,
@@ -106,8 +117,6 @@ export const Simulation = () => {
 
     return unsupervisedOk;
   };
-
-
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-hidden px-4 py-4 sm:px-6 sm:py-6">
       <style>
@@ -176,7 +185,7 @@ export const Simulation = () => {
               background: `linear-gradient(135deg, ${laraPrimaryDark}, ${laraPrimary})`,
             }}
           >
-            {formatTime(elapsedSeconds)} / {formatTime(SIMULATION_DURATION_SECONDS)}
+            {formatTime(elapsedSeconds)} / {formatTime(totalSeconds)}
           </span>
         </div>
         <ProgressBar

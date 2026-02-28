@@ -10,6 +10,9 @@ export type ClassroomStudent = {
   attentiveness?: number;
   comprehension?: number;
   behavior?: number;
+  liveActionLabel?: string;
+  liveActionKind?: "on_task" | "off_task";
+  liveActionSeverity?: "success" | "info" | "warning";
 };
 
 export type CommunicationBubble = {
@@ -18,6 +21,7 @@ export type CommunicationBubble = {
   actionType: string;
   text: string;
   messageId: string;
+  speechSeconds?: number;
   createdAt?: number;
   expiresAt?: number;
 };
@@ -66,6 +70,11 @@ const STATE_STYLES: Record<
     panelClass: "border-amber-200 bg-amber-50/90 text-amber-800",
     tagClass: "!bg-amber-100 !text-amber-800 !border !border-amber-200",
   },
+};
+
+const ACTION_TAG_CLASS: Record<"on_task" | "off_task", string> = {
+  on_task: "!bg-emerald-100 !text-emerald-800 !border !border-emerald-200",
+  off_task: "!bg-amber-100 !text-amber-900 !border !border-amber-200",
 };
 
 const clamp = (value: number, min: number, max: number): number => {
@@ -143,6 +152,9 @@ const ClassroomMockup = ({
       attentiveness: source?.attentiveness,
       comprehension: source?.comprehension,
       behavior: source?.behavior,
+      liveActionLabel: source?.liveActionLabel,
+      liveActionKind: source?.liveActionKind,
+      liveActionSeverity: source?.liveActionSeverity,
     };
   });
 
@@ -245,6 +257,12 @@ const ClassroomMockup = ({
                   value={toActionLabel(bubble.actionType)}
                   className="!border !border-indigo-200 !bg-indigo-50 !text-indigo-700 !text-[10px]"
                 />
+                {typeof bubble.speechSeconds === "number" ? (
+                  <Tag
+                    value={`~${Math.max(1, Math.round(bubble.speechSeconds))}s`}
+                    className="!ml-1 !border !border-slate-300 !bg-slate-100 !text-slate-700 !text-[10px]"
+                  />
+                ) : null}
                 <p
                   className={`${
                     isTeacher ? "text-sm leading-5" : "text-xs leading-5"
@@ -306,7 +324,11 @@ const ClassroomMockup = ({
             }`}
             pt={CONTAINER_PT}
           >
-            <div className="flex h-full w-full items-center justify-center px-2 py-1">
+            <div
+              className={`flex h-full w-full items-center justify-center px-2 py-1 ${
+                interactiveBoardActive ? "bg-emerald-600 text-white" : ""
+              }`}
+            >
               {interactiveBoardActive ? "Interactive Board · Active" : "Interactive Board"}
             </div>
           </Card>
@@ -329,6 +351,12 @@ const ClassroomMockup = ({
               />
             </div>
             <Tag value="Teacher" className="!bg-indigo-50 !text-indigo-700 !text-[10px] !border !border-indigo-200" />
+            {interactiveBoardActive ? (
+              <Tag
+                value="Interactive Mode"
+                className="!bg-emerald-100 !text-emerald-800 !text-[10px]"
+              />
+            ) : null}
             {renderBubble("teacher", true)}
           </div>
 
@@ -349,11 +377,15 @@ const ClassroomMockup = ({
               const firstName = first.name ?? toFallbackName(firstSeatIndex);
               const firstState = getStudentState(first, firstSeatIndex);
               const firstStyle = STATE_STYLES[firstState];
+              const firstActionKind = first.liveActionKind ?? "on_task";
+              const firstActionLabel = first.liveActionLabel;
               const secondName = second?.name ?? toFallbackName(secondSeatIndex);
               const secondState = second
                 ? getStudentState(second, secondSeatIndex)
                 : "steady";
               const secondStyle = STATE_STYLES[secondState];
+              const secondActionKind = second?.liveActionKind ?? "on_task";
+              const secondActionLabel = second?.liveActionLabel;
 
               return (
                 <Card
@@ -382,6 +414,12 @@ const ClassroomMockup = ({
                           value={firstStyle.label}
                           className={`!mt-0.5 !text-[9px] ${firstStyle.tagClass}`}
                         />
+                        {firstActionLabel ? (
+                          <Tag
+                            value={firstActionLabel}
+                            className={`!mt-0.5 !text-[9px] ${ACTION_TAG_CLASS[firstActionKind]}`}
+                          />
+                        ) : null}
                         {renderBubble(firstNodeId, false)}
                       </div>
 
@@ -407,6 +445,12 @@ const ClassroomMockup = ({
                             className={`!mt-0.5 !text-[9px]  ${secondStyle.tagClass}`}
                             
                           />
+                          {secondActionLabel ? (
+                            <Tag
+                              value={secondActionLabel}
+                              className={`!mt-0.5 !text-[9px] ${ACTION_TAG_CLASS[secondActionKind]}`}
+                            />
+                          ) : null}
                           {renderBubble(secondNodeId, false)}
                         </div>
                       ) : (

@@ -48,6 +48,14 @@ type StudentStateSnapshot = {
   behavior?: number;
   comprehension?: number;
   profile?: string;
+  liveAction?: {
+    code?: string;
+    kind?: "on_task" | "off_task";
+    label?: string;
+    severity?: "success" | "info" | "warning";
+    at?: string;
+  };
+  distractionStreak?: number;
 };
 
 type StudentSnapshot = {
@@ -62,6 +70,9 @@ type StudentStatesPayload = {
   studentStates?: StudentSnapshot[];
   classroomRuntime?: {
     interactiveBoardActive?: boolean;
+    completed?: boolean;
+    simulatedElapsedSeconds?: number;
+    simulatedTotalSeconds?: number;
   };
 };
 
@@ -70,6 +81,7 @@ type EmittedTurnPayload = {
   role: string;
   agentId?: string;
   content: string;
+  metadata?: Record<string, unknown>;
 };
 
 type AgentTurnEmittedPayload = {
@@ -119,6 +131,9 @@ type UseSimulationChannelResult = {
   studentNodeIds: string[];
   nodeBubbles: CommunicationBubble[];
   interactiveBoardActive: boolean;
+  simulationElapsedSeconds: number;
+  simulationTotalSeconds: number;
+  isSessionCompleted: boolean;
   isSocketConnected: boolean;
   lastError: string | null;
   isPausedForTaskAssignment: boolean;
@@ -137,6 +152,7 @@ const DEFAULT_BUBBLE_TTL_MS = 3000;
 const STUDENT_BUBBLE_TTL_MS = 4000;
 const TEACHER_BUBBLE_TTL_MS = 6000;
 const SUPERVISOR_BUBBLE_TTL_MS = 14000;
+const DEFAULT_SIMULATION_TOTAL_SECONDS = 45 * 60;
 
 const getClassroomIdFromStorage = (): number | undefined => {
   if (typeof window === "undefined") {
@@ -197,12 +213,12 @@ const parseIsoTimestamp = (value: string | undefined): number | undefined => {
   return Number.isFinite(parsed) ? parsed : undefined;
 };
 
-const buildAutomaticTurnMessage = (channel: SimulationChannel, topic: string, step: number): string => {
+const buildAutomaticTurnMessage = (channel: SimulationChannel, topic: string): string => {
   if (channel === "supervised") {
-    return `Lesson step ${step} on ${topic}: teach clearly, ask one check-for-understanding question, and keep pacing moderate.`;
+    return `Continue the ${topic} lesson in real-time pacing: teach clearly, ask one quick check-for-understanding question, and keep pacing moderate.`;
   }
 
-  return `Autonomous lesson step ${step} on ${topic}: adapt explanation based on student boredom, emotion, and retention, then choose one concrete adjustment.`;
+  return `Continue the ${topic} lesson autonomously in real-time pacing: adapt explanation based on student state signals, then choose one concrete adjustment.`;
 };
 
 const getPayloadText = (payload: Record<string, unknown> | undefined, fallback: string): string => {
@@ -312,6 +328,12 @@ const buildBubblesFromActivations = (
 const buildBubbleFromEmittedTurn = (
   emittedTurn: EmittedTurnPayload,
 ): CommunicationBubble | null => {
+  const speechSecondsRaw = emittedTurn.metadata?.["speechSeconds"];
+  const speechSeconds =
+    typeof speechSecondsRaw === "number" && Number.isFinite(speechSecondsRaw)
+      ? speechSecondsRaw
+      : undefined;
+
   if (emittedTurn.role === "teacher") {
     return {
       nodeId: "teacher",
@@ -319,6 +341,7 @@ const buildBubbleFromEmittedTurn = (
       actionType: "teacher_to_student",
       text: toShortText(emittedTurn.content),
       messageId: emittedTurn.id,
+      speechSeconds,
       createdAt: Date.now(),
     };
   }
@@ -330,6 +353,7 @@ const buildBubbleFromEmittedTurn = (
       actionType: "student_to_teacher",
       text: toShortText(emittedTurn.content),
       messageId: emittedTurn.id,
+      speechSeconds,
       createdAt: Date.now(),
     };
   }
@@ -456,6 +480,23 @@ const appendBubbleStack = (
 
     const normalizedIncomingText = normalizeBubbleText(bubble.text);
     if (knownTexts.has(normalizedIncomingText)) {
+      if (typeof bubble.speechSeconds === "number") {
+        const existingIndex = merged.findIndex(
+          (candidate) =>
+            normalizeBubbleText(candidate.text) === normalizedIncomingText &&
+            candidate.nodeId === bubble.nodeId,
+        );
+        if (existingIndex >= 0) {
+          const existing = merged[existingIndex];
+          if (existing && typeof existing.speechSeconds !== "number") {
+            merged[existingIndex] = {
+              ...existing,
+              speechSeconds: bubble.speechSeconds,
+            };
+            hasNewBubble = true;
+          }
+        }
+      }
       continue;
     }
 
@@ -488,6 +529,11 @@ export const useSimulationChannel = ({
   const [studentNodeIds, setStudentNodeIds] = useState<string[]>([]);
   const [nodeBubbles, setNodeBubbles] = useState<CommunicationBubble[]>([]);
   const [interactiveBoardActive, setInteractiveBoardActive] = useState(false);
+  const [simulationElapsedSeconds, setSimulationElapsedSeconds] = useState(0);
+  const [simulationTotalSeconds, setSimulationTotalSeconds] = useState(
+    DEFAULT_SIMULATION_TOTAL_SECONDS,
+  );
+  const [isSessionCompleted, setIsSessionCompleted] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
   const [isPausedForTaskAssignment, setIsPausedForTaskAssignment] = useState(false);
   const [taskAssignmentRequired, setTaskAssignmentRequired] =
@@ -498,7 +544,6 @@ export const useSimulationChannel = ({
 
   const creatingSessionRef = useRef(false);
   const turnInFlightRef = useRef(false);
-  const turnStepRef = useRef(0);
   const studentNodeIdsRef = useRef<string[]>([]);
   const studentSnapshotByNodeIdRef = useRef<Record<string, ClassroomStudent>>({});
 
@@ -600,6 +645,9 @@ export const useSimulationChannel = ({
           attentiveness: studentSnapshotByNodeIdRef.current[node.id]?.attentiveness,
           behavior: studentSnapshotByNodeIdRef.current[node.id]?.behavior,
           comprehension: studentSnapshotByNodeIdRef.current[node.id]?.comprehension,
+          liveActionLabel: studentSnapshotByNodeIdRef.current[node.id]?.liveActionLabel,
+          liveActionKind: studentSnapshotByNodeIdRef.current[node.id]?.liveActionKind,
+          liveActionSeverity: studentSnapshotByNodeIdRef.current[node.id]?.liveActionSeverity,
         })),
       );
       setStudentNodeIds(nextStudentNodeIds);
@@ -628,6 +676,9 @@ export const useSimulationChannel = ({
           attentiveness: studentState.state.attentiveness,
           behavior: studentState.state.behavior,
           comprehension: studentState.state.comprehension,
+          liveActionLabel: studentState.state.liveAction?.label,
+          liveActionKind: studentState.state.liveAction?.kind,
+          liveActionSeverity: studentState.state.liveAction?.severity,
         };
       }
 
@@ -645,6 +696,10 @@ export const useSimulationChannel = ({
             attentiveness: snapshot?.attentiveness ?? previous[index]?.attentiveness,
             behavior: snapshot?.behavior ?? previous[index]?.behavior,
             comprehension: snapshot?.comprehension ?? previous[index]?.comprehension,
+            liveActionLabel: snapshot?.liveActionLabel ?? previous[index]?.liveActionLabel,
+            liveActionKind: snapshot?.liveActionKind ?? previous[index]?.liveActionKind,
+            liveActionSeverity:
+              snapshot?.liveActionSeverity ?? previous[index]?.liveActionSeverity,
           };
         }),
       );
@@ -652,6 +707,18 @@ export const useSimulationChannel = ({
       const boardActive = envelope.payload.classroomRuntime?.interactiveBoardActive;
       if (typeof boardActive === "boolean") {
         setInteractiveBoardActive(boardActive);
+      }
+      const runtimeElapsed = envelope.payload.classroomRuntime?.simulatedElapsedSeconds;
+      if (typeof runtimeElapsed === "number" && Number.isFinite(runtimeElapsed)) {
+        setSimulationElapsedSeconds(Math.max(0, runtimeElapsed));
+      }
+      const runtimeTotal = envelope.payload.classroomRuntime?.simulatedTotalSeconds;
+      if (typeof runtimeTotal === "number" && Number.isFinite(runtimeTotal) && runtimeTotal > 0) {
+        setSimulationTotalSeconds(runtimeTotal);
+      }
+      const runtimeCompleted = envelope.payload.classroomRuntime?.completed;
+      if (typeof runtimeCompleted === "boolean") {
+        setIsSessionCompleted(runtimeCompleted);
       }
     };
 
@@ -758,9 +825,11 @@ export const useSimulationChannel = ({
         return;
       }
 
-      turnInFlightRef.current = true;
-      turnStepRef.current += 1;
+      if (isSessionCompleted) {
+        return;
+      }
 
+      turnInFlightRef.current = true;
       try {
         const response = await fetch(`${API_BASE_URL}/sessions/${sessionId}/turn`, {
           method: "POST",
@@ -768,7 +837,7 @@ export const useSimulationChannel = ({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            teacherOrUserMessage: buildAutomaticTurnMessage(channel, topic, turnStepRef.current),
+            teacherOrUserMessage: buildAutomaticTurnMessage(channel, topic),
           }),
         });
 
@@ -800,7 +869,7 @@ export const useSimulationChannel = ({
       cancelled = true;
       window.clearInterval(intervalId);
     };
-  }, [channel, isEffectivelyPaused, sessionId, topic]);
+  }, [channel, isEffectivelyPaused, isSessionCompleted, sessionId, topic]);
 
   const sendSupervisorHint = useCallback(
     (hintText: string): boolean => {
@@ -873,6 +942,9 @@ export const useSimulationChannel = ({
       studentNodeIds,
       nodeBubbles,
       interactiveBoardActive,
+      simulationElapsedSeconds,
+      simulationTotalSeconds,
+      isSessionCompleted,
       isSocketConnected: Boolean(socket?.connected),
       lastError,
       isPausedForTaskAssignment: isEffectivelyPaused,
@@ -888,6 +960,9 @@ export const useSimulationChannel = ({
       nodeBubbles,
       sendSupervisorHint,
       sessionId,
+      simulationElapsedSeconds,
+      simulationTotalSeconds,
+      isSessionCompleted,
       socket?.connected,
       studentNodeIds,
       students,

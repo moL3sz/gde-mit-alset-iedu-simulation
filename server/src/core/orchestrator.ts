@@ -5,6 +5,7 @@ import type {
   AgentProfile,
   AssignmentAuthority,
   ClassroomPhase,
+  ClassroomKnowledgeCheck,
   CommunicationActivation,
   CreateSessionRequest,
   CreateSessionResponse,
@@ -15,6 +16,7 @@ import type {
   SessionEvent,
   SessionEventType,
   SimulationChannel,
+  StudentLiveAction,
   SubmitTaskAssignmentRequest,
   SubmitTaskAssignmentResponse,
   SubmitSupervisorHintResponse,
@@ -32,6 +34,7 @@ import { AppError } from './shared/errors/app-error';
 import {
   getLessonPlanTotalTurns,
   getLessonStepForTopic,
+  type FractionsLessonStep,
 } from './shared/prompts';
 import {
   activateCommunicationEdge,
@@ -55,8 +58,82 @@ const INTERACTIVE_BOARD_DEACTIVATE_RATIO = 0.2;
 const INTERACTIVE_BOARD_RECOVERY_AVERAGE_ATTENTION = 6.5;
 const INTERACTIVE_BOARD_ACTIVATE_BOOST = 1.2;
 const INTERACTIVE_BOARD_SUSTAIN_BOOST = 0.35;
+const TEACHER_BEHAVIOR_RESPONSE_THRESHOLD = 3;
+const MAX_DISTRACTION_STREAK = 6;
+const BOREDOM_AVERAGE_TRIGGER = 4.9;
+const BOREDOM_RISE_DELTA_TRIGGER = 0.22;
+const BOREDOM_RISE_STREAK_TRIGGER = 2;
+const ENGAGEMENT_JOKE_COOLDOWN_TURNS = 3;
+const KNOWLEDGE_CHECK_INTERVAL_TURNS = 3;
+const KNOWLEDGE_CHECK_EXPIRY_TURNS = 2;
+const POST_PRAISE_EXTRA_DECAY_FACTOR = 0.22;
+const POST_PRAISE_EXTRA_DISTRACTION = 0.06;
+const SIMULATION_TARGET_SECONDS = 45 * 60;
+
+const ON_TASK_ACTION_LIBRARY: ReadonlyArray<{
+  code: StudentLiveAction['code'];
+  label: string;
+  severity: StudentLiveAction['severity'];
+}> = [
+  { code: 'listening', label: 'Paying attention', severity: 'success' },
+  { code: 'note_taking', label: 'Taking notes', severity: 'success' },
+  { code: 'task_focus', label: 'Working on the task', severity: 'info' },
+  { code: 'peer_support', label: 'Helping a peer briefly', severity: 'info' },
+];
+
+const OFF_TASK_ACTION_LIBRARY: ReadonlyArray<{
+  code: StudentLiveAction['code'];
+  label: string;
+  severity: StudentLiveAction['severity'];
+}> = [
+  { code: 'pen_clicking', label: 'Pen clicking', severity: 'warning' },
+  { code: 'looking_out_window', label: 'Looking out the window', severity: 'warning' },
+  { code: 'playing_with_object', label: 'Playing with an object', severity: 'warning' },
+  { code: 'desk_doodling', label: 'Doodling on paper', severity: 'warning' },
+  { code: 'side_talking', label: 'Side talking', severity: 'warning' },
+];
 
 const nowIso = (): string => new Date().toISOString();
+const round1 = (value: number): number => Math.round(value * 10) / 10;
+const countWords = (value: string): number => {
+  return value.trim().split(/\s+/).filter(Boolean).length;
+};
+const topicStopwords = new Set([
+  'the',
+  'and',
+  'for',
+  'with',
+  'from',
+  'that',
+  'this',
+  'then',
+  'into',
+  'about',
+  'your',
+  'you',
+  'are',
+  'was',
+  'were',
+  'what',
+  'when',
+  'where',
+  'which',
+  'their',
+  'there',
+  'have',
+  'has',
+  'had',
+  'just',
+  'very',
+  'short',
+  'step',
+  'steps',
+  'lesson',
+  'focus',
+  'goal',
+  'current',
+  'turn',
+]);
 
 const clamp = (value: number, min: number, max: number): number => {
   return Math.max(min, Math.min(max, value));
@@ -81,6 +158,25 @@ const stableRoll = (seed: string): number => {
   }
 
   return hash / 0xffffffff;
+};
+
+const estimateSpeechSeconds = (
+  text: string,
+  speaker: 'teacher' | 'student',
+): number => {
+  const words = countWords(text);
+  if (words <= 0) {
+    return 2;
+  }
+
+  const wordsPerMinute = speaker === 'teacher' ? 130 : 115;
+  const base = (words / wordsPerMinute) * 60;
+  const sentenceCount = text
+    .split(/[.!?]+/)
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0).length;
+  const pauseSeconds = Math.max(0, sentenceCount - 1) * 0.45;
+  return clamp(Math.round(base + pauseSeconds), 2, 45);
 };
 
 const getStudentStateFloors = (kind: AgentKind): {
@@ -145,6 +241,16 @@ interface StudentQuestionSignal {
   askedAt: string;
 }
 
+interface StudentLiveActionSignal {
+  studentId: string;
+  studentName: string;
+  liveAction: StudentLiveAction;
+  distractionScore: number;
+  distractionProbability: number;
+  distractionStreak: number;
+  needsTeacherIntervention: boolean;
+}
+
 interface InteractiveBoardDecision {
   nextActive: boolean;
   changed: boolean;
@@ -153,6 +259,14 @@ interface InteractiveBoardDecision {
   totalStudents: number;
   inattentiveRatio: number;
   averageAttentiveness: number;
+}
+
+interface BoredomJokeDecision {
+  runtime: NonNullable<Session['classroomRuntime']>;
+  shouldInjectJoke: boolean;
+  averageBoredness: number;
+  borednessDelta: number;
+  boredomRiseStreak: number;
 }
 
 export class Orchestrator {
@@ -379,8 +493,18 @@ export class Orchestrator {
         lessonTurn: runtime.lessonTurn,
         phase: 'practice',
         paused: false,
+        completed: false,
+        completedAt: undefined,
+        completionReason: undefined,
         pendingTaskAssignment: false,
         interactiveBoardActive: false,
+        simulatedElapsedSeconds: 0,
+        simulatedTotalSeconds: SIMULATION_TARGET_SECONDS,
+        pendingDistractionCounts: {},
+        previousAverageBoredness: undefined,
+        boredomRiseStreak: 0,
+        lastEngagementJokeTurn: undefined,
+        activeKnowledgeCheck: undefined,
       };
 
       return {
@@ -448,12 +572,50 @@ export class Orchestrator {
     ];
     let selectedStudents = orderedStudents.slice(0, responderCount);
     const lessonPlanTotalTurns = getLessonPlanTotalTurns(session.topic);
-    const lessonTurn = this.getClassroomLessonTurnIndex(session, lessonPlanTotalTurns);
-    const phase = this.resolveClassroomPhase(lessonTurn, lessonPlanTotalTurns);
-    let runtime = this.ensureClassroomRuntime(sessionId, lessonTurn, phase);
+    let runtime = this.ensureClassroomRuntime(sessionId, 1, 'lecture');
+    const lessonTurn = this.resolveLessonTurnFromRuntime(runtime, lessonPlanTotalTurns);
+    const phase = this.resolveClassroomPhaseFromRuntime(runtime, lessonPlanTotalTurns);
+    runtime = this.ensureClassroomRuntime(sessionId, lessonTurn, phase);
+    if (!runtime.completed && this.isSimulationTimeCompleted(runtime)) {
+      runtime = this.ensureClassroomRuntime(sessionId, lessonTurn, phase, {
+        completed: true,
+        completedAt: nowIso(),
+        completionReason: 'simulation_time_completed',
+        paused: true,
+      });
+    }
+
+    if (runtime.completed) {
+      this.rollbackRequestTurnForPause(sessionId, requestTurn.id);
+      eventCollector.push(
+        this.createEvent(
+          sessionId,
+          'session_completed',
+          {
+            lessonTurn: runtime.lessonTurn,
+            completedAt: runtime.completedAt ?? nowIso(),
+            reason: runtime.completionReason ?? 'simulation_time_completed',
+          },
+          requestTurn.id,
+          teacherProfile.id,
+        ),
+      );
+      return;
+    }
+    let cycleSpeechSeconds = 0;
+    let cycleInteractionSeconds = 1.5;
     let activeClarification = runtime.activeClarification;
     const supervisorHint =
       session.channel === 'supervised' ? this.memory.consumeSupervisorHint(sessionId) : undefined;
+    this.applyNaturalPerTurnStateDecay(
+      sessionId,
+      requestTurn.id,
+      lessonTurn,
+      lessonPlanTotalTurns,
+      phase,
+      studentProfiles,
+      runtime.interactiveBoardActive,
+    );
 
     const latestQuestion = this.extractLatestStudentQuestion(session);
     if (
@@ -612,6 +774,34 @@ export class Orchestrator {
       );
     }
 
+    const liveActionResolution = this.resolveStudentLiveActions(
+      sessionId,
+      requestTurn.id,
+      studentProfiles,
+      runtime,
+      lessonTurn,
+      phase,
+      interactiveBoardActive,
+    );
+    runtime = liveActionResolution.runtime;
+    const liveActionSignals = liveActionResolution.signals;
+    const behaviorAlertSignals = liveActionSignals.filter(
+      (signal) => signal.needsTeacherIntervention,
+    );
+    const behaviorAlertStudentIds = behaviorAlertSignals.map((signal) => signal.studentId);
+    const behaviorAlertLines = behaviorAlertSignals.map(
+      (signal) =>
+        `${signal.studentName}: repeated off-task action (${signal.liveAction.label}), streak threshold reached.`,
+    );
+    const boredomJokeDecision = this.resolveBoredomJokeDecision(
+      sessionId,
+      lessonTurn,
+      phase,
+      runtime,
+      studentProfiles,
+    );
+    runtime = boredomJokeDecision.runtime;
+
     if (!activeClarification) {
       for (const student of studentProfiles) {
         this.activateGraphEdgeWithEvent(sessionId, requestTurn.id, eventCollector, {
@@ -650,7 +840,27 @@ export class Orchestrator {
       });
     }
 
-    const teacherMode = activeClarification ? 'clarification_dialogue' : 'lesson_delivery';
+    const teacherMode:
+      | 'clarification_dialogue'
+      | 'lesson_delivery'
+      | 'behavior_intervention'
+      | 'engagement_joke'
+      | 'lesson_closure' =
+      activeClarification
+        ? 'clarification_dialogue'
+        : behaviorAlertLines.length > 0
+          ? 'behavior_intervention'
+          : this.isNearSimulationEnd(runtime)
+            ? 'lesson_closure'
+          : boredomJokeDecision.shouldInjectJoke
+            ? 'engagement_joke'
+            : 'lesson_delivery';
+    const activeKnowledgeCheck = runtime.activeKnowledgeCheck;
+    const shouldPromptKnowledgeCheck =
+      !activeClarification &&
+      !activeKnowledgeCheck &&
+      behaviorAlertLines.length === 0 &&
+      lessonTurn % KNOWLEDGE_CHECK_INTERVAL_TURNS === 0;
     const lessonStepTurn = activeClarification ? Math.max(lessonTurn - 1, 1) : lessonTurn;
     const lessonStep = getLessonStepForTopic(session.topic, lessonStepTurn);
     const graphContext = this.buildTeacherGraphContext(session, selectedStudents);
@@ -672,6 +882,12 @@ export class Orchestrator {
         const student = selectedStudents.find((candidate) => candidate.id === turn.agentId);
         return `${student?.name ?? turn.agentId}: ${turn.content}`;
       });
+    const liveActionSnapshot = liveActionSignals
+      .slice(0, 10)
+      .map(
+        (signal) =>
+          `${signal.studentName}: ${signal.liveAction.label} [${signal.liveAction.kind}] p=${signal.distractionProbability.toFixed(2)} streak=${signal.distractionStreak}`,
+      );
     const teacherInput = [
       `You are in parallel real-time classroom loop mode.`,
       `Lesson turn: ${lessonStep.turn}/${lessonPlanTotalTurns}`,
@@ -688,6 +904,23 @@ export class Orchestrator {
         ? `Autonomous adaptation signals from student states:`
         : undefined,
       ...(session.channel === 'unsupervised' ? studentStateSnapshot : []),
+      `Live student activity signals this cycle:`,
+      ...liveActionSnapshot,
+      `Boredness trend: average=${boredomJokeDecision.averageBoredness.toFixed(2)}, delta=${boredomJokeDecision.borednessDelta.toFixed(2)}, riseStreak=${boredomJokeDecision.boredomRiseStreak}.`,
+      behaviorAlertLines.length > 0 ? `Behavior alert signals:` : undefined,
+      ...behaviorAlertLines,
+      behaviorAlertLines.length > 0
+        ? `Rule: first redirect the highlighted students in one short classroom-management move, then continue the lesson.`
+        : undefined,
+      boredomJokeDecision.shouldInjectJoke
+        ? `Engagement rule: boredom is rising. Add exactly one short, classroom-safe joke related to the topic, then continue the lesson step.`
+        : undefined,
+      activeKnowledgeCheck
+        ? `Pending knowledge check from turn ${activeKnowledgeCheck.lessonTurn}: "${activeKnowledgeCheck.questionText}". Acknowledge correct student answers before moving on.`
+        : undefined,
+      shouldPromptKnowledgeCheck
+        ? `Knowledge-check rule: ask one short topic-related check question to students this turn.`
+        : undefined,
       `Graph relationship signals:`,
       ...graphContext.relationshipSignals,
       `Current active channels this cycle:`,
@@ -704,10 +937,15 @@ export class Orchestrator {
       activeClarification
         ? `Rule: answer this question first with short steps and one quick check question. Do not introduce the next new lesson concept yet.`
         : undefined,
+      teacherMode === 'lesson_closure'
+        ? `Closure rule: finalize the lesson now with a concise wrap-up, key takeaways, and one short positive ending line.`
+        : undefined,
       supervisorHint ? `Supervisor hint: ${supervisorHint}` : undefined,
       activeClarification
         ? `Output exactly one clarification response for the asking student now.`
-        : `Output exactly one teacher micro-step for the class now, aligned to this lesson turn.`,
+        : teacherMode === 'lesson_closure'
+          ? `Output exactly one lesson-closing teacher message now.`
+          : `Output exactly one teacher micro-step for the class now, aligned to this lesson turn.`,
     ]
       .filter((line): line is string => Boolean(line))
       .join('\n');
@@ -742,6 +980,7 @@ export class Orchestrator {
     let teacherResponseTargetIds: string[] = [];
     let passiveListenerTargetIds: string[] = [];
     let teacherProducedResponse = false;
+    let knowledgeCheckAskedTurnId: string | undefined;
     const interactionPlans = this.buildStudentInteractionPlans(
       session,
       requestTurn.id,
@@ -786,17 +1025,26 @@ export class Orchestrator {
           },
         },
       );
+      const teacherMessage =
+        teacherMode === 'lesson_closure'
+          ? this.ensureLessonClosureMessage(teacherResult.message)
+          : teacherResult.message;
+      const teacherSpeechSeconds = estimateSpeechSeconds(teacherMessage, 'teacher');
+      cycleSpeechSeconds += teacherSpeechSeconds;
+      cycleInteractionSeconds += 0.9;
 
       const teacherTurn = this.createTurn(
         sessionId,
         'teacher',
-        teacherResult.message,
+        teacherMessage,
         teacherProfile.id,
         {
           kind: teacherProfile.kind,
           lessonTurn: lessonStep.turn,
           lessonFocus: lessonStep.title,
           teacherMode,
+          speechSeconds: teacherSpeechSeconds,
+          requestTurnId: requestTurn.id,
           clarificationTargetId: activeClarification?.studentId,
           clarificationAskedTurnId: activeClarification?.askedTurnId,
           ...(teacherResult.metadata ?? {}),
@@ -813,30 +1061,59 @@ export class Orchestrator {
       const teacherFollowUpTargets =
         activeClarification && clarificationTargetProfile
           ? [clarificationTargetProfile]
-          : selectedStudents;
+          : Array.from(
+              new Map(
+                [...selectedStudents, ...studentProfiles.filter((student) =>
+                  behaviorAlertStudentIds.includes(student.id),
+                )].map((student) => [student.id, student]),
+              ).values(),
+            );
+
+      const createdKnowledgeCheck =
+        !activeClarification && !runtime.activeKnowledgeCheck
+          ? this.tryCreateKnowledgeCheck({
+              teacherTurn,
+              teacherMessage: teacherMessage,
+              lessonTurn,
+              lessonStep,
+              topic: session.topic,
+              targetStudentIds: teacherFollowUpTargets.map((student) => student.id),
+            })
+          : undefined;
+      if (createdKnowledgeCheck) {
+        runtime = this.ensureClassroomRuntime(sessionId, lessonTurn, phase, {
+          activeKnowledgeCheck: createdKnowledgeCheck,
+        });
+        knowledgeCheckAskedTurnId = createdKnowledgeCheck.askedTurnId;
+      }
+
       teacherResponseTargetIds = teacherFollowUpTargets.map((student) => student.id);
-      teacherProducedResponse = teacherResult.message.trim().length > 0;
+      teacherProducedResponse = teacherMessage.trim().length > 0;
       for (const student of teacherFollowUpTargets) {
         this.activateGraphEdgeWithEvent(sessionId, requestTurn.id, eventCollector, {
           from: TEACHER_AGENT_ID,
           to: student.id,
           interactionType: 'teacher_to_student',
           payload: {
-            actionType: 'teacher_to_student',
-            text: teacherResult.message,
-            phase: activeClarification ? 'clarification_follow_up' : 'follow_up',
+            actionType: createdKnowledgeCheck ? 'teacher_question' : 'teacher_to_student',
+            text: teacherMessage,
+            phase: createdKnowledgeCheck
+              ? 'knowledge_check'
+              : activeClarification
+                ? 'clarification_follow_up'
+                : 'follow_up',
             lessonTurn: lessonStep.turn,
             clarificationTargetId: activeClarification?.studentId,
           },
         });
       }
 
-      if (activeClarification && teacherResult.message.trim().length > 0) {
+      if (activeClarification && teacherMessage.trim().length > 0) {
         const passiveListeners = studentProfiles.filter(
           (student) => student.id !== activeClarification?.studentId,
         );
         passiveListenerTargetIds = passiveListeners.map((student) => student.id);
-        const overhearText = this.summarizeTeacherResponseForOverhear(teacherResult.message);
+        const overhearText = this.summarizeTeacherResponseForOverhear(teacherMessage);
 
         for (const listener of passiveListeners) {
           this.activateGraphEdgeWithEvent(sessionId, requestTurn.id, eventCollector, {
@@ -860,7 +1137,7 @@ export class Orchestrator {
       if (activeClarification) {
         const nextResponseCount = activeClarification.teacherResponseCount + 1;
         const responseSeemsSufficient = this.isClarificationExplanationSufficient(
-          teacherResult.message,
+          teacherMessage,
         );
         clarificationResolved =
           responseSeemsSufficient &&
@@ -884,7 +1161,7 @@ export class Orchestrator {
           sessionId,
           'agent_done',
           {
-            preview: teacherResult.message.slice(0, 90),
+            preview: teacherMessage.slice(0, 90),
             executionMode: 'parallel_realtime_loop',
             lessonTurn: lessonStep.turn,
             teacherMode,
@@ -924,6 +1201,7 @@ export class Orchestrator {
         );
 
         if (plan.action === 'silent') {
+          cycleInteractionSeconds += 0.8;
           const floors = getStudentStateFloors(profile.kind);
           this.memory.updateAgentState(sessionId, profile.id, {
             attentiveness: clamp(
@@ -991,6 +1269,9 @@ export class Orchestrator {
             },
           },
         );
+        const studentSpeechSeconds = estimateSpeechSeconds(result.message, 'student');
+        cycleSpeechSeconds += studentSpeechSeconds;
+        cycleInteractionSeconds += 0.6;
 
         const studentTurn = this.createTurn(
           sessionId,
@@ -1001,6 +1282,8 @@ export class Orchestrator {
             kind: profile.kind,
             lessonTurn: lessonStep.turn,
             lessonFocus: lessonStep.title,
+            speechSeconds: studentSpeechSeconds,
+            requestTurnId: requestTurn.id,
             ...(result.metadata ?? {}),
           },
         );
@@ -1082,15 +1365,73 @@ export class Orchestrator {
       );
     }
 
-    if (phase === 'review' && runtime.activeTaskAssignment) {
+    runtime = this.evaluateKnowledgeCheckResponses({
+      sessionId,
+      requestTurn,
+      lessonTurn,
+      phase,
+      lessonStep,
+      runtime,
+      teacherProfile,
+      eventCollector,
+      onAgentTurnEmission,
+      knowledgeCheckAskedTurnId,
+    });
+
+    const spokenSecondsThisRequest = this.calculateSpokenSecondsForRequest(
+      sessionId,
+      requestTurn.id,
+    );
+    const interactionSecondsThisRequest = Number(
+      (cycleInteractionSeconds + selectedStudents.length * 0.25).toFixed(2),
+    );
+    runtime = this.advanceSimulationTime(
+      sessionId,
+      runtime,
+      spokenSecondsThisRequest + interactionSecondsThisRequest,
+      lessonPlanTotalTurns,
+    );
+
+    if (this.isSimulationTimeCompleted(runtime)) {
+      const completionLessonTurn = this.resolveLessonTurnFromRuntime(
+        runtime,
+        lessonPlanTotalTurns,
+      );
+      const completionPhase = this.resolveClassroomPhaseFromRuntime(
+        runtime,
+        lessonPlanTotalTurns,
+      );
+      runtime = this.ensureClassroomRuntime(sessionId, completionLessonTurn, completionPhase, {
+        completed: true,
+        completedAt: nowIso(),
+        completionReason: 'simulation_time_completed',
+        paused: true,
+      });
+      eventCollector.push(
+        this.createEvent(
+          sessionId,
+          'session_completed',
+          {
+            lessonTurn: runtime.lessonTurn,
+            reason: 'simulation_time_completed',
+            simulatedElapsedSeconds: runtime.simulatedElapsedSeconds ?? 0,
+            simulatedTotalSeconds: runtime.simulatedTotalSeconds ?? SIMULATION_TARGET_SECONDS,
+          },
+          requestTurn.id,
+          teacherProfile.id,
+        ),
+      );
+    }
+
+    if (runtime.phase === 'review' && runtime.activeTaskAssignment) {
       this.applyTaskReviewForTurn(
         sessionId,
         requestTurn.id,
         runtime.activeTaskAssignment,
         eventCollector,
       );
-      runtime = this.ensureClassroomRuntime(sessionId, lessonTurn, phase, {
-        lastReviewTurn: lessonTurn,
+      runtime = this.ensureClassroomRuntime(sessionId, runtime.lessonTurn, runtime.phase, {
+        lastReviewTurn: runtime.lessonTurn,
       });
     }
 
@@ -1154,6 +1495,7 @@ export class Orchestrator {
         },
       },
     );
+    const teacherSpeechSeconds = estimateSpeechSeconds(teacherResult.message, 'teacher');
 
     const teacherTurn = this.createTurn(
       sessionId,
@@ -1162,6 +1504,8 @@ export class Orchestrator {
       teacherProfile.id,
       {
         kind: teacherProfile.kind,
+        speechSeconds: teacherSpeechSeconds,
+        requestTurnId: requestTurn.id,
         ...(teacherResult.metadata ?? {}),
       },
     );
@@ -1273,6 +1617,52 @@ export class Orchestrator {
     return 'review';
   }
 
+  private resolveLessonTurnFromRuntime(
+    runtime: NonNullable<Session['classroomRuntime']>,
+    totalTurns: number,
+  ): number {
+    const total = Math.max(1, runtime.simulatedTotalSeconds ?? SIMULATION_TARGET_SECONDS);
+    const elapsed = clamp(runtime.simulatedElapsedSeconds ?? 0, 0, total);
+    const progress = clamp(elapsed / total, 0, 1);
+    return this.resolveLessonTurnFromProgress(progress, totalTurns);
+  }
+
+  private resolveClassroomPhaseFromRuntime(
+    runtime: NonNullable<Session['classroomRuntime']>,
+    totalTurns: number,
+  ): ClassroomPhase {
+    return this.resolveClassroomPhase(
+      this.resolveLessonTurnFromRuntime(runtime, totalTurns),
+      totalTurns,
+    );
+  }
+
+  private resolveLessonTurnFromProgress(progress: number, totalTurns: number): number {
+    const boundedProgress = clamp(progress, 0, 1);
+    return clampInt(
+      Math.floor(boundedProgress * totalTurns) + 1,
+      1,
+      totalTurns,
+    );
+  }
+
+  private isSimulationTimeCompleted(
+    runtime: NonNullable<Session['classroomRuntime']>,
+  ): boolean {
+    const total = Math.max(1, runtime.simulatedTotalSeconds ?? SIMULATION_TARGET_SECONDS);
+    const elapsed = Math.max(0, runtime.simulatedElapsedSeconds ?? 0);
+    return elapsed >= total - 0.01;
+  }
+
+  private isNearSimulationEnd(
+    runtime: NonNullable<Session['classroomRuntime']>,
+    thresholdSeconds = 120,
+  ): boolean {
+    const total = Math.max(1, runtime.simulatedTotalSeconds ?? SIMULATION_TARGET_SECONDS);
+    const elapsed = clamp(runtime.simulatedElapsedSeconds ?? 0, 0, total);
+    return total - elapsed <= Math.max(1, thresholdSeconds);
+  }
+
   private ensureClassroomRuntime(
     sessionId: string,
     lessonTurn: number,
@@ -1284,8 +1674,18 @@ export class Orchestrator {
         lessonTurn,
         phase,
         paused: false,
+        completed: false,
+        completedAt: undefined,
+        completionReason: undefined,
         pendingTaskAssignment: false,
         interactiveBoardActive: false,
+        simulatedElapsedSeconds: 0,
+        simulatedTotalSeconds: SIMULATION_TARGET_SECONDS,
+        pendingDistractionCounts: {},
+        previousAverageBoredness: undefined,
+        boredomRiseStreak: 0,
+        lastEngagementJokeTurn: undefined,
+        activeKnowledgeCheck: undefined,
       };
 
       return {
@@ -1623,11 +2023,25 @@ export class Orchestrator {
   private applyTeacherResponseAttentivenessBoost(
     sessionId: string,
     studentIds: string[],
-    teacherMode: 'clarification_dialogue' | 'lesson_delivery',
+    teacherMode:
+      | 'clarification_dialogue'
+      | 'lesson_delivery'
+      | 'behavior_intervention'
+      | 'engagement_joke'
+      | 'lesson_closure',
     passiveListenerIds: string[] = [],
   ): void {
     const session = this.mustGetSession(sessionId);
-    const increment = teacherMode === 'clarification_dialogue' ? 0.9 : 0.5;
+    const increment =
+      teacherMode === 'clarification_dialogue'
+        ? 0.9
+        : teacherMode === 'behavior_intervention'
+          ? 0.7
+          : teacherMode === 'engagement_joke'
+            ? 0.65
+            : teacherMode === 'lesson_closure'
+              ? 0.45
+          : 0.5;
     const uniqueStudentIds = Array.from(new Set(studentIds));
     const passiveIncrement = teacherMode === 'clarification_dialogue' ? 0.25 : 0.15;
     const uniquePassiveIds = Array.from(new Set(passiveListenerIds)).filter(
@@ -1770,6 +2184,727 @@ export class Orchestrator {
     }
   }
 
+  private calculateSpokenSecondsForRequest(
+    sessionId: string,
+    requestTurnId: string,
+  ): number {
+    const session = this.mustGetSession(sessionId);
+    const spokenSeconds = session.turns
+      .filter((turn) => {
+        if (!turn.metadata || typeof turn.metadata !== 'object') {
+          return false;
+        }
+
+        return turn.metadata.requestTurnId === requestTurnId;
+      })
+      .reduce((sum, turn) => {
+        const speechSecondsRaw = turn.metadata?.speechSeconds;
+        const speechSeconds =
+          typeof speechSecondsRaw === 'number' && Number.isFinite(speechSecondsRaw)
+            ? speechSecondsRaw
+            : 0;
+        return sum + speechSeconds;
+      }, 0);
+
+    return Number(spokenSeconds.toFixed(2));
+  }
+
+  private advanceSimulationTime(
+    sessionId: string,
+    runtime: NonNullable<Session['classroomRuntime']>,
+    additionalSeconds: number,
+    totalTurns: number,
+  ): NonNullable<Session['classroomRuntime']> {
+    const safeAdditionalSeconds = Math.max(0, Number(additionalSeconds.toFixed(2)));
+    const total = Math.max(1, runtime.simulatedTotalSeconds ?? SIMULATION_TARGET_SECONDS);
+    const elapsed = clamp(runtime.simulatedElapsedSeconds ?? 0, 0, total);
+    const nextElapsed = clamp(elapsed + safeAdditionalSeconds, 0, total);
+    const nextProgress = clamp(nextElapsed / total, 0, 1);
+    const nextLessonTurn = this.resolveLessonTurnFromProgress(nextProgress, totalTurns);
+    const nextPhase = this.resolveClassroomPhase(nextLessonTurn, totalTurns);
+
+    return this.ensureClassroomRuntime(sessionId, nextLessonTurn, nextPhase, {
+      simulatedElapsedSeconds: Number(nextElapsed.toFixed(2)),
+      simulatedTotalSeconds: total,
+    });
+  }
+
+  private ensureLessonClosureMessage(message: string): string {
+    const compact = message.trim();
+    if (!compact) {
+      return 'Great work today. We completed the lesson and this class is now finished.';
+    }
+
+    if (/\b(class is finished|lesson is complete|we are done|that concludes)\b/i.test(compact)) {
+      return compact;
+    }
+
+    return `${compact} That concludes today's lesson, great effort everyone.`;
+  }
+
+  private applyNaturalPerTurnStateDecay(
+    sessionId: string,
+    requestTurnId: string,
+    lessonTurn: number,
+    totalTurns: number,
+    phase: ClassroomPhase,
+    students: AgentProfile[],
+    interactiveBoardActive: boolean,
+  ): void {
+    const lessonProgress = clamp(
+      lessonTurn / Math.max(1, totalTurns),
+      0,
+      1,
+    );
+    const phaseMultiplier =
+      phase === 'lecture' ? 1 : phase === 'practice' ? 1.1 : 1.18;
+    const boardMitigation = interactiveBoardActive ? 0.08 : 0;
+
+    for (const student of students) {
+      const floors = getStudentStateFloors(student.kind);
+      const comprehensionFloor =
+        student.kind === 'ADHD' ? 1 : student.kind === 'Autistic' || student.kind === 'Typical' ? 1.5 : 1;
+      const boredomSignal = estimateBoredness(student.state) / 10;
+      const fatigueSignal = estimateFatigue(student.state) / 10;
+      const postPraiseFatigueTurns = clampInt(
+        student.state.postPraiseFatigueTurns ?? 0,
+        0,
+        8,
+      );
+      const postPraiseDecayBoost = clamp(
+        student.state.postPraiseDecayBoost ?? 0,
+        0,
+        0.5,
+      );
+      const postPraiseDecayMultiplier =
+        postPraiseFatigueTurns > 0
+          ? 1 + postPraiseDecayBoost + POST_PRAISE_EXTRA_DECAY_FACTOR
+          : 1;
+
+      const attentionRoll = stableRoll(
+        `${sessionId}:${requestTurnId}:${student.id}:decay:attentiveness`,
+      );
+      const behaviorRoll = stableRoll(
+        `${sessionId}:${requestTurnId}:${student.id}:decay:behavior`,
+      );
+      const comprehensionRoll = stableRoll(
+        `${sessionId}:${requestTurnId}:${student.id}:decay:comprehension`,
+      );
+
+      const attentivenessDecay = clamp(
+        (0.05 + attentionRoll * 0.16 + lessonProgress * 0.13 + fatigueSignal * 0.08) *
+          phaseMultiplier *
+          postPraiseDecayMultiplier -
+          boardMitigation,
+        0.02,
+        0.48,
+      );
+      const behaviorDecay = clamp(
+        (0.03 + behaviorRoll * 0.1 + lessonProgress * 0.09 + boredomSignal * 0.06) *
+          phaseMultiplier *
+          postPraiseDecayMultiplier -
+          boardMitigation * 0.45,
+        0.01,
+        0.35,
+      );
+      const comprehensionDecay = clamp(
+        (0.02 +
+          comprehensionRoll * 0.08 +
+          lessonProgress * 0.07 +
+          (student.state.attentiveness < 5 ? 0.035 : 0)) *
+          phaseMultiplier *
+          postPraiseDecayMultiplier -
+          boardMitigation * 0.3,
+        0.01,
+        0.28,
+      );
+
+      const nextAttentiveness = clamp(
+        round1(student.state.attentiveness - attentivenessDecay),
+        floors.attentiveness,
+        10,
+      );
+      const nextBehavior = clamp(
+        round1(student.state.behavior - behaviorDecay),
+        floors.behavior,
+        10,
+      );
+      const nextComprehension = clamp(
+        round1(student.state.comprehension - comprehensionDecay),
+        comprehensionFloor,
+        10,
+      );
+      const nextPostPraiseFatigueTurns = Math.max(0, postPraiseFatigueTurns - 1);
+      const nextPostPraiseDecayBoost =
+        nextPostPraiseFatigueTurns > 0
+          ? Number((postPraiseDecayBoost * 0.92).toFixed(3))
+          : undefined;
+
+      this.memory.updateAgentState(sessionId, student.id, {
+        attentiveness: nextAttentiveness,
+        behavior: nextBehavior,
+        comprehension: nextComprehension,
+        postPraiseFatigueTurns:
+          nextPostPraiseFatigueTurns > 0 ? nextPostPraiseFatigueTurns : undefined,
+        postPraiseDecayBoost: nextPostPraiseDecayBoost,
+      });
+    }
+  }
+
+  private resolveBoredomJokeDecision(
+    sessionId: string,
+    lessonTurn: number,
+    phase: ClassroomPhase,
+    runtime: NonNullable<Session['classroomRuntime']>,
+    students: AgentProfile[],
+  ): BoredomJokeDecision {
+    if (students.length === 0) {
+      return {
+        runtime,
+        shouldInjectJoke: false,
+        averageBoredness: 0,
+        borednessDelta: 0,
+        boredomRiseStreak: runtime.boredomRiseStreak ?? 0,
+      };
+    }
+
+    const averageBoredness =
+      students.reduce((sum, student) => sum + estimateBoredness(student.state), 0) /
+      students.length;
+    const previousAverage =
+      runtime.previousAverageBoredness ?? averageBoredness;
+    const borednessDelta = averageBoredness - previousAverage;
+    const previousRiseStreak = runtime.boredomRiseStreak ?? 0;
+    const nextRiseStreak =
+      borednessDelta >= BOREDOM_RISE_DELTA_TRIGGER
+        ? previousRiseStreak + 1
+        : Math.max(0, previousRiseStreak - 1);
+    const turnsSinceLastJoke =
+      typeof runtime.lastEngagementJokeTurn === 'number'
+        ? lessonTurn - runtime.lastEngagementJokeTurn
+        : Number.POSITIVE_INFINITY;
+    const cooldownPassed = turnsSinceLastJoke >= ENGAGEMENT_JOKE_COOLDOWN_TURNS;
+    const phaseEligible = phase === 'lecture' || phase === 'practice';
+    const shouldInjectJoke =
+      phaseEligible &&
+      cooldownPassed &&
+      averageBoredness >= BOREDOM_AVERAGE_TRIGGER &&
+      nextRiseStreak >= BOREDOM_RISE_STREAK_TRIGGER;
+
+    const updatedRuntime = this.ensureClassroomRuntime(sessionId, lessonTurn, phase, {
+      previousAverageBoredness: Number(averageBoredness.toFixed(4)),
+      boredomRiseStreak: shouldInjectJoke ? 0 : nextRiseStreak,
+      lastEngagementJokeTurn: shouldInjectJoke
+        ? lessonTurn
+        : runtime.lastEngagementJokeTurn,
+    });
+
+    return {
+      runtime: updatedRuntime,
+      shouldInjectJoke,
+      averageBoredness: Number(averageBoredness.toFixed(4)),
+      borednessDelta: Number(borednessDelta.toFixed(4)),
+      boredomRiseStreak: shouldInjectJoke ? 0 : nextRiseStreak,
+    };
+  }
+
+  private tryCreateKnowledgeCheck(input: {
+    teacherTurn: Turn;
+    teacherMessage: string;
+    lessonTurn: number;
+    lessonStep: FractionsLessonStep;
+    topic: string;
+    targetStudentIds: string[];
+  }): ClassroomKnowledgeCheck | undefined {
+    if (!this.isKnowledgeCheckQuestion(input.teacherMessage)) {
+      return undefined;
+    }
+
+    const questionText = this.extractFirstQuestionSentence(input.teacherMessage);
+    if (!questionText) {
+      return undefined;
+    }
+
+    const uniqueTargets = Array.from(
+      new Set(input.targetStudentIds.filter((studentId) => studentId.trim().length > 0)),
+    );
+    if (uniqueTargets.length === 0) {
+      return undefined;
+    }
+
+    const expectedKeywords = this.extractExpectedKnowledgeKeywords(
+      input.topic,
+      input.lessonStep,
+    );
+
+    return {
+      askedTurnId: input.teacherTurn.id,
+      askedAt: input.teacherTurn.createdAt,
+      lessonTurn: input.lessonTurn,
+      questionText,
+      targetStudentIds: uniqueTargets,
+      expectedKeywords,
+      evaluatedStudentIds: [],
+      expiresAtLessonTurn: input.lessonTurn + KNOWLEDGE_CHECK_EXPIRY_TURNS,
+    };
+  }
+
+  private evaluateKnowledgeCheckResponses(input: {
+    sessionId: string;
+    requestTurn: Turn;
+    lessonTurn: number;
+    phase: ClassroomPhase;
+    lessonStep: FractionsLessonStep;
+    runtime: NonNullable<Session['classroomRuntime']>;
+    teacherProfile: AgentProfile;
+    eventCollector: SessionEvent[];
+    onAgentTurnEmission?: AgentTurnEmissionHandler;
+    knowledgeCheckAskedTurnId?: string;
+  }): NonNullable<Session['classroomRuntime']> {
+    const knowledgeCheck = input.runtime.activeKnowledgeCheck;
+    if (!knowledgeCheck) {
+      return input.runtime;
+    }
+
+    if (
+      input.knowledgeCheckAskedTurnId &&
+      knowledgeCheck.askedTurnId === input.knowledgeCheckAskedTurnId
+    ) {
+      return input.runtime;
+    }
+
+    if (input.lessonTurn > knowledgeCheck.expiresAtLessonTurn) {
+      return this.ensureClassroomRuntime(input.sessionId, input.lessonTurn, input.phase, {
+        activeKnowledgeCheck: undefined,
+      });
+    }
+
+    const session = this.mustGetSession(input.sessionId);
+    const askedTurnIndex = session.turns.findIndex(
+      (turn) => turn.id === knowledgeCheck.askedTurnId,
+    );
+    if (askedTurnIndex < 0) {
+      return this.ensureClassroomRuntime(input.sessionId, input.lessonTurn, input.phase, {
+        activeKnowledgeCheck: undefined,
+      });
+    }
+
+    const evaluatedStudentIds = new Set(knowledgeCheck.evaluatedStudentIds);
+    const targetStudentSet = new Set(knowledgeCheck.targetStudentIds);
+    const candidateTurns = session.turns
+      .slice(askedTurnIndex + 1)
+      .filter(
+        (turn) =>
+          turn.role === 'agent' &&
+          Boolean(turn.agentId) &&
+          targetStudentSet.has(turn.agentId ?? '') &&
+          !evaluatedStudentIds.has(turn.agentId ?? ''),
+      );
+
+    if (candidateTurns.length === 0) {
+      return input.runtime;
+    }
+
+    const praisedStudents: AgentProfile[] = [];
+    for (const turn of candidateTurns) {
+      const studentId = turn.agentId;
+      if (!studentId) {
+        continue;
+      }
+
+      evaluatedStudentIds.add(studentId);
+      const student = session.agents.find(
+        (agent) => agent.id === studentId && isStudentKind(agent.kind),
+      );
+      if (!student) {
+        continue;
+      }
+
+      const isCorrect = this.isLikelyCorrectKnowledgeAnswer(
+        turn.content,
+        knowledgeCheck.expectedKeywords,
+      );
+      if (!isCorrect) {
+        continue;
+      }
+
+      praisedStudents.push(student);
+      const floors = getStudentStateFloors(student.kind);
+      const nextComprehensionFloor =
+        student.kind === 'ADHD'
+          ? 1
+          : student.kind === 'Autistic' || student.kind === 'Typical'
+            ? 1.5
+            : 1;
+      const nextPostPraiseFatigueTurns = clampInt(
+        (student.state.postPraiseFatigueTurns ?? 0) + 3,
+        0,
+        8,
+      );
+      const nextPostPraiseDecayBoost = Number(
+        clamp((student.state.postPraiseDecayBoost ?? 0) + 0.1, 0.08, 0.5).toFixed(3),
+      );
+
+      this.memory.updateAgentState(input.sessionId, student.id, {
+        attentiveness: clamp(round1(student.state.attentiveness + 0.7), floors.attentiveness, 10),
+        behavior: clamp(round1(student.state.behavior + 0.45), floors.behavior, 10),
+        comprehension: clamp(
+          round1(student.state.comprehension + 1),
+          nextComprehensionFloor,
+          10,
+        ),
+        liveAction: {
+          code: 'task_focus',
+          kind: 'on_task',
+          label: 'Answered correctly',
+          severity: 'success',
+          at: nowIso(),
+        },
+        distractionStreak: 0,
+        postPraiseFatigueTurns: nextPostPraiseFatigueTurns,
+        postPraiseDecayBoost: nextPostPraiseDecayBoost,
+      });
+
+      this.activateGraphEdgeWithEvent(
+        input.sessionId,
+        input.requestTurn.id,
+        input.eventCollector,
+        {
+          from: TEACHER_AGENT_ID,
+          to: student.id,
+          interactionType: 'teacher_to_student',
+          payload: {
+            actionType: 'teacher_praise',
+            text: `${student.name}, excellent answer. You connected the idea correctly.`,
+            sourceKnowledgeCheckTurnId: knowledgeCheck.askedTurnId,
+          },
+        },
+      );
+    }
+
+    const unresolvedTargetIds = knowledgeCheck.targetStudentIds.filter(
+      (studentId) => !evaluatedStudentIds.has(studentId),
+    );
+    let nextRuntime = this.ensureClassroomRuntime(
+      input.sessionId,
+      input.lessonTurn,
+      input.phase,
+      {
+        activeKnowledgeCheck:
+          unresolvedTargetIds.length > 0
+            ? {
+                ...knowledgeCheck,
+                evaluatedStudentIds: Array.from(evaluatedStudentIds),
+              }
+            : undefined,
+      },
+    );
+
+    if (praisedStudents.length > 0) {
+      const praiseText = this.buildKnowledgePraiseText(
+        praisedStudents,
+        input.lessonStep,
+      );
+      const praiseSpeechSeconds = estimateSpeechSeconds(praiseText, 'teacher');
+      const praiseTurn = this.createTurn(
+        input.sessionId,
+        'teacher',
+        praiseText,
+        input.teacherProfile.id,
+        {
+          kind: input.teacherProfile.kind,
+          lessonTurn: input.lessonTurn,
+          lessonFocus: input.lessonStep.title,
+          teacherMode: 'knowledge_check_praise',
+          speechSeconds: praiseSpeechSeconds,
+          requestTurnId: input.requestTurn.id,
+          sourceKnowledgeCheckTurnId: knowledgeCheck.askedTurnId,
+        },
+      );
+
+      this.memory.appendTurn(input.sessionId, praiseTurn);
+      this.emitAgentTurnEmission(
+        session,
+        input.requestTurn.id,
+        praiseTurn,
+        input.onAgentTurnEmission,
+      );
+
+      input.eventCollector.push(
+        this.createEvent(
+          input.sessionId,
+          'agent_done',
+          {
+            executionMode: 'parallel_realtime_loop',
+            lessonTurn: input.lessonTurn,
+            action: 'knowledge_check_praise',
+            praisedStudentIds: praisedStudents.map((student) => student.id),
+          },
+          input.requestTurn.id,
+          input.teacherProfile.id,
+        ),
+      );
+
+      if (nextRuntime.activeKnowledgeCheck) {
+        nextRuntime = this.ensureClassroomRuntime(
+          input.sessionId,
+          input.lessonTurn,
+          input.phase,
+          {
+            activeKnowledgeCheck: {
+              ...nextRuntime.activeKnowledgeCheck,
+              evaluatedStudentIds: Array.from(evaluatedStudentIds),
+            },
+          },
+        );
+      }
+    }
+
+    return nextRuntime;
+  }
+
+  private buildKnowledgePraiseText(
+    praisedStudents: AgentProfile[],
+    lessonStep: FractionsLessonStep,
+  ): string {
+    if (praisedStudents.length === 1) {
+      const student = praisedStudents[0];
+      return `${student?.name}, great answer on ${lessonStep.title.toLowerCase()}. Keep that clear thinking.`;
+    }
+
+    const names = praisedStudents.map((student) => student.name).join(', ');
+    return `Great responses, ${names}. You connected the key idea in ${lessonStep.title.toLowerCase()} correctly.`;
+  }
+
+  private isKnowledgeCheckQuestion(message: string): boolean {
+    const compact = message.trim();
+    if (!compact || !compact.includes('?')) {
+      return false;
+    }
+
+    return /\b(what|why|how|which|can|explain|compare|define|numerator|denominator|fraction)\b/i.test(
+      compact,
+    );
+  }
+
+  private extractFirstQuestionSentence(message: string): string | undefined {
+    const compact = message.replace(/\s+/g, ' ').trim();
+    if (!compact) {
+      return undefined;
+    }
+
+    const sentences = compact.split(/(?<=[.!?])\s+/);
+    const question = sentences.find((sentence) => sentence.includes('?'));
+    if (!question) {
+      return undefined;
+    }
+
+    return this.truncatePayloadText(question, 220);
+  }
+
+  private extractExpectedKnowledgeKeywords(
+    topic: string,
+    lessonStep: FractionsLessonStep,
+  ): string[] {
+    const source = `${topic} ${lessonStep.title} ${lessonStep.deliveryGoal}`.toLowerCase();
+    const tokens = source
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter((token) => token.length >= 3)
+      .filter((token) => !topicStopwords.has(token));
+    return Array.from(new Set(tokens)).slice(0, 10);
+  }
+
+  private isLikelyCorrectKnowledgeAnswer(
+    studentMessage: string,
+    expectedKeywords: string[],
+  ): boolean {
+    const compact = studentMessage.toLowerCase().replace(/\s+/g, ' ').trim();
+    if (!compact) {
+      return false;
+    }
+
+    if (/\b(i don'?t know|not sure|cannot remember|do not remember)\b/i.test(compact)) {
+      return false;
+    }
+
+    const answerTokens = new Set(
+      compact
+        .replace(/[^a-z0-9\s/]/g, ' ')
+        .split(/\s+/)
+        .filter((token) => token.length >= 2),
+    );
+    const keywordHits = expectedKeywords.filter((keyword) => answerTokens.has(keyword)).length;
+    const hasFractionPattern = /\b\d+\s*\/\s*\d+\b/.test(compact);
+    const hasMathReasoningCue = /\b(because|denominator|numerator|equal|same|part|whole)\b/.test(
+      compact,
+    );
+    const wordCount = compact.split(/\s+/).filter(Boolean).length;
+
+    let score = 0;
+    score += keywordHits * 0.45;
+    score += hasFractionPattern ? 0.45 : 0;
+    score += hasMathReasoningCue ? 0.4 : 0;
+    score += wordCount >= 6 ? 0.3 : 0;
+
+    return score >= 0.9;
+  }
+
+  private resolveStudentLiveActions(
+    sessionId: string,
+    requestTurnId: string,
+    students: AgentProfile[],
+    runtime: NonNullable<Session['classroomRuntime']>,
+    lessonTurn: number,
+    phase: ClassroomPhase,
+    interactiveBoardActive: boolean,
+  ): {
+    runtime: NonNullable<Session['classroomRuntime']>;
+    signals: StudentLiveActionSignal[];
+  } {
+    const previousCounts = runtime.pendingDistractionCounts ?? {};
+    const nextCounts: Record<string, number> = { ...previousCounts };
+    const signals: StudentLiveActionSignal[] = [];
+
+    for (const student of students) {
+      const distractionScore = clamp(
+        (10 - student.state.attentiveness) * 0.5 +
+          (10 - student.state.behavior) * 0.35 +
+          (10 - student.state.comprehension) * 0.15,
+        0,
+        10,
+      );
+      const phaseAdjustment =
+        phase === 'lecture' ? 0.06 : phase === 'practice' ? 0.03 : -0.01;
+      const boardAdjustment = interactiveBoardActive ? -0.14 : 0;
+      const postPraisePenalty =
+        (student.state.postPraiseFatigueTurns ?? 0) > 0
+          ? POST_PRAISE_EXTRA_DISTRACTION +
+            clamp(student.state.postPraiseDecayBoost ?? 0, 0, 0.5) * 0.4
+          : 0;
+      const distractionProbability = clamp(
+        0.1 + distractionScore * 0.07 + phaseAdjustment + boardAdjustment + postPraisePenalty,
+        0.05,
+        0.9,
+      );
+      const roll = stableRoll(`${sessionId}:${requestTurnId}:${student.id}:live_action_roll`);
+      const isOffTask = roll < distractionProbability;
+      const actionTemplate = this.pickStudentLiveActionTemplate(
+        isOffTask ? OFF_TASK_ACTION_LIBRARY : ON_TASK_ACTION_LIBRARY,
+        `${sessionId}:${requestTurnId}:${student.id}:live_action_pick`,
+      );
+      const previousStreak = clampInt(
+        nextCounts[student.id] ?? student.state.distractionStreak ?? 0,
+        0,
+        MAX_DISTRACTION_STREAK,
+      );
+      const preResetStreak = isOffTask
+        ? clampInt(previousStreak + 1, 0, MAX_DISTRACTION_STREAK)
+        : Math.max(0, previousStreak - 1);
+      const reactionThreshold = this.resolveBehaviorReactionThreshold(
+        student,
+        distractionScore,
+      );
+      const needsTeacherIntervention = isOffTask && preResetStreak >= reactionThreshold;
+      const storedStreak = needsTeacherIntervention ? 0 : preResetStreak;
+      nextCounts[student.id] = storedStreak;
+
+      const floors = getStudentStateFloors(student.kind);
+      const attentivenessDelta = isOffTask
+        ? -(0.2 + distractionScore * 0.05)
+        : 0.12 + (interactiveBoardActive ? 0.08 : 0);
+      const behaviorDelta = isOffTask ? -(0.16 + distractionScore * 0.04) : 0.1;
+      const nextAttentiveness = clamp(
+        round1(student.state.attentiveness + attentivenessDelta),
+        floors.attentiveness,
+        10,
+      );
+      const nextBehavior = clamp(
+        round1(student.state.behavior + behaviorDelta),
+        floors.behavior,
+        10,
+      );
+      const liveAction: StudentLiveAction = {
+        code: actionTemplate.code,
+        kind: isOffTask ? 'off_task' : 'on_task',
+        label: actionTemplate.label,
+        severity: actionTemplate.severity,
+        at: nowIso(),
+      };
+
+      this.memory.updateAgentState(sessionId, student.id, {
+        attentiveness: nextAttentiveness,
+        behavior: nextBehavior,
+        liveAction,
+        distractionStreak: storedStreak,
+      });
+
+      signals.push({
+        studentId: student.id,
+        studentName: student.name,
+        liveAction,
+        distractionScore: Number(distractionScore.toFixed(3)),
+        distractionProbability: Number(distractionProbability.toFixed(3)),
+        distractionStreak: preResetStreak,
+        needsTeacherIntervention,
+      });
+    }
+
+    const updatedRuntime = this.ensureClassroomRuntime(sessionId, lessonTurn, phase, {
+      pendingDistractionCounts: nextCounts,
+    });
+
+    return {
+      runtime: updatedRuntime,
+      signals,
+    };
+  }
+
+  private pickStudentLiveActionTemplate(
+    library: ReadonlyArray<{
+      code: StudentLiveAction['code'];
+      label: string;
+      severity: StudentLiveAction['severity'];
+    }>,
+    seed: string,
+  ): {
+    code: StudentLiveAction['code'];
+    label: string;
+    severity: StudentLiveAction['severity'];
+  } {
+    if (library.length === 0) {
+      return {
+        code: 'listening',
+        label: 'Paying attention',
+        severity: 'info',
+      };
+    }
+
+    const roll = stableRoll(seed);
+    const index = clampInt(Math.floor(roll * library.length), 0, library.length - 1);
+    const selected = library[index];
+
+    if (!selected) {
+      return library[0]!;
+    }
+
+    return selected;
+  }
+
+  private resolveBehaviorReactionThreshold(
+    student: AgentProfile,
+    distractionScore: number,
+  ): number {
+    const profileAdjustment =
+      student.kind === 'ADHD' ? -1 : student.kind === 'Autistic' ? 0 : 0;
+    const scoreAdjustment = distractionScore >= 7 ? -1 : 0;
+    return clampInt(
+      TEACHER_BEHAVIOR_RESPONSE_THRESHOLD + profileAdjustment + scoreAdjustment,
+      2,
+      4,
+    );
+  }
+
   private buildStudentClassroomInput(
     student: AgentProfile,
     assignmentContext: string,
@@ -1869,6 +3004,7 @@ export class Orchestrator {
         (activation) =>
           activation.to === student.id && activation.interactionType === 'teacher_broadcast',
       );
+      const isCurrentlyOffTask = student.state.liveAction?.kind === 'off_task';
 
       let teacherWeight =
         0.45 +
@@ -1881,6 +3017,10 @@ export class Orchestrator {
         student.state.behavior * 0.03 +
         student.state.attentiveness * 0.01 +
         (10 - fatigue) * 0.01;
+      if (isCurrentlyOffTask) {
+        teacherWeight *= 0.7;
+        peerWeight += 0.16;
+      }
       if (hasTeacherBroadcast) {
         peerWeight *= 0.35;
       }
@@ -2307,6 +3447,14 @@ export class Orchestrator {
         behavior: student.behavior,
         comprehension: student.comprehension,
         profile: student.profile,
+        liveAction: {
+          code: 'listening',
+          kind: 'on_task',
+          label: 'Ready for class',
+          severity: 'info',
+          at: nowIso(),
+        },
+        distractionStreak: 0,
       },
     }));
 
