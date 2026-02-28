@@ -546,6 +546,18 @@ export const useSimulationChannel = ({
   const turnInFlightRef = useRef(false);
   const studentNodeIdsRef = useRef<string[]>([]);
   const studentSnapshotByNodeIdRef = useRef<Record<string, ClassroomStudent>>({});
+  const processedTimedTurnIdsRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!sessionId) {
+      return;
+    }
+
+    processedTimedTurnIdsRef.current = new Set();
+    setSimulationElapsedSeconds(0);
+    setSimulationTotalSeconds(DEFAULT_SIMULATION_TOTAL_SECONDS);
+    setIsSessionCompleted(false);
+  }, [sessionId]);
 
   useEffect(() => {
     if (!socket || creatingSessionRef.current || sessionId) {
@@ -667,6 +679,23 @@ export const useSimulationChannel = ({
         return;
       }
 
+      const boardActive = envelope.payload.classroomRuntime?.interactiveBoardActive;
+      if (typeof boardActive === "boolean") {
+        setInteractiveBoardActive(boardActive);
+      }
+      const runtimeElapsed = envelope.payload.classroomRuntime?.simulatedElapsedSeconds;
+      if (typeof runtimeElapsed === "number" && Number.isFinite(runtimeElapsed)) {
+        setSimulationElapsedSeconds((previous) => Math.max(previous, Math.max(0, runtimeElapsed)));
+      }
+      const runtimeTotal = envelope.payload.classroomRuntime?.simulatedTotalSeconds;
+      if (typeof runtimeTotal === "number" && Number.isFinite(runtimeTotal) && runtimeTotal > 0) {
+        setSimulationTotalSeconds(runtimeTotal);
+      }
+      const runtimeCompleted = envelope.payload.classroomRuntime?.completed;
+      if (typeof runtimeCompleted === "boolean") {
+        setIsSessionCompleted(runtimeCompleted);
+      }
+
       const studentStates = envelope.payload.studentStates ?? [];
 
       for (const studentState of studentStates) {
@@ -704,22 +733,6 @@ export const useSimulationChannel = ({
         }),
       );
 
-      const boardActive = envelope.payload.classroomRuntime?.interactiveBoardActive;
-      if (typeof boardActive === "boolean") {
-        setInteractiveBoardActive(boardActive);
-      }
-      const runtimeElapsed = envelope.payload.classroomRuntime?.simulatedElapsedSeconds;
-      if (typeof runtimeElapsed === "number" && Number.isFinite(runtimeElapsed)) {
-        setSimulationElapsedSeconds(Math.max(0, runtimeElapsed));
-      }
-      const runtimeTotal = envelope.payload.classroomRuntime?.simulatedTotalSeconds;
-      if (typeof runtimeTotal === "number" && Number.isFinite(runtimeTotal) && runtimeTotal > 0) {
-        setSimulationTotalSeconds(runtimeTotal);
-      }
-      const runtimeCompleted = envelope.payload.classroomRuntime?.completed;
-      if (typeof runtimeCompleted === "boolean") {
-        setIsSessionCompleted(runtimeCompleted);
-      }
     };
 
     const handleSupervisorHint = (envelope: WsEnvelope<SupervisorHintPayload>) => {
@@ -746,7 +759,32 @@ export const useSimulationChannel = ({
         return;
       }
 
-      const bubble = buildBubbleFromEmittedTurn(envelope.payload.emittedTurn);
+      const emittedTurn = envelope.payload.emittedTurn;
+      const shouldTrackElapsed =
+        (emittedTurn.role === "teacher" || emittedTurn.role === "agent") &&
+        typeof emittedTurn.id === "string" &&
+        emittedTurn.id.length > 0 &&
+        !processedTimedTurnIdsRef.current.has(emittedTurn.id);
+
+      if (shouldTrackElapsed) {
+        processedTimedTurnIdsRef.current.add(emittedTurn.id);
+        const speechSecondsRaw = emittedTurn.metadata?.["speechSeconds"];
+        const speechSecondsNumeric =
+          typeof speechSecondsRaw === "number"
+            ? speechSecondsRaw
+            : Number(speechSecondsRaw);
+        const speechSeconds = Number.isFinite(speechSecondsNumeric)
+          ? Math.max(0, speechSecondsNumeric)
+          : 0;
+
+        if (speechSeconds > 0) {
+          setSimulationElapsedSeconds((previous) =>
+            Number((previous + speechSeconds).toFixed(2)),
+          );
+        }
+      }
+
+      const bubble = buildBubbleFromEmittedTurn(emittedTurn);
       if (!bubble) {
         return;
       }

@@ -240,7 +240,7 @@ const ClassroomMockup = ({
         pt={{
           root: {
             className:
-              "!rounded-xl !border !border-indigo-100 !bg-white/95 !shadow-[0_14px_34px_rgba(15,23,42,0.16)]",
+              "!z-[1200] !rounded-xl !border !border-indigo-100 !bg-white/95 !shadow-[0_14px_34px_rgba(15,23,42,0.16)]",
             style: { maxWidth: isTeacher ? "24rem" : "18rem" },
           },
           content: { className: "!p-3" },

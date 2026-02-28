@@ -41,7 +41,7 @@ export const Unsupervised = ({
   return (
     <section className="h-full w-full p-2 md:w-1/2 md:p-3">
       <div
-        className="relative flex h-full flex-col overflow-hidden rounded-3xl border border-white/55 bg-white/90 shadow-[0_18px_42px_rgba(15,23,42,0.16)] backdrop-blur-sm"
+        className="flex h-full flex-col overflow-hidden rounded-3xl border border-white/55 bg-white/90 shadow-[0_18px_42px_rgba(15,23,42,0.16)] backdrop-blur-sm"
         style={{ fontFamily: "'Avenir Next', 'Segoe UI', 'Trebuchet MS', sans-serif" }}
       >
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-gradient-to-r from-white via-indigo-50/45 to-cyan-50/40 px-4 py-3 sm:px-5 sm:py-4">

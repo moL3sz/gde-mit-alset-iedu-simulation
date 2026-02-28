@@ -197,8 +197,7 @@ export const Simulation = () => {
       </div>
 
       <div
-        className="relative z-10 min-h-0 flex-1 overflow-hidden rounded-2xl border border-white/30 p-2 shadow-[0_20px_44px_rgba(15,23,42,0.28)] sm:p-3"
-        style={{ background: "rgba(248,250,252,0.92)" }}
+        className="relative z-10 min-h-0 flex-1 overflow-hidden"
       >
         <div className="min-h-full overflow-auto md:overflow-hidden">
           <div className="flex min-h-full w-full flex-col md:h-full md:flex-row">
