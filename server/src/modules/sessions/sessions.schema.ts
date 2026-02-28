@@ -4,6 +4,7 @@ export const createSessionSchema = z.object({
   mode: z.enum(['classroom', 'debate']),
   channel: z.enum(['supervised', 'unsupervised']).optional(),
   topic: z.string().trim().min(2).max(300),
+  period: z.coerce.number().int().positive().optional(),
   classroomId: z.coerce.number().int().positive().optional(),
   config: z
     .object({

@@ -32,8 +32,8 @@ import { TeacherAgent } from './agents/teacherAgent';
 import type { SessionMemory } from './memory/sessionMemory';
 import { AppError } from './shared/errors/app-error';
 import {
-  FRACTIONS_LESSON_TOTAL_TURNS,
-  getFractionsLessonStep,
+  getLessonPlanTotalTurns,
+  getLessonStepForTopic,
   type FractionsLessonStep,
 } from './shared/prompts';
 import {
@@ -49,8 +49,6 @@ import { AppDataSource } from '../database/data-source';
 import { ClassRoom } from '../database/entities/ClassRoom';
 
 const TEACHER_AGENT_ID = 'teacher';
-const PRACTICE_PHASE_START_TURN = Math.ceil(FRACTIONS_LESSON_TOTAL_TURNS / 3) + 1;
-const REVIEW_PHASE_START_TURN = Math.ceil((FRACTIONS_LESSON_TOTAL_TURNS * 2) / 3) + 1;
 const STUDENT_TO_STUDENT_BOREDOM_THRESHOLD = 4.2;
 const MIN_STUDENT_ACTION_DELAY_MS = 120;
 const MAX_STUDENT_ACTION_DELAY_MS = 900;
@@ -573,9 +571,10 @@ export class Orchestrator {
       ...studentProfiles.slice(0, startIndex),
     ];
     let selectedStudents = orderedStudents.slice(0, responderCount);
+    const lessonPlanTotalTurns = getLessonPlanTotalTurns(session.topic);
     let runtime = this.ensureClassroomRuntime(sessionId, 1, 'lecture');
-    const lessonTurn = this.resolveLessonTurnFromRuntime(runtime);
-    const phase = this.resolveClassroomPhaseFromRuntime(runtime);
+    const lessonTurn = this.resolveLessonTurnFromRuntime(runtime, lessonPlanTotalTurns);
+    const phase = this.resolveClassroomPhaseFromRuntime(runtime, lessonPlanTotalTurns);
     runtime = this.ensureClassroomRuntime(sessionId, lessonTurn, phase);
     if (!runtime.completed && this.isSimulationTimeCompleted(runtime)) {
       runtime = this.ensureClassroomRuntime(sessionId, lessonTurn, phase, {
@@ -612,6 +611,7 @@ export class Orchestrator {
       sessionId,
       requestTurn.id,
       lessonTurn,
+      lessonPlanTotalTurns,
       phase,
       studentProfiles,
       runtime.interactiveBoardActive,
@@ -699,7 +699,7 @@ export class Orchestrator {
         return;
       }
 
-      const autonomousMode = this.pickAutonomousTaskMode(lessonTurn);
+      const autonomousMode = this.pickAutonomousTaskMode(lessonTurn, lessonPlanTotalTurns);
       const autonomousGroups = this.buildAutonomousTaskGroups(
         autonomousMode,
         studentProfiles.map((student) => student.id),
@@ -862,7 +862,7 @@ export class Orchestrator {
       behaviorAlertLines.length === 0 &&
       lessonTurn % KNOWLEDGE_CHECK_INTERVAL_TURNS === 0;
     const lessonStepTurn = activeClarification ? Math.max(lessonTurn - 1, 1) : lessonTurn;
-    const lessonStep = getFractionsLessonStep(lessonStepTurn);
+    const lessonStep = getLessonStepForTopic(session.topic, lessonStepTurn);
     const graphContext = this.buildTeacherGraphContext(session, selectedStudents);
     const assignmentContext = runtime.activeTaskAssignment
       ? this.describeTaskAssignment(runtime.activeTaskAssignment)
@@ -890,7 +890,7 @@ export class Orchestrator {
       );
     const teacherInput = [
       `You are in parallel real-time classroom loop mode.`,
-      `Lesson turn: ${lessonStep.turn}/${FRACTIONS_LESSON_TOTAL_TURNS}`,
+      `Lesson turn: ${lessonStep.turn}/${lessonPlanTotalTurns}`,
       `Teacher response mode: ${teacherMode}`,
       `Classroom phase: ${phase}`,
       `Current lesson focus: ${lessonStep.title}`,
@@ -1389,11 +1389,18 @@ export class Orchestrator {
       sessionId,
       runtime,
       spokenSecondsThisRequest + interactionSecondsThisRequest,
+      lessonPlanTotalTurns,
     );
 
     if (this.isSimulationTimeCompleted(runtime)) {
-      const completionLessonTurn = this.resolveLessonTurnFromRuntime(runtime);
-      const completionPhase = this.resolveClassroomPhaseFromRuntime(runtime);
+      const completionLessonTurn = this.resolveLessonTurnFromRuntime(
+        runtime,
+        lessonPlanTotalTurns,
+      );
+      const completionPhase = this.resolveClassroomPhaseFromRuntime(
+        runtime,
+        lessonPlanTotalTurns,
+      );
       runtime = this.ensureClassroomRuntime(sessionId, completionLessonTurn, completionPhase, {
         completed: true,
         completedAt: nowIso(),
@@ -1595,12 +1602,15 @@ export class Orchestrator {
     session.updatedAt = nowIso();
   }
 
-  private resolveClassroomPhase(lessonTurn: number): ClassroomPhase {
-    if (lessonTurn < PRACTICE_PHASE_START_TURN) {
+  private resolveClassroomPhase(lessonTurn: number, totalTurns: number): ClassroomPhase {
+    const practicePhaseStartTurn = Math.ceil(totalTurns / 3) + 1;
+    const reviewPhaseStartTurn = Math.ceil((totalTurns * 2) / 3) + 1;
+
+    if (lessonTurn < practicePhaseStartTurn) {
       return 'lecture';
     }
 
-    if (lessonTurn < REVIEW_PHASE_START_TURN) {
+    if (lessonTurn < reviewPhaseStartTurn) {
       return 'practice';
     }
 
@@ -1609,25 +1619,30 @@ export class Orchestrator {
 
   private resolveLessonTurnFromRuntime(
     runtime: NonNullable<Session['classroomRuntime']>,
+    totalTurns: number,
   ): number {
     const total = Math.max(1, runtime.simulatedTotalSeconds ?? SIMULATION_TARGET_SECONDS);
     const elapsed = clamp(runtime.simulatedElapsedSeconds ?? 0, 0, total);
     const progress = clamp(elapsed / total, 0, 1);
-    return this.resolveLessonTurnFromProgress(progress);
+    return this.resolveLessonTurnFromProgress(progress, totalTurns);
   }
 
   private resolveClassroomPhaseFromRuntime(
     runtime: NonNullable<Session['classroomRuntime']>,
+    totalTurns: number,
   ): ClassroomPhase {
-    return this.resolveClassroomPhase(this.resolveLessonTurnFromRuntime(runtime));
+    return this.resolveClassroomPhase(
+      this.resolveLessonTurnFromRuntime(runtime, totalTurns),
+      totalTurns,
+    );
   }
 
-  private resolveLessonTurnFromProgress(progress: number): number {
+  private resolveLessonTurnFromProgress(progress: number, totalTurns: number): number {
     const boundedProgress = clamp(progress, 0, 1);
     return clampInt(
-      Math.floor(boundedProgress * FRACTIONS_LESSON_TOTAL_TURNS) + 1,
+      Math.floor(boundedProgress * totalTurns) + 1,
       1,
-      FRACTIONS_LESSON_TOTAL_TURNS,
+      totalTurns,
     );
   }
 
@@ -1688,12 +1703,15 @@ export class Orchestrator {
     return updated.classroomRuntime;
   }
 
-  private pickAutonomousTaskMode(lessonTurn: number): TaskWorkMode {
-    if (lessonTurn <= PRACTICE_PHASE_START_TURN + 2) {
+  private pickAutonomousTaskMode(lessonTurn: number, totalTurns: number): TaskWorkMode {
+    const practicePhaseStartTurn = Math.ceil(totalTurns / 3) + 1;
+    const reviewPhaseStartTurn = Math.ceil((totalTurns * 2) / 3) + 1;
+
+    if (lessonTurn <= practicePhaseStartTurn + 2) {
       return 'individual';
     }
 
-    if (lessonTurn <= REVIEW_PHASE_START_TURN - 1) {
+    if (lessonTurn <= reviewPhaseStartTurn - 1) {
       return 'pair';
     }
 
@@ -1856,12 +1874,12 @@ export class Orchestrator {
     );
   }
 
-  private getClassroomLessonTurnIndex(session: Session): number {
+  private getClassroomLessonTurnIndex(session: Session, totalTurns: number): number {
     const instructorTurns = session.turns.filter(
       (turn) => turn.role === 'teacher' && !turn.agentId,
     ).length;
 
-    return clampInt(instructorTurns, 1, FRACTIONS_LESSON_TOTAL_TURNS);
+    return clampInt(instructorTurns, 1, totalTurns);
   }
 
   private extractLatestStudentQuestion(session: Session): StudentQuestionSignal | undefined {
@@ -2195,14 +2213,15 @@ export class Orchestrator {
     sessionId: string,
     runtime: NonNullable<Session['classroomRuntime']>,
     additionalSeconds: number,
+    totalTurns: number,
   ): NonNullable<Session['classroomRuntime']> {
     const safeAdditionalSeconds = Math.max(0, Number(additionalSeconds.toFixed(2)));
     const total = Math.max(1, runtime.simulatedTotalSeconds ?? SIMULATION_TARGET_SECONDS);
     const elapsed = clamp(runtime.simulatedElapsedSeconds ?? 0, 0, total);
     const nextElapsed = clamp(elapsed + safeAdditionalSeconds, 0, total);
     const nextProgress = clamp(nextElapsed / total, 0, 1);
-    const nextLessonTurn = this.resolveLessonTurnFromProgress(nextProgress);
-    const nextPhase = this.resolveClassroomPhase(nextLessonTurn);
+    const nextLessonTurn = this.resolveLessonTurnFromProgress(nextProgress, totalTurns);
+    const nextPhase = this.resolveClassroomPhase(nextLessonTurn, totalTurns);
 
     return this.ensureClassroomRuntime(sessionId, nextLessonTurn, nextPhase, {
       simulatedElapsedSeconds: Number(nextElapsed.toFixed(2)),
@@ -2227,12 +2246,13 @@ export class Orchestrator {
     sessionId: string,
     requestTurnId: string,
     lessonTurn: number,
+    totalTurns: number,
     phase: ClassroomPhase,
     students: AgentProfile[],
     interactiveBoardActive: boolean,
   ): void {
     const lessonProgress = clamp(
-      lessonTurn / Math.max(1, FRACTIONS_LESSON_TOTAL_TURNS),
+      lessonTurn / Math.max(1, totalTurns),
       0,
       1,
     );

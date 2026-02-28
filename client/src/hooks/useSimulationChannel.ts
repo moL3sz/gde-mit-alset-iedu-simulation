@@ -145,6 +145,7 @@ type UseSimulationChannelResult = {
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000/api";
 const CLASSROOM_ID_STORAGE_KEY = "classroomId";
+const START_STORAGE_KEY = "startSetup";
 const BUBBLE_SWEEP_MS = 600;
 const MAX_BUBBLES_PER_NODE = 4;
 const DEFAULT_BUBBLE_TTL_MS = 3000;
@@ -169,6 +170,29 @@ const getClassroomIdFromStorage = (): number | undefined => {
   }
 
   return numeric;
+};
+
+const getPeriodFromStorage = (): number | undefined => {
+  if (typeof window === "undefined") {
+    return undefined;
+  }
+
+  const raw = window.localStorage.getItem(START_STORAGE_KEY);
+  if (!raw) {
+    return undefined;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as { period?: number };
+    const period = parsed?.period;
+    if (typeof period !== "number" || !Number.isInteger(period) || period <= 0) {
+      return undefined;
+    }
+
+    return period;
+  } catch {
+    return undefined;
+  }
 };
 
 const toActionLabel = (value: string): string =>
@@ -534,6 +558,7 @@ export const useSimulationChannel = ({
     const createSession = async () => {
       try {
         const classroomId = getClassroomIdFromStorage();
+        const period = getPeriodFromStorage();
 
         const response = await fetch(`${API_BASE_URL}/sessions`, {
           method: "POST",
@@ -544,6 +569,7 @@ export const useSimulationChannel = ({
             mode: "classroom",
             channel,
             topic,
+            ...(typeof period === "number" ? { period } : {}),
             ...(typeof classroomId === "number" ? { classroomId } : {}),
           }),
         });
