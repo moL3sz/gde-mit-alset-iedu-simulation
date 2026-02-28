@@ -1,9 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Button } from "primereact/button";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { MetricsLineChart } from "../components/charts/MetricsLineChart";
-import rawStudentData from "../data/dummy_student.json";
-import rawTeacherData from "../data/dummy_teacher.json";
-import rawStudentDataRl from "../data/dummy_student_lr.json";
-import rawTeacherDataRl from "../data/dummy_teacher_lr.json";
 
 type StudentDataRow = {
   name: string;
@@ -46,10 +44,59 @@ type StatisticsColumnProps = {
   preparedData: PreparedChartData;
 };
 
-const supervisorStudentData = rawStudentData as StudentDataRow[];
-const supervisorTeacherData = rawTeacherData as TeacherDataRow[];
-const reinforcementStudentData = rawStudentDataRl as StudentDataRow[];
-const reinforcementTeacherData = rawTeacherDataRl as TeacherDataRow[];
+type SessionTurn = {
+  id: string;
+  role: "teacher" | "user" | "agent" | "system";
+  agentId?: string;
+  content: string;
+  createdAt: string;
+  metadata?: Record<string, unknown>;
+};
+
+type SessionAgent = {
+  id: string;
+  kind: string;
+  name: string;
+  state: {
+    attentiveness: number;
+    behavior: number;
+    comprehension: number;
+  };
+};
+
+type SessionActivation = {
+  id: string;
+  from: string;
+  to: string;
+  interactionType: string;
+  createdAt: string;
+  payload?: Record<string, unknown>;
+};
+
+type SessionSummary = {
+  sessionId: string;
+  topic: string;
+  agents: SessionAgent[];
+  turns: SessionTurn[];
+  communicationGraph: {
+    activations?: SessionActivation[];
+  };
+  updatedAt: string;
+};
+
+type SessionChartRows = {
+  students: StudentDataRow[];
+  teachers: TeacherDataRow[];
+  topic: string | null;
+};
+
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000/api";
+
+const EMPTY_ROWS: SessionChartRows = {
+  students: [],
+  teachers: [],
+  topic: null,
+};
 
 const EMPTY_CHART_DATA: PreparedChartData = {
   labels: [],
@@ -64,11 +111,25 @@ const EMPTY_CHART_DATA: PreparedChartData = {
   endTimestamp: null,
 };
 
-const timestampToMs = (timestamp: string) => {
-  const [datePart, timePart] = timestamp.split(" ");
-  const [year, month, day] = datePart.split("-").map(Number);
-  const [hour, minute] = timePart.split(":").map(Number);
-  return new Date(year, month - 1, day, hour, minute).getTime();
+const clamp = (value: number, min: number, max: number): number =>
+  Math.max(min, Math.min(max, value));
+
+const timestampToMs = (timestamp: string): number => {
+  const parsed = Date.parse(timestamp);
+  if (Number.isFinite(parsed)) {
+    return parsed;
+  }
+
+  return 0;
+};
+
+const formatTimestamp = (timestamp: string): string => {
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) {
+    return timestamp;
+  }
+
+  return date.toLocaleString();
 };
 
 const isHighlightedAction = (action: string) => {
@@ -79,6 +140,121 @@ const isHighlightedAction = (action: string) => {
     normalizedAction.includes("nem listen") ||
     normalizedAction === "talking"
   );
+};
+
+const resolveTeacherAction = (turn: SessionTurn): string => {
+  const mode = typeof turn.metadata?.teacherMode === "string" ? turn.metadata.teacherMode : "";
+
+  if (mode === "engagement_joke") {
+    return "kidding";
+  }
+
+  if (mode === "behavior_intervention") {
+    return "moderation";
+  }
+
+  if (
+    mode === "clarification_dialogue" ||
+    mode === "knowledge_check_praise"
+  ) {
+    return "interactive education";
+  }
+
+  if (turn.content.includes("?")) {
+    return "interactive education";
+  }
+
+  return "education";
+};
+
+const resolveStudentAction = (
+  activation: SessionActivation,
+  attention: number,
+): string => {
+  const actionType = typeof activation.payload?.actionType === "string"
+    ? activation.payload.actionType
+    : activation.interactionType;
+
+  if (actionType === "student_to_student") {
+    return "talking";
+  }
+
+  if (attention <= 4.2) {
+    return "doesn't listen";
+  }
+
+  return "listen";
+};
+
+const toRowsFromSession = (summary: SessionSummary): SessionChartRows => {
+  const studentNameById = new Map(
+    summary.agents
+      .filter((agent) => agent.kind !== "Teacher")
+      .map((agent) => [agent.id, agent.name]),
+  );
+
+  const studentRows: StudentDataRow[] = [];
+  const activations = summary.communicationGraph.activations ?? [];
+
+  for (const activation of activations) {
+    if (!studentNameById.has(activation.from)) {
+      continue;
+    }
+
+    const borednessRaw = activation.payload?.boredness;
+    const fatigueRaw = activation.payload?.fatigue;
+    const boredness =
+      typeof borednessRaw === "number" && Number.isFinite(borednessRaw)
+        ? clamp(borednessRaw, 0, 10)
+        : 5.2;
+    const fatigue =
+      typeof fatigueRaw === "number" && Number.isFinite(fatigueRaw)
+        ? clamp(fatigueRaw, 0, 10)
+        : 4.8;
+    const attention = clamp(10 - boredness, 0, 10);
+    const emotion = clamp(10 - fatigue, 0, 10);
+    const name = studentNameById.get(activation.from);
+    if (!name) {
+      continue;
+    }
+
+    studentRows.push({
+      name,
+      attention: Number(attention.toFixed(2)),
+      boredom: Number(boredness.toFixed(2)),
+      emotion: Number(emotion.toFixed(2)),
+      action: resolveStudentAction(activation, attention),
+      timestamp: activation.createdAt,
+    });
+  }
+
+  if (studentRows.length === 0) {
+    const fallbackTimestamp = summary.updatedAt;
+    for (const agent of summary.agents.filter((item) => item.kind !== "Teacher")) {
+      const attention = clamp(agent.state.attentiveness, 0, 10);
+      studentRows.push({
+        name: agent.name,
+        attention: Number(attention.toFixed(2)),
+        boredom: Number((10 - attention).toFixed(2)),
+        emotion: Number(clamp(agent.state.comprehension, 0, 10).toFixed(2)),
+        action: attention <= 4.2 ? "doesn't listen" : "listen",
+        timestamp: fallbackTimestamp,
+      });
+    }
+  }
+
+  const teacherRows: TeacherDataRow[] = summary.turns
+    .filter((turn) => turn.role === "teacher")
+    .map((turn) => ({
+      action: resolveTeacherAction(turn),
+      timestamp: turn.createdAt,
+    }));
+
+  return {
+    students: studentRows,
+    teachers: teacherRows,
+    topic: summary.topic,
+  };
 };
 
 const buildDataSource = (
@@ -136,7 +312,6 @@ const buildPreparedChartData = (
 
   if (selectedStudent) {
     const selectedRows = source.studentRowsByName.get(selectedStudent);
-
     if (selectedRows) {
       for (const timestamp of selectedRows.keys()) {
         timelineSet.add(timestamp);
@@ -148,7 +323,9 @@ const buildPreparedChartData = (
     }
   }
 
-  const timeline = Array.from(timelineSet).sort();
+  const timeline = Array.from(timelineSet).sort((left, right) => {
+    return timestampToMs(left) - timestampToMs(right);
+  });
 
   if (timeline.length === 0) {
     return EMPTY_CHART_DATA;
@@ -299,34 +476,120 @@ const StatisticsColumn = ({ title, selectedStudent, preparedData }: StatisticsCo
   );
 };
 
+const fetchSessionSummary = async (sessionId: string): Promise<SessionSummary> => {
+  const response = await fetch(`${API_BASE_URL}/sessions/${sessionId}`);
+  if (!response.ok) {
+    throw new Error(`Failed to load session ${sessionId} (${response.status})`);
+  }
+
+  return (await response.json()) as SessionSummary;
+};
+
 export const Statics = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [selectedStudent, setSelectedStudent] = useState<string | null>(null);
+  const [supervisorRows, setSupervisorRows] = useState<SessionChartRows>(EMPTY_ROWS);
+  const [unsupervisedRows, setUnsupervisedRows] = useState<SessionChartRows>(EMPTY_ROWS);
+  const [supervisorError, setSupervisorError] = useState<string | null>(null);
+  const [unsupervisedError, setUnsupervisedError] = useState<string | null>(null);
+
+  const supervisedSessionId = searchParams.get("supervisedSessionId");
+  const unsupervisedSessionId = searchParams.get("unsupervisedSessionId");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      if (!supervisedSessionId) {
+        setSupervisorRows(EMPTY_ROWS);
+        setSupervisorError("Missing supervisedSessionId");
+        return;
+      }
+
+      setSupervisorError(null);
+      try {
+        const summary = await fetchSessionSummary(supervisedSessionId);
+        if (cancelled) {
+          return;
+        }
+        setSupervisorRows(toRowsFromSession(summary));
+      } catch (error: unknown) {
+        if (cancelled) {
+          return;
+        }
+        setSupervisorError(
+          error instanceof Error ? error.message : "Failed to load supervised statistics",
+        );
+        setSupervisorRows(EMPTY_ROWS);
+      }
+    };
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [supervisedSessionId]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      if (!unsupervisedSessionId) {
+        setUnsupervisedRows(EMPTY_ROWS);
+        setUnsupervisedError("Missing unsupervisedSessionId");
+        return;
+      }
+
+      setUnsupervisedError(null);
+      try {
+        const summary = await fetchSessionSummary(unsupervisedSessionId);
+        if (cancelled) {
+          return;
+        }
+        setUnsupervisedRows(toRowsFromSession(summary));
+      } catch (error: unknown) {
+        if (cancelled) {
+          return;
+        }
+        setUnsupervisedError(
+          error instanceof Error ? error.message : "Failed to load unsupervised statistics",
+        );
+        setUnsupervisedRows(EMPTY_ROWS);
+      }
+    };
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [unsupervisedSessionId]);
 
   const supervisorSource = useMemo(
-    () => buildDataSource(supervisorStudentData, supervisorTeacherData),
-    [],
+    () => buildDataSource(supervisorRows.students, supervisorRows.teachers),
+    [supervisorRows.students, supervisorRows.teachers],
   );
-  const reinforcementSource = useMemo(
-    () => buildDataSource(reinforcementStudentData, reinforcementTeacherData),
-    [],
+  const unsupervisedSource = useMemo(
+    () => buildDataSource(unsupervisedRows.students, unsupervisedRows.teachers),
+    [unsupervisedRows.students, unsupervisedRows.teachers],
   );
 
   const supervisorPreparedData = useMemo(
     () => buildPreparedChartData(supervisorSource, selectedStudent),
     [selectedStudent, supervisorSource],
   );
-  const reinforcementPreparedData = useMemo(
-    () => buildPreparedChartData(reinforcementSource, selectedStudent),
-    [reinforcementSource, selectedStudent],
+  const unsupervisedPreparedData = useMemo(
+    () => buildPreparedChartData(unsupervisedSource, selectedStudent),
+    [selectedStudent, unsupervisedSource],
   );
 
   const globalTimeRange = useMemo(() => {
-    const starts = [supervisorPreparedData.startTimestamp, reinforcementPreparedData.startTimestamp]
+    const starts = [supervisorPreparedData.startTimestamp, unsupervisedPreparedData.startTimestamp]
       .filter((value): value is string => Boolean(value))
-      .sort((a, b) => timestampToMs(a) - timestampToMs(b));
-    const ends = [supervisorPreparedData.endTimestamp, reinforcementPreparedData.endTimestamp]
+      .sort((left, right) => timestampToMs(left) - timestampToMs(right));
+    const ends = [supervisorPreparedData.endTimestamp, unsupervisedPreparedData.endTimestamp]
       .filter((value): value is string => Boolean(value))
-      .sort((a, b) => timestampToMs(a) - timestampToMs(b));
+      .sort((left, right) => timestampToMs(left) - timestampToMs(right));
 
     if (starts.length === 0 || ends.length === 0) {
       return null;
@@ -336,7 +599,12 @@ export const Statics = () => {
       start: starts[0],
       end: ends[ends.length - 1],
     };
-  }, [reinforcementPreparedData.endTimestamp, reinforcementPreparedData.startTimestamp, supervisorPreparedData.endTimestamp, supervisorPreparedData.startTimestamp]);
+  }, [
+    supervisorPreparedData.endTimestamp,
+    supervisorPreparedData.startTimestamp,
+    unsupervisedPreparedData.endTimestamp,
+    unsupervisedPreparedData.startTimestamp,
+  ]);
 
   const studentNames = useMemo(() => {
     const names: string[] = [];
@@ -347,34 +615,51 @@ export const Statics = () => {
         if (seen.has(item)) {
           continue;
         }
-
         seen.add(item);
         names.push(item);
       }
     };
 
     addNames(supervisorSource.studentNames);
-    addNames(reinforcementSource.studentNames);
+    addNames(unsupervisedSource.studentNames);
 
     return names;
-  }, [reinforcementSource.studentNames, supervisorSource.studentNames]);
+  }, [supervisorSource.studentNames, unsupervisedSource.studentNames]);
 
   return (
     <div className="h-screen overflow-hidden bg-slate-100">
       <div className="mx-auto flex h-full max-w-[1900px] flex-col gap-3 p-3">
         <div className="shrink-0 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h1 className="text-2xl font-semibold text-slate-900">Statistics</h1>
               <p className="text-sm text-slate-600">
                 Attention, boredom and emotion are displayed together in each chart.
               </p>
+              {(supervisorRows.topic || unsupervisedRows.topic) && (
+                <p className="text-xs text-slate-500">
+                  Topic: {supervisorRows.topic ?? unsupervisedRows.topic}
+                </p>
+              )}
+              {(supervisorError || unsupervisedError) && (
+                <p className="text-xs text-rose-600">
+                  {[supervisorError, unsupervisedError].filter(Boolean).join(" | ")}
+                </p>
+              )}
             </div>
-            {globalTimeRange && (
-              <p className="self-center text-sm text-slate-600">
-                Time range: {globalTimeRange.start} - {globalTimeRange.end}
-              </p>
-            )}
+            <div className="flex items-center gap-3">
+              {globalTimeRange && (
+                <p className="self-center text-sm text-slate-600">
+                  Time range: {formatTimestamp(globalTimeRange.start)} - {formatTimestamp(globalTimeRange.end)}
+                </p>
+              )}
+              <Button
+                label="Back to simulation"
+                size="small"
+                outlined
+                onClick={() => navigate("/simulation")}
+              />
+            </div>
           </div>
         </div>
 
@@ -420,9 +705,9 @@ export const Statics = () => {
                 preparedData={supervisorPreparedData}
               />
               <StatisticsColumn
-                title="Reinforcement Learning"
+                title="Unsupervised"
                 selectedStudent={selectedStudent}
-                preparedData={reinforcementPreparedData}
+                preparedData={unsupervisedPreparedData}
               />
             </div>
 

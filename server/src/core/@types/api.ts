@@ -34,6 +34,8 @@ export interface GetSessionResponse {
   channel: SimulationChannel;
   topic: string;
   agents: AgentProfile[];
+  turns: Turn[];
+  events: SessionEvent[];
   lastTurns: Turn[];
   metrics: SessionMetrics;
   communicationGraph: CommunicationGraph;

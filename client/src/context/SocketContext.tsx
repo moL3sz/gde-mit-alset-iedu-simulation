@@ -9,7 +9,9 @@ type SocketContextType = {
 
 const SocketContext = createContext<SocketContextType | undefined>(undefined);
 
-const SOCKET_BASE_URL = import.meta.env.VITE_SOCKET_URL ?? "http://localhost:3000";
+const SOCKET_BASE_URL =
+  import.meta.env.VITE_SOCKET_URL ??
+  (typeof window !== "undefined" ? window.location.origin : "http://localhost:3000");
 
 export function SocketProvider({ children }: { children: ReactNode }) {
   const [supervisedSocket, setSupervisedSocket] = useState<Socket | null>(null);

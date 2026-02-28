@@ -1,4 +1,7 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "primereact/button";
+import { Dialog } from "primereact/dialog";
 import { ProgressBar } from "primereact/progressbar";
 import { Supervised } from "../components/Supervised";
 import { Unsupervised } from "../components/Unsupervised";
@@ -43,7 +46,9 @@ const getSimulationTopic = (): string => {
 };
 
 export const Simulation = () => {
+  const navigate = useNavigate();
   const { supervisedSocket, unsupervisedSocket, initializeSockets } = useSockets();
+  const [showCompletionDialog, setShowCompletionDialog] = useState(false);
 
   useEffect(() => {
     initializeSockets();
@@ -92,6 +97,31 @@ export const Simulation = () => {
     return totalSeconds > 0 ? Math.min(100, (elapsedSeconds / totalSeconds) * 100) : 0;
   }, [elapsedSeconds, totalSeconds]);
 
+  const hasBothSessions =
+    Boolean(supervisedRuntime.sessionId) && Boolean(unsupervisedRuntime.sessionId);
+  const bothCompleted =
+    supervisedRuntime.isSessionCompleted && unsupervisedRuntime.isSessionCompleted;
+
+  useEffect(() => {
+    if (!hasBothSessions || !bothCompleted) {
+      return;
+    }
+
+    setShowCompletionDialog(true);
+  }, [bothCompleted, hasBothSessions]);
+
+  const goToStatistics = () => {
+    const query = new URLSearchParams();
+    if (supervisedRuntime.sessionId) {
+      query.set("supervisedSessionId", supervisedRuntime.sessionId);
+    }
+    if (unsupervisedRuntime.sessionId) {
+      query.set("unsupervisedSessionId", unsupervisedRuntime.sessionId);
+    }
+
+    navigate(`/statics?${query.toString()}`);
+  };
+
   const submitSupervisedTaskAssignment = async (
     input: SubmitTaskAssignmentInput,
     applyToUnsupervised: boolean,
@@ -116,6 +146,25 @@ export const Simulation = () => {
 
   return (
     <div className="flex min-h-screen w-full flex-col overflow-hidden bg-slate-200">
+      <Dialog
+        visible={showCompletionDialog}
+        onHide={() => setShowCompletionDialog(false)}
+        closable={false}
+        draggable={false}
+        modal
+        style={{ width: "min(90vw, 460px)" }}
+        header="Class Completed"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-slate-700">
+            The 45-minute simulation has finished. You can now review the full session results and action timeline.
+          </p>
+          <div className="flex justify-end">
+            <Button label="View Results" onClick={goToStatistics} />
+          </div>
+        </div>
+      </Dialog>
+
       <div className="border-b border-slate-300/80 bg-slate-100 px-4 py-3">
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
           <h1 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-700 sm:text-base">

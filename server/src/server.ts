@@ -13,6 +13,11 @@ const bootstrap = async (): Promise<void> => {
     host: env.DB_HOST,
     database: env.DB_NAME,
   });
+  const appliedMigrations = await AppDataSource.runMigrations();
+  logger.info('database_migrations_ran', {
+    appliedCount: appliedMigrations.length,
+    applied: appliedMigrations.map((migration) => migration.name),
+  });
 
   const server: Server = app.listen(env.PORT, () => {
     logger.info('server_started', {

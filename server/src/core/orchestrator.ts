@@ -329,6 +329,8 @@ export class Orchestrator {
       channel: session.channel,
       topic: session.topic,
       agents: session.agents,
+      turns: session.turns,
+      events: session.events,
       lastTurns: session.turns.slice(-8),
       metrics: session.metrics,
       communicationGraph: session.communicationGraph,
