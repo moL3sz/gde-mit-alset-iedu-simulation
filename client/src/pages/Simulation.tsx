@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { ProgressBar } from "primereact/progressbar";
 import { Supervised } from "../components/Supervised";
 import { Unsupervised } from "../components/Unsupervised";
@@ -43,24 +43,11 @@ const getSimulationTopic = (): string => {
 };
 
 export const Simulation = () => {
-  const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
   const { supervisedSocket, unsupervisedSocket, initializeSockets } = useSockets();
 
   useEffect(() => {
     initializeSockets();
   }, [initializeSockets]);
-
-  useEffect(() => {
-    const startedAt = Date.now();
-    const intervalId = window.setInterval(() => {
-      const nextElapsed = Math.floor((Date.now() - startedAt) / 1000);
-      setElapsedSeconds(Math.min(nextElapsed, SIMULATION_DURATION_SECONDS));
-    }, 1000);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, []);
 
   const topic = useMemo(() => getSimulationTopic(), []);
 
@@ -77,9 +64,33 @@ export const Simulation = () => {
     forcedPause: supervisedRuntime.isPausedForTaskAssignment,
   });
 
+  const elapsedSeconds = useMemo(() => {
+    return Math.max(
+      supervisedRuntime.simulationElapsedSeconds,
+      unsupervisedRuntime.simulationElapsedSeconds,
+      0,
+    );
+  }, [
+    supervisedRuntime.simulationElapsedSeconds,
+    unsupervisedRuntime.simulationElapsedSeconds,
+  ]);
+
+  const totalSeconds = useMemo(() => {
+    const serverTotal = Math.max(
+      supervisedRuntime.simulationTotalSeconds,
+      unsupervisedRuntime.simulationTotalSeconds,
+      0,
+    );
+
+    return serverTotal > 0 ? serverTotal : SIMULATION_DURATION_SECONDS;
+  }, [
+    supervisedRuntime.simulationTotalSeconds,
+    unsupervisedRuntime.simulationTotalSeconds,
+  ]);
+
   const progressValue = useMemo(() => {
-    return Math.min(100, (elapsedSeconds / SIMULATION_DURATION_SECONDS) * 100);
-  }, [elapsedSeconds]);
+    return totalSeconds > 0 ? Math.min(100, (elapsedSeconds / totalSeconds) * 100) : 0;
+  }, [elapsedSeconds, totalSeconds]);
 
   const submitSupervisedTaskAssignment = async (
     input: SubmitTaskAssignmentInput,
@@ -111,7 +122,7 @@ export const Simulation = () => {
             Simulation Progress
           </h1>
           <span className="rounded-full bg-slate-200 px-3 py-1 text-xs font-semibold text-slate-700">
-            {formatTime(elapsedSeconds)} / {formatTime(SIMULATION_DURATION_SECONDS)}
+            {formatTime(elapsedSeconds)} / {formatTime(totalSeconds)}
           </span>
         </div>
         <ProgressBar value={progressValue} showValue={false} style={{ height: "0.7rem" }} />

@@ -13,6 +13,17 @@ export type TurnRole = 'teacher' | 'user' | 'agent' | 'system';
 export type ClassroomPhase = 'lecture' | 'practice' | 'review';
 export type AssignmentAuthority = 'teacher_agent' | 'supervisor_user';
 export type TaskWorkMode = 'individual' | 'pair' | 'group';
+export type StudentLiveActionKind = 'on_task' | 'off_task';
+export type StudentLiveActionCode =
+  | 'listening'
+  | 'note_taking'
+  | 'task_focus'
+  | 'peer_support'
+  | 'pen_clicking'
+  | 'looking_out_window'
+  | 'playing_with_object'
+  | 'desk_doodling'
+  | 'side_talking';
 
 export type SessionEventType =
   | 'session_created'
@@ -28,7 +39,8 @@ export type SessionEventType =
   | 'task_assignment_required'
   | 'task_assignment_submitted'
   | 'task_review_completed'
-  | 'interactive_board_mode_changed';
+  | 'interactive_board_mode_changed'
+  | 'session_completed';
 
 export type CommunicationNodeKind =
   | 'teacher'
@@ -130,16 +142,45 @@ export interface ClassroomClarificationThread {
   requiredResponseCount: number;
 }
 
+export interface ClassroomKnowledgeCheck {
+  askedTurnId: string;
+  askedAt: string;
+  lessonTurn: number;
+  questionText: string;
+  targetStudentIds: string[];
+  expectedKeywords: string[];
+  evaluatedStudentIds: string[];
+  expiresAtLessonTurn: number;
+}
+
 export interface ClassroomRuntime {
   lessonTurn: number;
   phase: ClassroomPhase;
   paused: boolean;
+  completed?: boolean;
+  completedAt?: string;
+  completionReason?: 'lesson_plan_completed' | 'simulation_time_completed';
   pendingTaskAssignment: boolean;
   interactiveBoardActive: boolean;
+  simulatedElapsedSeconds?: number;
+  simulatedTotalSeconds?: number;
+  pendingDistractionCounts?: Record<string, number>;
+  previousAverageBoredness?: number;
+  boredomRiseStreak?: number;
+  lastEngagementJokeTurn?: number;
+  activeKnowledgeCheck?: ClassroomKnowledgeCheck;
   activeTaskAssignment?: TaskAssignment;
   activeClarification?: ClassroomClarificationThread;
   lastClarifiedQuestionTurnId?: string;
   lastReviewTurn?: number;
+}
+
+export interface StudentLiveAction {
+  code: StudentLiveActionCode;
+  kind: StudentLiveActionKind;
+  label: string;
+  severity: 'success' | 'info' | 'warning';
+  at: string;
 }
 
 export interface AgentState {
@@ -147,6 +188,10 @@ export interface AgentState {
   behavior: number;
   comprehension: number;
   profile: AgentKind;
+  liveAction?: StudentLiveAction;
+  distractionStreak?: number;
+  postPraiseFatigueTurns?: number;
+  postPraiseDecayBoost?: number;
 }
 
 export interface AgentProfile {

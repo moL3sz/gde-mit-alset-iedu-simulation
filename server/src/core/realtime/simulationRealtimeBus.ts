@@ -17,6 +17,18 @@ const cloneState = (
   behavior: state.behavior,
   comprehension: state.comprehension,
   profile: state.profile,
+  liveAction: state.liveAction
+    ? {
+        code: state.liveAction.code,
+        kind: state.liveAction.kind,
+        label: state.liveAction.label,
+        severity: state.liveAction.severity,
+        at: state.liveAction.at,
+      }
+    : undefined,
+  distractionStreak: state.distractionStreak,
+  postPraiseFatigueTurns: state.postPraiseFatigueTurns,
+  postPraiseDecayBoost: state.postPraiseDecayBoost,
 });
 
 const isStudentAgent = (agent: AgentProfile): boolean =>
