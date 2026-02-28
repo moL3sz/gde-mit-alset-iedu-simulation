@@ -114,14 +114,14 @@ export const Unsupervised = ({
           socket={unsupervisedSocket}
           sessionId={sessionId}
           title="Unsupervised Charts"
-          className="left-4 right-4 top-[80px] bottom-4"
+          className="left-4 right-4 top-[80px] bottom-4 md:left-[calc(50%+0.5rem)]"
         />
         <GraphModal
           graph={graph}
           visible={isGraphVisible}
           onHide={() => setIsGraphVisible(false)}
           title="Unsupervised Graph"
-          className="left-4 right-4 top-[80px] bottom-4"
+          className="left-4 right-4 top-[80px] bottom-4 md:left-[calc(50%+0.5rem)]"
         />
       </div>
     </section>

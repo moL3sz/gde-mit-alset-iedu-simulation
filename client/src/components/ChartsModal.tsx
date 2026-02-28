@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "primereact/button";
 import type { Socket } from "socket.io-client";
 
@@ -52,6 +53,7 @@ type StudentSeries = {
 };
 
 const MAX_POINTS = 24;
+const MODAL_CONTENT_Z_INDEX = 2147483001;
 
 const toMetric = (value: number | undefined): number => {
   if (typeof value !== "number" || Number.isNaN(value)) {
@@ -218,10 +220,10 @@ const ChartsModal = ({
     return null;
   }
 
-  return (
+  const modalContent = (
     <div
       className={`fixed overflow-hidden rounded-lg border border-slate-300/70 bg-white p-3 shadow-lg ${className}`}
-      style={{ zIndex: 11000 }}
+      style={{ zIndex: MODAL_CONTENT_Z_INDEX }}
     >
       <div className="flex items-center justify-between gap-2">
         <div>
@@ -256,6 +258,12 @@ const ChartsModal = ({
       </div>
     </div>
   );
+
+  if (typeof document === "undefined") {
+    return modalContent;
+  }
+
+  return createPortal(modalContent, document.body);
 };
 
 export default ChartsModal;

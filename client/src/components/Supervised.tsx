@@ -269,14 +269,14 @@ export const Supervised = ({
           socket={supervisedSocket}
           sessionId={sessionId}
           title="Supervised Charts"
-          className="left-4 right-4 top-[80px] bottom-4"
+          className="left-4 right-4 top-[80px] bottom-4 md:right-[calc(50%+0.5rem)]"
         />
         <GraphModal
           visible={isGraphVisible}
           graph={graph}
           onHide={() => setIsGraphVisible(false)}
           title="Supervised Graph"
-          className="left-4 right-4 top-[80px] bottom-4"
+          className="left-4 right-4 top-[80px] bottom-4 md:right-[calc(50%+0.5rem)]"
         />
       </div>
     </section>

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "primereact/button";
+import { Tag } from "primereact/tag";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { MetricsLineChart } from "../components/charts/MetricsLineChart";
 
@@ -436,6 +437,80 @@ const buildPreparedChartData = (
   };
 };
 
+const computeMaterialGraspPercent = (preparedData: PreparedChartData): number | null => {
+  const validSampleIndexes = preparedData.attentionValues
+    .map((attentionValue, index) => ({ attentionValue, index }))
+    .filter(
+      (sample): sample is { attentionValue: number; index: number } =>
+        typeof sample.attentionValue === "number" && Number.isFinite(sample.attentionValue),
+    );
+
+  if (validSampleIndexes.length === 0) {
+    return null;
+  }
+
+  const sampleScores = validSampleIndexes.map(({ attentionValue, index }) => {
+    const boredomValue = preparedData.boredomValues[index];
+    const emotionValue = preparedData.emotionValues[index];
+
+    const normalizedAttention = clamp(attentionValue / 10, 0, 1);
+    const normalizedAntiBoredom =
+      typeof boredomValue === "number" && Number.isFinite(boredomValue)
+        ? clamp(1 - boredomValue / 10, 0, 1)
+        : 0.5;
+    const normalizedEmotion =
+      typeof emotionValue === "number" && Number.isFinite(emotionValue)
+        ? clamp(emotionValue / 10, 0, 1)
+        : 0.5;
+
+    return (
+      normalizedAttention * 0.46 +
+      normalizedAntiBoredom * 0.34 +
+      normalizedEmotion * 0.2
+    );
+  });
+
+  const highlightedCount = preparedData.highlightedValues.filter(
+    (value) => typeof value === "number" && Number.isFinite(value),
+  ).length;
+  const highlightedRatio = highlightedCount / validSampleIndexes.length;
+  const focusPenaltyFactor = clamp(1 - highlightedRatio * 0.18, 0.8, 1);
+  const averageSampleScore =
+    sampleScores.reduce((accumulator, score) => accumulator + score, 0) / sampleScores.length;
+
+  return Math.round(clamp(averageSampleScore * focusPenaltyFactor, 0, 1) * 100);
+};
+
+const toGraspTagConfig = (
+  graspPercent: number | null,
+): { value: string; severity: "success" | "warning" | "danger" | "secondary" } => {
+  if (graspPercent === null) {
+    return {
+      value: "No data",
+      severity: "secondary",
+    };
+  }
+
+  if (graspPercent >= 70) {
+    return {
+      value: `${graspPercent}% · Good`,
+      severity: "success",
+    };
+  }
+
+  if (graspPercent >= 45) {
+    return {
+      value: `${graspPercent}% · Medium`,
+      severity: "warning",
+    };
+  }
+
+  return {
+    value: `${graspPercent}% · Low`,
+    severity: "danger",
+  };
+};
+
 const StatisticsColumn = ({ title, selectedStudent, preparedData }: StatisticsColumnProps) => {
   const seriesBaseLabel = selectedStudent ? selectedStudent : "Class average";
   const firstLineQuestion = selectedStudent
@@ -443,6 +518,8 @@ const StatisticsColumn = ({ title, selectedStudent, preparedData }: StatisticsCo
     : "How did they feel about the class?";
   const averageEmotionText =
     preparedData.averageEmotion === null ? "n/a" : preparedData.averageEmotion.toFixed(2);
+  const materialGraspPercent = computeMaterialGraspPercent(preparedData);
+  const graspTag = toGraspTagConfig(materialGraspPercent);
 
   return (
     <section className="flex h-full min-h-0 flex-col rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
@@ -452,7 +529,10 @@ const StatisticsColumn = ({ title, selectedStudent, preparedData }: StatisticsCo
         <p className="text-sm text-slate-600">
           {firstLineQuestion} <span className="font-semibold text-slate-900">{averageEmotionText}</span>
         </p>
-        <p className="mb-2 text-sm text-slate-600">How well did they grasp the material?</p>
+        <div className="mb-2 mt-1 flex items-center gap-2">
+          <p className="text-sm text-slate-600">How well did they grasp the material?</p>
+          <Tag value={graspTag.value} severity={graspTag.severity} />
+        </div>
 
         <div className="mt-2 min-h-0 flex-1">
           <MetricsLineChart

@@ -67,31 +67,7 @@ const translateStudentAction = (action: string | null | undefined) => {
   return action;
 };
 
-const translateTeacherAction = (action: string | null | undefined) => {
-  if (!action || action === "n/a" || action === "no data") {
-    return "n/a";
-  }
 
-  const normalizedAction = action.toLowerCase();
-
-  if (normalizedAction === "education") {
-    return "teaching";
-  }
-
-  if (normalizedAction === "interactive education") {
-    return "interactive teaching";
-  }
-
-  if (normalizedAction === "kidding") {
-    return "joking";
-  }
-
-  if (normalizedAction === "moderation") {
-    return "moderating";
-  }
-
-  return action;
-};
 
 export const MetricsLineChart = ({
   title,
@@ -277,9 +253,8 @@ export const MetricsLineChart = ({
                 }
 
                 const studentAction = translateStudentAction(studentActions[pointIndex]);
-                const teacherAction = translateTeacherAction(teacherActions[pointIndex]);
 
-                return [`student: ${studentAction}`, `teacher: ${teacherAction}`];
+                return [`student: ${studentAction}`];
               },
             },
           },

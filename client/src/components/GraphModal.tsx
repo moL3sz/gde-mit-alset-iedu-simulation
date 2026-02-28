@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "primereact/button";
 
 import type { SimulationGraph } from "../hooks/useSimulationChannel";
@@ -34,6 +35,7 @@ const ACTIVATION_VISIBLE_MIN_MS = 1800;
 const ACTIVATION_VISIBLE_MAX_MS = 5200;
 const EDGE_PULSE_CYCLE_MS = 1200;
 const EDGE_PULSE_LINE_FACTOR = 0.28;
+const MODAL_CONTENT_Z_INDEX = 2147483001;
 
 const getCssVar = (name: string, fallback: string): string => {
   if (typeof window === "undefined") {
@@ -832,90 +834,96 @@ const GraphModal = ({
     return null;
   }
 
-  return (
+  const modalContent = (
     <div
       className={`fixed flex flex-col overflow-hidden rounded-lg border border-slate-300/70 bg-white p-3 shadow-lg ${className}`}
-      style={{ zIndex: 11000 }}
+      style={{ zIndex: MODAL_CONTENT_Z_INDEX }}
     >
-      <div className="flex items-center justify-between gap-2">
-        <h3 className="text-base font-semibold">{title}</h3>
-        <Button icon="pi pi-times" rounded text size="small" onClick={onHide} />
-      </div>
-      <div className="mt-2 min-h-0 flex-1">
-        <div className="flex h-full min-h-0 gap-3">
-          <div className="relative min-h-0 flex-1 rounded-lg border border-slate-200 bg-slate-50">
-            <canvas
-              ref={canvasRef}
-              className="h-full w-full"
-              onMouseMove={handleCanvasMouseMove}
-              onMouseLeave={handleCanvasMouseLeave}
-            />
-            {hoveredNode ? (
-              <div
-                className="pointer-events-none absolute rounded px-2 py-1 text-xs font-medium shadow"
-                style={{
-                  left: hoveredNode.x + 10,
-                  top: hoveredNode.y + 10,
-                  background: TOOLTIP_BG,
-                  color: TOOLTIP_TEXT,
-                }}
-              >
-                {hoveredNode.label}
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-base font-semibold">{title}</h3>
+          <Button icon="pi pi-times" rounded text size="small" onClick={onHide} />
+        </div>
+        <div className="mt-2 min-h-0 flex-1">
+          <div className="flex h-full min-h-0 gap-3">
+            <div className="relative min-h-0 flex-1 rounded-lg border border-slate-200 bg-slate-50">
+              <canvas
+                ref={canvasRef}
+                className="h-full w-full"
+                onMouseMove={handleCanvasMouseMove}
+                onMouseLeave={handleCanvasMouseLeave}
+              />
+              {hoveredNode ? (
+                <div
+                  className="pointer-events-none absolute rounded px-2 py-1 text-xs font-medium shadow"
+                  style={{
+                    left: hoveredNode.x + 10,
+                    top: hoveredNode.y + 10,
+                    background: TOOLTIP_BG,
+                    color: TOOLTIP_TEXT,
+                  }}
+                >
+                  {hoveredNode.label}
+                </div>
+              ) : null}
+            </div>
+
+            <aside className="flex w-72 shrink-0 flex-col rounded-lg border border-slate-200 bg-slate-50 p-2">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-700">
+                  Activations
+                </h4>
+                <span className="text-xs text-slate-500">
+                  {activationQueue.length}/{ACTIVATION_QUEUE_MAX}
+                </span>
               </div>
-            ) : null}
-          </div>
+              <div ref={activationListRef} className="mt-2 min-h-0 flex-1 space-y-2 overflow-hidden pr-1">
+                {activationQueue.length === 0 ? (
+                  <p className="rounded-md border border-dashed border-slate-300 bg-white/70 px-2 py-2 text-xs text-slate-500">
+                    No live activation yet.
+                  </p>
+                ) : (
+                  activationQueue.map((item) => {
+                    const phaseClass =
+                      item.phase === "enter"
+                        ? "translate-x-6 opacity-0"
+                        : item.phase === "exit"
+                          ? "translate-x-2 opacity-0"
+                          : "translate-x-0 opacity-100";
 
-          <aside className="flex w-72 shrink-0 flex-col rounded-lg border border-slate-200 bg-slate-50 p-2">
-            <div className="flex items-center justify-between">
-              <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-700">
-                Activations
-              </h4>
-              <span className="text-xs text-slate-500">
-                {activationQueue.length}/{ACTIVATION_QUEUE_MAX}
-              </span>
-            </div>
-            <div ref={activationListRef} className="mt-2 min-h-0 flex-1 space-y-2 overflow-hidden pr-1">
-              {activationQueue.length === 0 ? (
-                <p className="rounded-md border border-dashed border-slate-300 bg-white/70 px-2 py-2 text-xs text-slate-500">
-                  No live activation yet.
-                </p>
-              ) : (
-                activationQueue.map((item) => {
-                  const phaseClass =
-                    item.phase === "enter"
-                      ? "translate-x-6 opacity-0"
-                      : item.phase === "exit"
-                        ? "translate-x-2 opacity-0"
-                        : "translate-x-0 opacity-100";
-
-                  return (
-                    <div
-                      key={item.key}
-                      className={`rounded-md border border-slate-200 bg-white px-2 py-2 shadow-sm transition-all duration-300 ease-out ${phaseClass}`}
-                      style={{ borderLeft: `4px solid ${item.color}` }}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span
-                          className="inline-block h-2 w-2 rounded-full"
-                          style={{ backgroundColor: item.color }}
-                        />
-                        <span className="text-[11px] font-semibold" style={{ color: item.color }}>
-                          {toInteractionLabel(item.interactionType)}
-                        </span>
+                    return (
+                      <div
+                        key={item.key}
+                        className={`rounded-md border border-slate-200 bg-white px-2 py-2 shadow-sm transition-all duration-300 ease-out ${phaseClass}`}
+                        style={{ borderLeft: `4px solid ${item.color}` }}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="inline-block h-2 w-2 rounded-full"
+                            style={{ backgroundColor: item.color }}
+                          />
+                          <span className="text-[11px] font-semibold" style={{ color: item.color }}>
+                            {toInteractionLabel(item.interactionType)}
+                          </span>
+                        </div>
+                        <p className="mt-1 text-xs font-medium text-slate-700">
+                          {item.fromLabel} -&gt; {item.toLabel}
+                        </p>
                       </div>
-                      <p className="mt-1 text-xs font-medium text-slate-700">
-                        {item.fromLabel} -&gt; {item.toLabel}
-                      </p>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </aside>
+                    );
+                  })
+                )}
+              </div>
+            </aside>
+          </div>
         </div>
       </div>
-    </div>
   );
+
+  if (typeof document === "undefined") {
+    return modalContent;
+  }
+
+  return createPortal(modalContent, document.body);
 };
 
 export default GraphModal;
