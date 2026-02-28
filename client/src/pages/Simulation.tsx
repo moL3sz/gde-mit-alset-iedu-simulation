@@ -143,7 +143,6 @@ export const Simulation = () => {
     return unsupervisedOk;
   };
 
-
   return (
     <div className="flex min-h-screen w-full flex-col overflow-hidden bg-slate-200">
       <Dialog
@@ -167,43 +166,55 @@ export const Simulation = () => {
 
       <div className="border-b border-slate-300/80 bg-slate-100 px-4 py-3">
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-          <h1 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-700 sm:text-base">
-            Simulation Progress
-          </h1>
+          <div>
+            <h1 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-700 sm:text-base">
+              Simulation Progress
+            </h1>
+            <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-slate-500">
+              Topic: {topic}
+            </p>
+          </div>
           <span className="rounded-full bg-slate-200 px-3 py-1 text-xs font-semibold text-slate-700">
             {formatTime(elapsedSeconds)} / {formatTime(totalSeconds)}
           </span>
         </div>
-        <ProgressBar value={progressValue} showValue={false} style={{ height: "0.7rem" }} />
+        <ProgressBar
+          value={progressValue}
+          showValue={false}
+          style={{ height: "0.72rem", backgroundColor: "#e2e8f0" }}
+          color="#4f46e5"
+        />
       </div>
 
-      <div className="min-h-0 flex-1 overflow-auto md:overflow-hidden">
-        <div className="flex min-h-full w-full flex-col md:h-full md:flex-row">
-          <Supervised
-            graph={supervisedRuntime.graph}
-            sessionId={supervisedRuntime.sessionId}
-            students={supervisedRuntime.students}
-            studentNodeIds={supervisedRuntime.studentNodeIds}
-            nodeBubbles={supervisedRuntime.nodeBubbles}
-            interactiveBoardActive={supervisedRuntime.interactiveBoardActive}
-            isSocketConnected={supervisedRuntime.isSocketConnected}
-            lastError={supervisedRuntime.lastError}
-            isPausedForTaskAssignment={supervisedRuntime.isPausedForTaskAssignment}
-            taskAssignmentRequired={supervisedRuntime.taskAssignmentRequired}
-            onSubmitTaskAssignment={submitSupervisedTaskAssignment}
-            onSendHint={supervisedRuntime.sendSupervisorHint}
-          />
-          <Unsupervised
-            graph={unsupervisedRuntime.graph}
-            sessionId={unsupervisedRuntime.sessionId}
-            students={unsupervisedRuntime.students}
-            studentNodeIds={unsupervisedRuntime.studentNodeIds}
-            nodeBubbles={unsupervisedRuntime.nodeBubbles}
-            interactiveBoardActive={unsupervisedRuntime.interactiveBoardActive}
-            isSocketConnected={unsupervisedRuntime.isSocketConnected}
-            lastError={unsupervisedRuntime.lastError}
-            isPausedForTaskAssignment={unsupervisedRuntime.isPausedForTaskAssignment}
-          />
+      <div className="relative min-h-0 flex-1 overflow-hidden">
+        <div className="min-h-full overflow-auto md:overflow-hidden">
+          <div className="flex min-h-full w-full flex-col md:h-full md:flex-row">
+            <Supervised
+              graph={supervisedRuntime.graph}
+              sessionId={supervisedRuntime.sessionId}
+              students={supervisedRuntime.students}
+              studentNodeIds={supervisedRuntime.studentNodeIds}
+              nodeBubbles={supervisedRuntime.nodeBubbles}
+              interactiveBoardActive={supervisedRuntime.interactiveBoardActive}
+              isSocketConnected={supervisedRuntime.isSocketConnected}
+              lastError={supervisedRuntime.lastError}
+              isPausedForTaskAssignment={supervisedRuntime.isPausedForTaskAssignment}
+              taskAssignmentRequired={supervisedRuntime.taskAssignmentRequired}
+              onSubmitTaskAssignment={submitSupervisedTaskAssignment}
+              onSendHint={supervisedRuntime.sendSupervisorHint}
+            />
+            <Unsupervised
+              graph={unsupervisedRuntime.graph}
+              sessionId={unsupervisedRuntime.sessionId}
+              students={unsupervisedRuntime.students}
+              studentNodeIds={unsupervisedRuntime.studentNodeIds}
+              nodeBubbles={unsupervisedRuntime.nodeBubbles}
+              interactiveBoardActive={unsupervisedRuntime.interactiveBoardActive}
+              isSocketConnected={unsupervisedRuntime.isSocketConnected}
+              lastError={unsupervisedRuntime.lastError}
+              isPausedForTaskAssignment={unsupervisedRuntime.isPausedForTaskAssignment}
+            />
+          </div>
         </div>
       </div>
     </div>

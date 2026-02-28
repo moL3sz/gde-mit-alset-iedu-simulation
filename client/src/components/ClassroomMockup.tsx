@@ -57,18 +57,18 @@ const STATE_STYLES: Record<
 > = {
   engaged: {
     label: "Focused",
-    panelClass: "border-slate-300 bg-slate-50 text-slate-700",
-    tagClass: "!bg-green-200 !text-slate-700 !border !border-slate-300",
+    panelClass: "border-emerald-200 bg-emerald-50/90 text-emerald-800",
+    tagClass: "!bg-emerald-100 !text-emerald-800 !border !border-emerald-200",
   },
   steady: {
     label: "Steady",
-    panelClass: "border-slate-300 bg-slate-100 text-slate-700",
-    tagClass: "!bg-blue-200 !text-slate-700 !border !border-slate-300",
+    panelClass: "border-indigo-200 bg-indigo-50/85 text-indigo-800",
+    tagClass: "!bg-indigo-100 !text-indigo-800 !border !border-indigo-200",
   },
   distracted: {
     label: "Distracted",
-    panelClass: "border-slate-400 bg-slate-100 text-slate-600",
-    tagClass: "!bg-yellow-400 !text-slate-700 !border !border-slate-400",
+    panelClass: "border-amber-200 bg-amber-50/90 text-amber-800",
+    tagClass: "!bg-amber-100 !text-amber-800 !border !border-amber-200",
   },
 };
 
@@ -240,7 +240,7 @@ const ClassroomMockup = ({
         pt={{
           root: {
             className:
-              "!rounded-xl !border !border-slate-300 !bg-white/95 !shadow-[0_10px_24px_rgba(15,23,42,0.18)]",
+              "!z-[1200] !rounded-xl !border !border-indigo-100 !bg-white/95 !shadow-[0_14px_34px_rgba(15,23,42,0.16)]",
             style: { maxWidth: isTeacher ? "24rem" : "18rem" },
           },
           content: { className: "!p-3" },
@@ -251,11 +251,11 @@ const ClassroomMockup = ({
             {bubbleStack.map((bubble) => (
               <div
                 key={bubble.messageId}
-                className="rounded-lg border border-slate-200 bg-slate-50/80 px-2 py-1.5"
+                className="rounded-lg border border-slate-200 bg-slate-50/85 px-2 py-1.5"
               >
                 <Tag
                   value={toActionLabel(bubble.actionType)}
-                  className="!border !border-slate-300 !bg-slate-100 !text-slate-700 !text-[10px]"
+                  className="!border !border-indigo-200 !bg-indigo-50 !text-indigo-700 !text-[10px]"
                 />
                 {typeof bubble.speechSeconds === "number" ? (
                   <Tag
@@ -280,57 +280,61 @@ const ClassroomMockup = ({
 
   return (
     <Card
-      className="w-full overflow-hidden rounded-3xl border border-slate-300/70 bg-[#f2f4f7] shadow-[0_18px_32px_rgba(22,35,60,0.08)]"
+      className="w-full overflow-hidden rounded-3xl border border-white/60 bg-white/92 shadow-[0_22px_46px_rgba(22,35,60,0.14)] backdrop-blur-sm"
       pt={CONTAINER_PT}
-      style={{ fontFamily: "'Trebuchet MS', Verdana, sans-serif" }}
+      style={{ fontFamily: "'Avenir Next', 'Segoe UI', 'Trebuchet MS', sans-serif" }}
     >
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-300/80 px-4 py-3">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-700 sm:text-base">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 bg-gradient-to-r from-white via-indigo-50/45 to-cyan-50/45 px-4 py-3">
+        <h2 className="text-sm font-bold uppercase tracking-[0.12em] text-slate-800 sm:text-base">
           Classroom Live View
         </h2>
         <div className="flex flex-wrap items-center gap-2 text-[11px] sm:text-xs">
           <Tag
             value="Focused"
             rounded
-            className="!border !border-emerald-200 !bg-emerald-100 !text-emerald-800"
+            className="!border !border-emerald-200 !bg-emerald-50 !text-emerald-700"
           />
           <Tag
             value="Steady"
             rounded
-            className="!border !border-sky-200 !bg-sky-100 !text-sky-800"
+            className="!border !border-indigo-200 !bg-indigo-50 !text-indigo-700"
           />
           <Tag
             value="Distracted"
             rounded
-            className="!border !border-amber-200 !bg-amber-100 !text-amber-800"
+            className="!border !border-amber-200 !bg-amber-50 !text-amber-700"
           />
         </div>
       </div>
 
       <div className="p-3 sm:p-4">
-        <div className="relative mx-auto aspect-[4/3] w-full max-w-[1060px] overflow-hidden rounded-3xl border border-slate-300 bg-[#f5f6f8] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.6)]">
-          <div className="absolute inset-x-0 top-[36%] h-[1px] bg-slate-300/80" />
-          <div className="absolute inset-x-0 top-0 h-[36%] bg-[#eceff3]" />
-          <div className="absolute inset-x-0 bottom-0 h-[64%] bg-[#d6cfc5]" />
+        <div className="relative mx-auto aspect-[4/3] w-full max-w-[1060px] overflow-hidden rounded-3xl border border-slate-200 bg-[linear-gradient(180deg,#f8fbff_0%,#f4f7fc_38%,#f0ece6_38%,#ece4d9_100%)] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.7)]">
+          <div className="absolute inset-x-0 top-[36%] h-[1px] bg-slate-300/70" />
+          <div className="absolute inset-x-0 top-0 h-[36%] bg-gradient-to-b from-indigo-50/45 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-[64%] bg-gradient-to-b from-[#efe7dd] via-[#ecdfd1] to-[#e6d8c8]" />
 
-          <div className="absolute right-[8%] top-[7%] h-[16%] w-[9%] rounded-md border border-slate-300/70 bg-[#e8ebf0]" />
-          <div className="absolute right-[20%] top-[7%] h-[16%] w-[9%] rounded-md border border-slate-300/70 bg-[#e8ebf0]" />
+          <div className="absolute right-[8%] top-[7%] h-[16%] w-[9%] rounded-md border border-slate-200/90 bg-white/80" />
+          <div className="absolute right-[20%] top-[7%] h-[16%] w-[9%] rounded-md border border-slate-200/90 bg-white/80" />
 
           <Card
             className={`absolute left-5 top-4 h-8 w-[34%] min-w-[130px] border text-center text-[11px] font-semibold uppercase tracking-wide sm:h-10 sm:text-sm ${
               interactiveBoardActive
-                ? "!border-emerald-500/80 !bg-emerald-600 text-emerald-50"
-                : "border-slate-500/80 bg-[#69707b] text-slate-100"
+                ? "border-emerald-400/80 bg-emerald-500 text-emerald-50"
+                : "border-indigo-500/80 bg-indigo-500 text-indigo-50"
             }`}
             pt={CONTAINER_PT}
           >
-            <div className={`flex h-full w-full items-center justify-center px-2 py-1 ${interactiveBoardActive ? "bg-emerald-600 text-white" : ""}`}>
+            <div
+              className={`flex h-full w-full items-center justify-center px-2 py-1 ${
+                interactiveBoardActive ? "bg-emerald-600 text-white" : ""
+              }`}
+            >
               {interactiveBoardActive ? "Interactive Board · Active" : "Interactive Board"}
             </div>
           </Card>
 
           <Card
-            className="absolute left-6 top-[26%] h-12 w-[24%] min-w-[120px] border border-[#8f8376] bg-[#bbb1a5] text-center text-[10px] font-semibold tracking-wide text-slate-100 sm:h-14 sm:text-xs"
+            className="absolute left-6 top-[26%] h-12 w-[24%] min-w-[120px] border border-[#8f8376] bg-[#c4b6a7] text-center text-[10px] font-semibold tracking-wide text-slate-100 sm:h-14 sm:text-xs"
             pt={CONTAINER_PT}
           >
             <div className="flex h-full w-full items-center justify-center px-2 py-2">
@@ -343,10 +347,10 @@ const ClassroomMockup = ({
               <Avatar
                 label="T"
                 shape="circle"
-                className="!h-16 !w-16 !border !border-[#9e97a0] !bg-[#d9d5da] !text-[#5f5860] sm:!h-20 sm:!w-20"
+                className="!h-16 !w-16 !border !border-indigo-300 !bg-indigo-100 !text-indigo-700 sm:!h-20 sm:!w-20"
               />
             </div>
-            <Tag value="Teacher" className="!bg-slate-100 !text-slate-700 !text-[10px]" />
+            <Tag value="Teacher" className="!bg-indigo-50 !text-indigo-700 !text-[10px] !border !border-indigo-200" />
             {interactiveBoardActive ? (
               <Tag
                 value="Interactive Mode"
@@ -356,7 +360,7 @@ const ClassroomMockup = ({
             {renderBubble("teacher", true)}
           </div>
 
-          <div className="absolute right-0 top-[20%] h-16 w-6 rounded-l-lg bg-[#c2baaf] sm:h-20 sm:w-7" />
+          <div className="absolute right-0 top-[20%] h-16 w-6 rounded-l-lg bg-[#cbbfb1] sm:h-20 sm:w-7" />
 
           <div className="absolute inset-x-3 bottom-2 top-[42%] grid grid-cols-1 gap-2 sm:inset-x-5 sm:bottom-3 sm:top-[44%] sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
             {Array.from({ length: deskGroupCount }, (_, deskIndex) => {
@@ -386,11 +390,11 @@ const ClassroomMockup = ({
               return (
                 <Card
                   key={`desk-${deskIndex + 1}`}
-                  className="border border-slate-300/70 bg-slate-100/70"
+                  className="border border-slate-200/80 bg-white/88 shadow-sm backdrop-blur-sm"
                   pt={DESK_CARD_PT}
                 >
                   <div className="space-y-1.5 sm:space-y-2">
-                    <div className="h-6 w-full rounded-md border border-[#8c7f72] bg-[#cdc3b7] sm:h-8" />
+                    <div className="h-6 w-full rounded-md border border-[#8c7f72] bg-[#c8baac] sm:h-8" />
 
                     <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
                       <div
@@ -400,7 +404,7 @@ const ClassroomMockup = ({
                           <Avatar
                             label={toInitials(firstName)}
                             shape="circle"
-                            className="!h-6 !w-6 !bg-slate-300 !text-[9px] !font-semibold !text-slate-700 sm:!h-7 sm:!w-7"
+                            className="!h-6 !w-6 !bg-cyan-500 !text-[9px] !font-semibold !text-white sm:!h-7 sm:!w-7"
                           />
                         </div>
                         <span className="mt-0.5 truncate text-[8px] font-semibold leading-tight sm:text-[9px]">
@@ -427,7 +431,7 @@ const ClassroomMockup = ({
                             <Avatar
                               label={toInitials(secondName)}
                               shape="circle"
-                              className="!h-6 !w-6 !bg-slate-300 !text-[9px] !font-semibold !text-slate-700 sm:!h-7 sm:!w-7"
+                              className="!h-6 !w-6 !bg-cyan-500 !text-[9px] !font-semibold !text-white sm:!h-7 sm:!w-7"
                             />
                           </div>
                           <span className="mt-0.5 truncate text-[8px] font-semibold leading-tight sm:text-[9px]">
@@ -461,12 +465,12 @@ const ClassroomMockup = ({
                     <div className="flex justify-center gap-1">
                       <Tag
                         value={first.profile ?? "Typical"}
-                        className="!bg-slate-100 !text-slate-700 !text-[8px]"
+                        className="!bg-slate-100 !text-slate-700 !text-[8px] !border !border-slate-200"
                       />
                       {second ? (
                         <Tag
                           value={second.profile ?? "Typical"}
-                          className="!bg-slate-100 !text-slate-700 !text-[8px]"
+                          className="!bg-slate-100 !text-slate-700 !text-[8px] !border !border-slate-200"
                         />
                       ) : null}
                     </div>

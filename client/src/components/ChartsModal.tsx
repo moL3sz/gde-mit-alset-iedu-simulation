@@ -220,7 +220,8 @@ const ChartsModal = ({
 
   return (
     <div
-      className={`absolute z-2000 overflow-hidden rounded-lg border border-slate-300/70 bg-white p-3 shadow-lg ${className}`}
+      className={`fixed overflow-hidden rounded-lg border border-slate-300/70 bg-white p-3 shadow-lg ${className}`}
+      style={{ zIndex: 11000 }}
     >
       <div className="flex items-center justify-between gap-2">
         <div>
