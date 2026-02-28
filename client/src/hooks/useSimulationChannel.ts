@@ -636,6 +636,30 @@ export const useSimulationChannel = ({
   }, [sessionId, socket]);
 
   useEffect(() => {
+    if (!socket) {
+      return;
+    }
+
+    const handleConnectError = (error: Error) => {
+      setLastError(`Socket connect error: ${error.message}`);
+    };
+
+    const handleConnectSuccess = () => {
+      setLastError((previous) =>
+        previous?.startsWith("Socket connect error:") ? null : previous,
+      );
+    };
+
+    socket.on("connect_error", handleConnectError);
+    socket.on("connect", handleConnectSuccess);
+
+    return () => {
+      socket.off("connect_error", handleConnectError);
+      socket.off("connect", handleConnectSuccess);
+    };
+  }, [socket]);
+
+  useEffect(() => {
     if (!socket || !sessionId) {
       return;
     }

@@ -12,6 +12,7 @@ const SocketContext = createContext<SocketContextType | undefined>(undefined);
 const SOCKET_BASE_URL =
   import.meta.env.VITE_SOCKET_URL ??
   (typeof window !== "undefined" ? window.location.origin : "http://localhost:3000");
+const NORMALIZED_SOCKET_BASE_URL = SOCKET_BASE_URL.replace(/\/+$/, "");
 
 export function SocketProvider({ children }: { children: ReactNode }) {
   const [supervisedSocket, setSupervisedSocket] = useState<Socket | null>(null);
@@ -23,7 +24,11 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         return currentSocket;
       }
 
-      return io(`${SOCKET_BASE_URL}/supervised`);
+      return io(`${NORMALIZED_SOCKET_BASE_URL}/supervised`, {
+        path: "/socket.io",
+        transports: ["websocket", "polling"],
+        withCredentials: true,
+      });
     });
 
     setUnsupervisedSocket((currentSocket) => {
@@ -31,7 +36,11 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         return currentSocket;
       }
 
-      return io(`${SOCKET_BASE_URL}/unsupervised`);
+      return io(`${NORMALIZED_SOCKET_BASE_URL}/unsupervised`, {
+        path: "/socket.io",
+        transports: ["websocket", "polling"],
+        withCredentials: true,
+      });
     });
   }, []);
 
